@@ -11,7 +11,8 @@ import Matter from 'matter-js'
         World = Matter.World,
         Vertices = Matter.Vertices,
 		    Body = Matter.Body,
-		    Vector = Matter.Vector,
+        Vector = Matter.Vector,
+        Events = Matter.Events,
         Bodies = Matter.Bodies;
 
 
@@ -22,25 +23,26 @@ export default class SimulationBase extends PureComponent {
   componentDidMount() {
     this.physicsInit()
   }
-  physicsInit(){
+  physicsInit() {
+    const rotationAngle = -Math.PI / 3.5,
+    worldWidth = 800,
+    worldHeight = 600,
+    groundHeight = 40
+
+    // bodies are positioned via their center of mass. This is easy to calculate for a rectangle.
     const ground = Bodies.rectangle(
-      0, 500, 2000, 40,
+      worldWidth/2 ,worldHeight - (groundHeight/2), worldWidth, groundHeight,
       {
         isStatic: true,
-        id: "ground"
+        id: "ground",
+        restitution: 0,
+        render: {
+          opacity: 1,
+          lineWidth: 0,
+          fillStyle: 'darkgreen'
+        }
       }
     )
-
-    const leftWall = Bodies.rectangle(
-     0,0, 20, 1000,
-      {
-        isStatic: true,
-        id: "wall"
-      }
-    )
-    Body.rotate(leftWall, -Math.PI/4)
-    Body.translate(leftWall, { x: 200, y: 500 })
-
 
     const leftWallPivot = Bodies.circle(
       200, 500, 5, {
@@ -48,14 +50,39 @@ export default class SimulationBase extends PureComponent {
       }
     )
 
-    const circleTest = Bodies.circle(
-      200, 200, 20, {
+    const leftWall = Bodies.rectangle(
+     0,0, 20, 1000,
+      {
+        isStatic: true,
+        restitution: 0,
+        id: "wall"
+      }
+    )
+    Body.rotate(leftWall, rotationAngle)
+    Body.translate(leftWall, { x: 200, y: 500 })
+
+    const carTest = Bodies.rectangle(
+      100, 330, 40, 20, {
         mass: 1,
         frictionAir: 0.01,
         frictionStatic: 0.9,
-        friction: 0.5
+        friction: 0.02,
+        sleepThreshold: 5,
+        restitution: 0,
+        slop:0,
+        label: "car",
+        render: {
+          sprite: {
+            texture: 'fastcar.png',
+            xScale: 0.25,
+            yScale: 0.25,
+            yOffset: 0.1
+          }
+        }
       }
     )
+
+    Body.rotate(carTest, -rotationAngle)
 
     let engine = Engine.create(),
     world = engine.world
@@ -68,9 +95,10 @@ export default class SimulationBase extends PureComponent {
         element: this.refs.canvas,
         engine: engine,
         options: {
-            width: 800,
-            height: 600,
-            showVelocity: true
+            width: worldWidth,
+            height: worldHeight,
+            showVelocity: true,
+            wireframes: false
         }
     });
 
@@ -80,7 +108,7 @@ export default class SimulationBase extends PureComponent {
     let runner = Runner.create();
     Runner.run(runner, engine);
 
-    World.add(world, [ground, leftWall, leftWallPivot, circleTest])
+    World.add(world, [ground, leftWall, leftWallPivot, carTest])
 
 
     // add mouse control
@@ -96,6 +124,26 @@ export default class SimulationBase extends PureComponent {
         });
 
     World.add(world, mouseConstraint);
+    Events.on(carTest, "sleepStart", function (e) {
+      console.log("sleepStart")
+    })
+    Events.on(carTest, "sleepEnd", function (e) {
+      console.log("sleepEnd")
+    })
+    Events.on(engine, "afterUpdate", function (e) {
+      //console.log(e.source);
+      //console.log(circleTest)
+      //console.log(carTest.angularSpeed)
+      //console.log(carTest.velocity.x && carTest.position.x > 200)
+      if (carTest.velocity.x < 0.01 && carTest.position.x > 200) {
+        carTest.position = { x: Math.round(carTest.position.x), y: Math.round(carTest.position.y) }
+        //console.log(carTest.position, 3)
+      }
+    })
+  }
+
+  tickData(e) {
+    //console.log(e.position)
   }
 
   render() {
