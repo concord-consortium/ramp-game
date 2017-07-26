@@ -22,12 +22,15 @@
   "dependencies": {
     "babel-polyfill": "^6.16.0",
     "eventemitter2": "^4.1.0",
+    "konva": "^1.6.3",
     "material-ui": "^0.16.4",
     "prop-types": "^15.5.8",
     "re-base": "^2.8.0",
     "react": "^15.6.1",
+    "react-animation-frame": "^0.2.1",
     "react-dom": "^15.5.4",
     "react-game-kit": "0.0.2",
+    "react-konva": "^1.1.4",
     "react-tap-event-plugin": "^2.0.1",
     "react-toolbox": "2.0.0-beta.11",
     "react-transition-group": "1.x"

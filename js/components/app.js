@@ -1,11 +1,10 @@
 import React, {PureComponent} from 'react'
 import Plane from './plane'
-import MotionJSSimulation from './motion-simulation'
-
+import SimulationBase from './simulation-base'
 
 const App = () => (
   <div className="appContainer">
-    <MotionJSSimulation />
+    <SimulationBase message="Let's Time Stuff!" durationMs={2000}></SimulationBase>
   </div>
 )
 
