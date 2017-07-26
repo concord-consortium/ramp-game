@@ -16,7 +16,7 @@ import Matter from 'matter-js'
         Bodies = Matter.Bodies;
 
 
-export default class SimulationBase extends PureComponent {
+export default class MotionJSSimulation extends PureComponent {
   constructor(props) {
     super(props)
   }

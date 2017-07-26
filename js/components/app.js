@@ -1,11 +1,11 @@
 import React, {PureComponent} from 'react'
 import Plane from './plane'
-import SimulationBase from './simulationbase'
+import MotionJSSimulation from './motion-simulation'
 
 
 const App = () => (
   <div className="appContainer">
-    <SimulationBase />
+    <MotionJSSimulation />
   </div>
 )
 
