@@ -3,6 +3,7 @@ import ReactAnimationFrame from 'react-animation-frame'
 import Plane from './plane'
 import StaticElements from './simulation-static-elements'
 import InclineControl from './incline-control'
+import Car from './car'
 
 import { Layer, Rect, Stage, Group } from 'react-konva'
 
@@ -11,7 +12,10 @@ const DEFAULT_POSITIONS = {
   RampBottomY: 560,
   RampStartX: 30,
   RampEndX: 300,
-  CarInitialX: 150
+  CarInitialX: 150,
+  SimWidth: 800,
+  SimHeight: 600,
+  GroundHeight: 40
 }
 
 class SimulationBase extends React.Component {
@@ -48,11 +52,12 @@ class SimulationBase extends React.Component {
       <div className="timer">
         <p>{this.props.message}</p>
         <div className="timer">{this.state.progress}</div>
-        <Stage width={800} height={600}>
+        <Stage width={currentPositions.SimWidth} height={currentPositions.SimHeight}>
           <Layer>
             <Plane currentPositions={currentPositions} />
             <InclineControl currentPositions={currentPositions} onInclineChanged={this.setInclinePos} />
-            <StaticElements />
+            <StaticElements currentPositions={currentPositions} />
+            <Car currentPositions={currentPositions} />
           </Layer>
         </Stage>
       </div>
