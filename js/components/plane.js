@@ -6,15 +6,14 @@ export default class Plane extends React.Component{
     super(props)
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    return (nextProps.yPos != this.props.yPos)
-  }
-
-
   render() {
-    const { yPos } = this.props
-    let topPoint = yPos ? yPos : 200
-    let points = [0,560, 300,560, 0, topPoint]
+    const { currentPositions } = this.props
+    let points = [
+      0, currentPositions.RampBottomY,
+      currentPositions.RampStartX, currentPositions.RampBottomY,
+      currentPositions.RampEndX, currentPositions.RampBottomY,
+      currentPositions.RampStartX, currentPositions.RampTopY,
+      0, currentPositions.RampTopY]
     return (
       <Line points={points} closed={true} fill={'grey'} stroke={'black'} strokeWidth={1} />
     )
