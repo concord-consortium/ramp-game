@@ -7,9 +7,9 @@ export default class StaticElements extends React.Component{
   }
 
   render() {
-    const { currentPositions } = this.props;
+    const { simSettings } = this.props;
     return (
-      <Rect x={0} y={currentPositions.SimHeight - currentPositions.GroundHeight} width={currentPositions.SimWidth} height={currentPositions.GroundHeight} fill={'green'} stroke={'black'} strokeWidth={1} />
+      <Rect x={0} y={simSettings.SimHeight - simSettings.GroundHeight} width={simSettings.SimWidth} height={simSettings.GroundHeight} fill={'green'} stroke={'black'} strokeWidth={1} />
     )
   }
 }

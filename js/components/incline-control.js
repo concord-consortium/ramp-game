@@ -18,7 +18,7 @@ export default class InclineControl extends React.Component{
   constructor(props) {
     super(props)
     this.state = {
-      currentPositions: this.props.currentPositions,
+      simSettings: this.props.simSettings,
       isDragging: false,
       color: 'darkgrey',
       appearance: HIDDEN_APPEARANCE
@@ -45,12 +45,12 @@ export default class InclineControl extends React.Component{
   }
 
   updatePositions(posX, posY) {
-    const { currentPositions } = this.state
-    let newPositions = currentPositions
-      newPositions.RampTopY = this.clampPosition(posY, 0, currentPositions.RampBottomY)
-      newPositions.RampStartX = this.clampPosition(posX, 0, currentPositions.RampEndX)
+    const { simSettings } = this.state
+    let newPositions = simSettings
+      newPositions.RampTopY = this.clampPosition(posY, 0, simSettings.RampBottomY)
+      newPositions.RampStartX = this.clampPosition(posX, 0, simSettings.RampEndX)
       this.setState({
-        currentPositions: newPositions
+        simSettings: newPositions
       })
       this.props.onInclineChanged(newPositions)
   }
@@ -89,11 +89,11 @@ export default class InclineControl extends React.Component{
 
 
   render() {
-    const { appearance, currentPositions } = this.state
+    const { appearance, simSettings } = this.state
     let height = appearance.scale
     let width = appearance.scale
     let radius = appearance.scale / 2
-    let center = {x: currentPositions.RampStartX, y: currentPositions.RampTopY }
+    let center = {x: simSettings.RampStartX, y: simSettings.RampTopY }
     return (
       <Circle x={center.x} y={center.y} radius={radius}  fill={appearance.fillColor} stroke={appearance.stroke} strokeWidth={appearance.strokeWidth} onMouseDown={this.onDragStart} onMouseOver={this.onHover} />
     )

@@ -22,26 +22,26 @@ export default class SimulationBase extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      currentPositions: DEFAULT_POSITIONS,
+      simSettings: DEFAULT_POSITIONS,
       isRunning: false
     }
     this.setInclinePos = this.setInclinePos.bind(this)
   }
 
   setInclinePos(p) {
-    this.setState({ currentPositions: p })
+    this.setState({ simSettings: p })
   }
 
   render() {
-    const {currentPositions} = this.state
+    const {simSettings} = this.state
     return (
       <div className="ramp-simulation">
-        <Stage width={currentPositions.SimWidth} height={currentPositions.SimHeight}>
+        <Stage width={simSettings.SimWidth} height={simSettings.SimHeight}>
           <Layer>
-            <Plane currentPositions={currentPositions} />
-            <InclineControl currentPositions={currentPositions} onInclineChanged={this.setInclinePos} />
-            <StaticElements currentPositions={currentPositions} />
-            <Car currentPositions={currentPositions} />
+            <Plane simSettings={simSettings} />
+            <InclineControl simSettings={simSettings} onInclineChanged={this.setInclinePos} />
+            <StaticElements simSettings={simSettings} />
+            <Car simSettings={simSettings} />
           </Layer>
         </Stage>
       </div>

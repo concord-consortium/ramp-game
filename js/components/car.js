@@ -20,6 +20,7 @@ class Car extends React.Component{
       carPos: { x: 100, y: 300 },
       isDragging: false,
       isRunning: false,
+      carVelocity: 0,
       appearance: DEFAULT_APPEARANCE
     }
     this.onClick = this.onClick.bind(this)
@@ -35,9 +36,9 @@ class Car extends React.Component{
     this.setPositionInWorld(this.state.carPos.x)
   }
 
-  onAnimationFrame(time) {
-    const { carPos, isRunning, startTime, rampAcceleration } = this.state;
-    const { currentPositions } = this.props
+  onAnimationFrame(time, previousTime) {
+    const { carPos, isRunning, startTime, rampAcceleration, carVelocity } = this.state;
+    const { simSettings } = this.props
     if (isRunning) {
       let t = startTime
       if (!startTime || startTime === 0) {
@@ -45,44 +46,57 @@ class Car extends React.Component{
         this.setState({ startTime: time })
       }
       let p = carPos.x
-      if (p < currentPositions.SimWidth - 100) {
-        let a = carPos.x >= currentPositions.RampEndX ? 0 : rampAcceleration
+      let v = carVelocity
+      if (p < simSettings.SimWidth - 100) {
         let dt = time - t
-        console.log(time, dt, t)
         dt /= 1000
-        p += 1 * a * dt * dt;//1//this.calculateVelocity()
-        this.setPositionInWorld(p)
+        if (p >= simSettings.RampEndX) {
+          v = v - 0.01
+          p += v * dt
+          console.log(v, dt)
+        }
+        else {
+          p += 1 * rampAcceleration * dt * dt;//1//this.calculateVelocity()
+          v = p / dt
+          console.log(v, dt)
+        }
+        this.setPositionInWorld(p, v)
       }
       else {
-        this.setState({isRunning: false, startTime: 0})
+        this.setState({isRunning: false, carVelocity: 0, startTime: 0})
       }
     }
   }
 
-  setPositionInWorld(carX) {
+  setPositionInWorld(carX, velocity) {
     const { isRunning } = this.state
-    const { currentPositions } = this.props
+    const { simSettings } = this.props
     let newPos = {};
-    newPos.x = this.clampPosition(carX, 0, currentPositions.SimWidth)
+    newPos.x = this.clampPosition(carX, 0, simSettings.SimWidth)
     newPos.y = this.getPositionOnRamp(carX)
-    this.setState({ carPos: newPos })
+    if (velocity) {
+      this.setState({ carPos: newPos, carVelocity: velocity })
+    }
+    else {
+      this.setState({ carPos: newPos })
+    }
   }
 
   getPositionOnRamp(carX) {
-    const { currentPositions } = this.props
+    const { simSettings } = this.props
 
-    if (carX > currentPositions.RampEndX) {
-      return currentPositions.SimHeight - currentPositions.GroundHeight
+    if (carX > simSettings.RampEndX) {
+      return simSettings.SimHeight - simSettings.GroundHeight
     }
-    else if (carX <= currentPositions.RampStartX) {
-      return currentPositions.RampTopY
+    else if (carX <= simSettings.RampStartX) {
+      return simSettings.RampTopY
     }
     else {
       // car is on the incline
-      let rampTop = currentPositions.SimHeight - currentPositions.RampTopY - currentPositions.GroundHeight
-      let theta = Math.atan(rampTop / (currentPositions.RampEndX - currentPositions.RampStartX))
-      let y = (carX - currentPositions.RampStartX) * Math.tan(theta)
-      y = y + currentPositions.RampTopY
+      let rampTop = simSettings.SimHeight - simSettings.RampTopY - simSettings.GroundHeight
+      let theta = Math.atan(rampTop / (simSettings.RampEndX - simSettings.RampStartX))
+      let y = (carX - simSettings.RampStartX) * Math.tan(theta)
+      y = y + simSettings.RampTopY
       if (theta != this.state.theta) {
         let rampAcceleration = m * g * Math.sin(theta*180/Math.PI)
         this.setState({ theta, rampAcceleration })
@@ -102,7 +116,7 @@ class Car extends React.Component{
   onDrag(e) {
     const { isDragging } = this.state
     if (isDragging) {
-      this.setPositionInWorld(e.layerX)
+      this.setPositionInWorld(e.layerX, 0)
     }
   }
 
