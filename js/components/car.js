@@ -9,8 +9,9 @@ const DEFAULT_APPEARANCE = {
   stroke: 'black',
   strokeWidth: 2
 }
-const g = 9.81
-const m = 100
+const gravity = 9.81
+const mass = 10
+const friction = 0.9
 
 
 class Car extends React.Component{
@@ -49,19 +50,23 @@ class Car extends React.Component{
 
     let newTheta = newSettings.RampAngle
     if (newTheta != theta) {
-        let parallelForce = m * g * (Math.sin(newTheta));
-        let rampAcceleration = parallelForce / m
-        this.setState({ theta: newTheta, rampAcceleration, simSettings: newSettings })
+      let g = gravity, m = mass, f = friction
+      let parallelForce = m * g * (Math.sin(newTheta))
+      let normalForce = m * g * (Math.cos(newTheta))
+      let frictionForce = normalForce * f
+      let rampAcceleration = (parallelForce - frictionForce) / m
+      if (rampAcceleration < 0) rampAcceleration = 0
+      this.setState({ theta: newTheta, rampAcceleration, simSettings: newSettings })
     }
   }
 
   onAnimationFrame(currentTimestamp, previousTimestamp) {
-    const { carPos, isRunning, rampAcceleration, carVelocity, simSettings, startTime, startPos } = this.state;
+    const { carPos, isRunning, rampAcceleration, carVelocity, simSettings, startTime, startPos, startGroundTime } = this.state;
 
     if (isRunning) {
       let t = startTime
       let po = startPos
-      let slowAcceleration = -5
+      let slowAcceleration = -10
 
       if (!startTime || startTime === 0) {
         t = currentTimestamp
@@ -81,21 +86,34 @@ class Car extends React.Component{
         let p = carPos.x
         let v = carVelocity
 
-        if (p < simSettings.SimWidth - 100) {
-          // let dt = time - t
-          if (p >= simSettings.RampEndX) {
-            let nextP = this.calculateAcceleratedPosition(po, et, slowAcceleration)
+        if (p < simSettings.SimWidth) {
 
-            if (nextP > simSettings.SimWidth) {
+          // car on ramp
+          if (p < simSettings.RampEndX) {
+            p = this.calculateAcceleratedPosition(po, v, et, rampAcceleration)
+            v = (p - carPos.x) / dt
+          }
+          // car on ground
+          else {
+            let egt, sgt = 0
+            if (!startGroundTime || startGroundTime === 0) {
+              sgt = previousTimestamp
+              this.setState({ startGroundTime: currentTimestamp })
+            } else {
+              sgt = startGroundTime
+            }
+            egt = (currentTimestamp - sgt) / 1000
+
+            let nextP = this.calculateAcceleratedPosition(simSettings.RampEndX, v, egt, slowAcceleration)
+
+            if (nextP > simSettings.SimWidth || nextP - p < 0.1) {
               this.setState({ isRunning: false, carVelocity: 0 })
             } else {
-              p = nextP
+              if (nextP >= p) {
+                v = (nextP - carPos.x) / dt
+                p = nextP
+              }
             }
-          }
-          else {
-            p = this.calculateAcceleratedPosition(po, et, rampAcceleration)
-
-            v = (p - carPos.x) / dt
           }
           //console.log(v)
           this.setPositionInWorld(p, v)
@@ -108,9 +126,9 @@ class Car extends React.Component{
     }
   }
 
-  calculateAcceleratedPosition(originalPosition, elapsedTime, acceleration) {
+  calculateAcceleratedPosition(originalPosition, currentVelocity, elapsedTime, acceleration) {
     return (
-      originalPosition + (originalPosition * elapsedTime) + (0.5 * acceleration * elapsedTime * elapsedTime)
+      originalPosition + (currentVelocity * elapsedTime) + (0.5 * acceleration * elapsedTime * elapsedTime)
     )
   }
 
@@ -149,7 +167,7 @@ class Car extends React.Component{
   }
 
   onClick(e) {
-    this.setState({ isRunning: true })
+    this.setState({ isRunning: true, startGroundTime: 0, startTime: 0 })
   }
 
   clampPosition(pos, min, max) {
@@ -191,14 +209,19 @@ class Car extends React.Component{
   }
 
   render() {
-    const { appearance, hasClicked, carPos, fps } = this.state
+    const { appearance, hasClicked, carPos, fps, carVelocity } = this.state
     let height = 20
     let width = 20
     let center = carPos
-    let fpsText = fps ? fps + 'fps' : ''
+    let fpsText = 'fps: ' + fps
+    let velText = 'vel: ' + Math.round(carVelocity)
+    let xText = 'xPos: ' + Math.round(carPos.x)
+
     return (
       <Group>
-        <Text x={10} y={10} fontFamily={'Arial'} fontSize={16} text={fpsText} />
+        <Text x={10} y={10} fontFamily={'Arial'} fontSize={12} text={fpsText} />
+        <Text x={10} y={25} fontFamily={'Arial'} fontSize={12} text={velText} />
+        <Text x={10} y={40} fontFamily={'Arial'} fontSize={12} text={xText} />
         <Circle x={center.x} y={center.y} width={width} height={height} fill={appearance.fillColor} stroke={appearance.stroke} strokeWidth={appearance.strokeWidth} onClick={this.onClick} onMouseDown={this.onDragStart} />
       </Group>
     )
