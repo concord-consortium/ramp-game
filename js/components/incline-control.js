@@ -49,6 +49,10 @@ export default class InclineControl extends React.Component{
     let newPositions = simSettings
       newPositions.RampTopY = this.clampPosition(posY, 0, simSettings.RampBottomY)
       newPositions.RampStartX = this.clampPosition(posX, 0, simSettings.RampEndX)
+
+      let rampTop = simSettings.SimHeight - newPositions.RampTopY - newPositions.GroundHeight
+      newPositions.RampAngle = Math.atan(rampTop / (newPositions.RampEndX - newPositions.RampStartX))
+
       this.setState({
         simSettings: newPositions
       })

@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react'
-import Plane from './plane'
+import Ramp from './ramp'
 import StaticElements from './simulation-static-elements'
 import InclineControl from './incline-control'
 import Car from './car'
@@ -14,7 +14,8 @@ const DEFAULT_POSITIONS = {
   CarInitialX: 150,
   SimWidth: 800,
   SimHeight: 600,
-  GroundHeight: 40
+  GroundHeight: 40,
+  RampAngle: 60 * Math.PI / 180
 }
 
 export default class SimulationBase extends React.Component {
@@ -38,7 +39,7 @@ export default class SimulationBase extends React.Component {
       <div className="ramp-simulation">
         <Stage width={simSettings.SimWidth} height={simSettings.SimHeight}>
           <Layer>
-            <Plane simSettings={simSettings} />
+            <Ramp simSettings={simSettings} />
             <InclineControl simSettings={simSettings} onInclineChanged={this.setInclinePos} />
             <StaticElements simSettings={simSettings} />
             <Car simSettings={simSettings} />
