@@ -16937,7 +16937,8 @@ var Car = function (_React$Component) {
                 var nextP = this.calculateAcceleratedPosition(simSettings.RampEndX, sgv, egt, slowAcceleration);
 
                 if (nextP > simSettings.SimWidth || nextP - p < 0.01) {
-                  console.log("car x position invalid or car is stopped", nextP);
+                  // car x position invalid or car is stopped
+                  v = 0;
                   this.endSimulation();
                 } else {
                   if (nextP >= p) {
@@ -17073,7 +17074,7 @@ var Car = function (_React$Component) {
       var height = 20;
       var width = 20;
       var center = carPos;
-      var fpsText = 'fps: ' + fps;
+      var fpsText = fps ? 'fps: ' + fps : "";
       var velText = 'vel: ' + Math.round(carVelocity);
       var xText = 'xPos: ' + Math.round(carPos.x);
       var finalDistanceText = finalDistance && finalDistance !== 0 ? "Final distance: " + finalDistance : "";
@@ -17083,8 +17084,7 @@ var Car = function (_React$Component) {
         null,
         _react2.default.createElement(_reactKonva.Text, { x: 10, y: 10, fontFamily: 'Arial', fontSize: 12, text: fpsText }),
         _react2.default.createElement(_reactKonva.Text, { x: 10, y: 25, fontFamily: 'Arial', fontSize: 12, text: velText }),
-        _react2.default.createElement(_reactKonva.Text, { x: 10, y: 40, fontFamily: 'Arial', fontSize: 12, text: xText }),
-        _react2.default.createElement(_reactKonva.Text, { x: 10, y: 55, fontFamily: 'Arial', fontSize: 12, text: finalDistanceText }),
+        _react2.default.createElement(_reactKonva.Text, { x: 10, y: 40, fontFamily: 'Arial', fontSize: 12, text: finalDistanceText }),
         _react2.default.createElement(_reactKonva.Circle, { x: center.x, y: center.y, width: width, height: height, fill: appearance.fillColor, stroke: appearance.stroke, strokeWidth: appearance.strokeWidth, onClick: this.onClick, onMouseDown: this.onDragStart })
       );
     }
