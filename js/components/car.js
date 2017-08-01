@@ -9,10 +9,21 @@ const DEFAULT_APPEARANCE = {
   stroke: 'black',
   strokeWidth: 2
 }
-const gravity = 9.81
-const mass = 10
-const friction = 0.9
 
+const DEFAULT_SIMULATION = {
+  gravity: 9.81,
+  mass: 10,
+  rampFriction: 0.01,
+  groundFriction: -1
+}
+
+const RESET = {
+  isRunning: false,
+  rampAcceleration: 0,
+  startTime: 0,
+  startGroundTime: 0,
+  carVelocity: 0
+}
 
 class Car extends React.Component{
   constructor(props) {
@@ -22,10 +33,12 @@ class Car extends React.Component{
       simSettings: this.props.simSettings,
       theta: 0,
       rampAcceleration: 0,
+      groundAcceleration: DEFAULT_SIMULATION.gravity * DEFAULT_SIMULATION.groundFriction,
       isDragging: false,
       isRunning: false,
       carVelocity: 0,
-      appearance: DEFAULT_APPEARANCE
+      appearance: DEFAULT_APPEARANCE,
+      simConstants: DEFAULT_SIMULATION
     }
     this.onClick = this.onClick.bind(this)
     this.onDrag = this.onDrag.bind(this)
@@ -34,47 +47,91 @@ class Car extends React.Component{
     this.clampPosition = this.clampPosition.bind(this)
     this.setPositionInWorld = this.setPositionInWorld.bind(this)
     this.updateRampAngles = this.updateRampAngles.bind(this)
-
-    //this.updateRampAngles(this.props.simSettings)
   }
+
   componentDidMount() {
     this.updateRampAngles(this.props.simSettings)
   }
+
   componentWillReceiveProps(nextProps) {
     this.updateRampAngles(nextProps.simSettings)
     this.setPositionInWorld(this.state.carPos.x)
   }
 
   updateRampAngles(newSettings) {
-    const { theta, rampAcceleration } = this.state
+    const { theta, rampAcceleration, carPos, simConstants, simSettings } = this.state
 
     let newTheta = newSettings.RampAngle
     if (newTheta != theta) {
-      let g = gravity, m = mass, f = friction
+      let g = simConstants.gravity, m = simConstants.mass, f = simConstants.rampFriction
       let parallelForce = m * g * (Math.sin(newTheta))
       let normalForce = m * g * (Math.cos(newTheta))
       let frictionForce = normalForce * f
       let rampAcceleration = (parallelForce - frictionForce) / m
       if (rampAcceleration < 0) rampAcceleration = 0
-      this.setState({ theta: newTheta, rampAcceleration, simSettings: newSettings })
+      this.setState({
+        theta: newTheta,
+        rampAcceleration,
+        simSettings: newSettings,
+        isRunning: false,
+        startTime: 0,
+        startPos: carPos.x,
+        onRamp: carPos.x < simSettings.RampEndX,
+        carVelocity: 0,
+        isDragging: false
+      })
     }
   }
 
+  updateSimConstants(newValues) {
+    this.setState({ simConstants: newValues })
+  }
+
+  startSimulation() {
+    const { carPos, simSettings } = this.state
+    this.setState({
+      isRunning: true,
+      startTime: 0,
+      startPos: carPos.x,
+      startGroundTime: 0,
+      onRamp: carPos.x < simSettings.RampEndX,
+      carVelocity: 0,
+      startGroundVelocity: 0,
+      isDragging: false
+    })
+  }
+  endSimulation() {
+    const { carPos, simSettings } = this.state
+    console.log(this.state)
+    this.setState({
+      isRunning: false,
+      startTime: 0,
+      startPos: carPos.x,
+      onRamp: carPos.x < simSettings.RampEndX,
+      carVelocity: 0,
+      startGroundVelocity: 0,
+      isDragging: false
+    })
+  }
+
   onAnimationFrame(currentTimestamp, previousTimestamp) {
-    const { carPos, isRunning, rampAcceleration, carVelocity, simSettings, startTime, startPos, startGroundTime } = this.state;
+    const { carPos, isRunning, rampAcceleration, groundAcceleration, carVelocity, simSettings, startTime, startPos, startGroundTime, startGroundVelocity, simConstants, onRamp } = this.state;
 
     if (isRunning) {
       let t = startTime
+      let sgt = startGroundTime
+      let sgv = startGroundVelocity
       let po = startPos
-      let slowAcceleration = -10
+      let slowAcceleration = groundAcceleration
 
       if (!startTime || startTime === 0) {
         t = currentTimestamp
-        po = carPos.x;
-        this.setState({ startTime: currentTimestamp, startPos: po })
+        sgt = this.calculateTimeToGround(po, simSettings.RampEndX, rampAcceleration) * 1000 + t
+        // get initial velocity when reaching the ground
+        sgv = this.calculateVelocity(0, rampAcceleration, (sgt-t)/1000)
+        this.setState({ startTime: currentTimestamp, startGroundTime: sgt, startGroundVelocity: sgv })
       }
       else {
-
         // calculate time since last animation frame - we lock the simulation to a max of 60fps
         let deltaTime = currentTimestamp - previousTimestamp
         let elapsedTime = currentTimestamp - startTime
@@ -89,52 +146,53 @@ class Car extends React.Component{
         if (p < simSettings.SimWidth) {
 
           // car on ramp
-          if (p < simSettings.RampEndX) {
-            p = this.calculateAcceleratedPosition(po, v, et, rampAcceleration)
-            v = (p - carPos.x) / dt
+          if (onRamp) {
+            p = this.calculateAcceleratedPosition(po, 0, et, rampAcceleration)
+            v = this.calculateVelocity(0, rampAcceleration, et)
           }
           // car on ground
           else {
-            let egt, sgt = 0
-            if (!startGroundTime || startGroundTime === 0) {
-              sgt = previousTimestamp
-              this.setState({ startGroundTime: currentTimestamp })
-            } else {
-              sgt = startGroundTime
-            }
-            egt = (currentTimestamp - sgt) / 1000
+            let egt = (currentTimestamp - sgt) / 1000
+            let nextP = this.calculateAcceleratedPosition(simSettings.RampEndX, sgv, egt, slowAcceleration)
 
-            let nextP = this.calculateAcceleratedPosition(simSettings.RampEndX, v, egt, slowAcceleration)
-
-            if (nextP > simSettings.SimWidth || nextP - p < 0.1) {
-              this.setState({ isRunning: false, carVelocity: 0 })
+            if (nextP > simSettings.SimWidth || nextP - p < 0.01) {
+              console.log("car x position invalid or car is stopped", nextP)
+              this.endSimulation()
             } else {
               if (nextP >= p) {
-                v = (nextP - carPos.x) / dt
+                v = this.calculateVelocity(sgv, slowAcceleration, egt)
                 p = nextP
               }
             }
           }
-          //console.log(v)
           this.setPositionInWorld(p, v)
         }
         else {
-          this.setState({ isRunning: false, carVelocity: 0 })
+          this.endSimulation()
         }
-        this.setState({ fps })
+        this.setState({ fps, onRamp: carPos.x < simSettings.RampEndX })
       }
     }
   }
 
-  calculateAcceleratedPosition(originalPosition, currentVelocity, elapsedTime, acceleration) {
+  calculateAcceleratedPosition(originalPosition, initialVelocity, elapsedTime, acceleration) {
     return (
-      originalPosition + (currentVelocity * elapsedTime) + (0.5 * acceleration * elapsedTime * elapsedTime)
+      originalPosition + (initialVelocity * elapsedTime) + (0.5 * acceleration * elapsedTime * elapsedTime)
     )
+  }
+
+  calculateVelocity(initialVelocity, acceleration, elapsedTime) {
+    let v = initialVelocity + (acceleration * elapsedTime);
+    return v
+  }
+
+  calculateTimeToGround(originalPosition, groundPosition, acceleration) {
+    let t = Math.sqrt((groundPosition - originalPosition) * 2 / acceleration)
+    return t
   }
 
   setPositionInWorld(carX, velocity) {
     const { isRunning, simSettings } = this.state
-    //const { simSettings } = this.props
     let newPos = {};
     newPos.x = this.clampPosition(carX, 0, simSettings.SimWidth)
     newPos.y = this.getPositionOnRamp(carX)
@@ -148,7 +206,7 @@ class Car extends React.Component{
 
   getPositionOnRamp(carX) {
     const { simSettings, theta} = this.state
-    //  calculate position
+
     let y = 0
 
     if (carX > simSettings.RampEndX) {
@@ -161,13 +219,15 @@ class Car extends React.Component{
       // car is on the incline
       y = (carX - simSettings.RampStartX) * Math.tan(theta)
       y = y + simSettings.RampTopY
-
+      if (y > simSettings.SimHeight - simSettings.GroundHeight) {
+        y = simSettings.SimHeight - simSettings.GroundHeight
+      }
     }
     return y
   }
 
   onClick(e) {
-    this.setState({ isRunning: true, startGroundTime: 0, startTime: 0 })
+    this.startSimulation()
   }
 
   clampPosition(pos, min, max) {
@@ -227,5 +287,5 @@ class Car extends React.Component{
     )
   }
 }
-
+// lock the refresh to a max of 60fps
 module.exports = ReactAnimationFrame(Car, 10)
