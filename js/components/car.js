@@ -97,12 +97,17 @@ class Car extends React.Component{
       onRamp: carPos.x < simSettings.RampEndX,
       carVelocity: 0,
       startGroundVelocity: 0,
-      isDragging: false
+      isDragging: false,
+      finalDistance: 0
     })
   }
   endSimulation() {
     const { carPos, simSettings } = this.state
-    console.log(this.state)
+    let d = 0
+    if (carPos.x > simSettings.RampEndX) {
+      d = (carPos.x - simSettings.RampEndX)/(simSettings.SimWidth - simSettings.RampEndX) * 5
+    }
+
     this.setState({
       isRunning: false,
       startTime: 0,
@@ -110,7 +115,8 @@ class Car extends React.Component{
       onRamp: carPos.x < simSettings.RampEndX,
       carVelocity: 0,
       startGroundVelocity: 0,
-      isDragging: false
+      isDragging: false,
+      finalDistance: d
     })
   }
 
@@ -269,19 +275,21 @@ class Car extends React.Component{
   }
 
   render() {
-    const { appearance, hasClicked, carPos, fps, carVelocity } = this.state
+    const { appearance, hasClicked, carPos, fps, carVelocity, finalDistance } = this.state
     let height = 20
     let width = 20
     let center = carPos
     let fpsText = 'fps: ' + fps
     let velText = 'vel: ' + Math.round(carVelocity)
     let xText = 'xPos: ' + Math.round(carPos.x)
+    let finalDistanceText = finalDistance && finalDistance !== 0 ? "Final distance: " + finalDistance : ""
 
     return (
       <Group>
         <Text x={10} y={10} fontFamily={'Arial'} fontSize={12} text={fpsText} />
         <Text x={10} y={25} fontFamily={'Arial'} fontSize={12} text={velText} />
         <Text x={10} y={40} fontFamily={'Arial'} fontSize={12} text={xText} />
+        <Text x={10} y={55} fontFamily={'Arial'} fontSize={12} text={finalDistanceText} />
         <Circle x={center.x} y={center.y} width={width} height={height} fill={appearance.fillColor} stroke={appearance.stroke} strokeWidth={appearance.strokeWidth} onClick={this.onClick} onMouseDown={this.onDragStart} />
       </Group>
     )
