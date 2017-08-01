@@ -162,7 +162,8 @@ class Car extends React.Component{
             let nextP = this.calculateAcceleratedPosition(simSettings.RampEndX, sgv, egt, slowAcceleration)
 
             if (nextP > simSettings.SimWidth || nextP - p < 0.01) {
-              console.log("car x position invalid or car is stopped", nextP)
+              // car x position invalid or car is stopped
+              v = 0
               this.endSimulation()
             } else {
               if (nextP >= p) {
@@ -279,7 +280,7 @@ class Car extends React.Component{
     let height = 20
     let width = 20
     let center = carPos
-    let fpsText = 'fps: ' + fps
+    let fpsText = fps ? 'fps: ' + fps : ""
     let velText = 'vel: ' + Math.round(carVelocity)
     let xText = 'xPos: ' + Math.round(carPos.x)
     let finalDistanceText = finalDistance && finalDistance !== 0 ? "Final distance: " + finalDistance : ""
@@ -288,8 +289,8 @@ class Car extends React.Component{
       <Group>
         <Text x={10} y={10} fontFamily={'Arial'} fontSize={12} text={fpsText} />
         <Text x={10} y={25} fontFamily={'Arial'} fontSize={12} text={velText} />
-        <Text x={10} y={40} fontFamily={'Arial'} fontSize={12} text={xText} />
-        <Text x={10} y={55} fontFamily={'Arial'} fontSize={12} text={finalDistanceText} />
+        <Text x={10} y={40} fontFamily={'Arial'} fontSize={12} text={finalDistanceText} />
+
         <Circle x={center.x} y={center.y} width={width} height={height} fill={appearance.fillColor} stroke={appearance.stroke} strokeWidth={appearance.strokeWidth} onClick={this.onClick} onMouseDown={this.onDragStart} />
       </Group>
     )
