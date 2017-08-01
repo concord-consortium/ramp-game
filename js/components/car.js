@@ -283,7 +283,7 @@ class Car extends React.Component{
     let fpsText = fps ? 'fps: ' + fps : ""
     let velText = 'vel: ' + Math.round(carVelocity)
     let xText = 'xPos: ' + Math.round(carPos.x)
-    let finalDistanceText = finalDistance && finalDistance !== 0 ? "Final distance: " + finalDistance : ""
+    let finalDistanceText = finalDistance && finalDistance !== 0 ? "Final distance: " + finalDistance.toFixed(2) : ""
 
     return (
       <Group>
