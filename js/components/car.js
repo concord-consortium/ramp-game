@@ -10,35 +10,20 @@ const DEFAULT_APPEARANCE = {
   strokeWidth: 2
 }
 
-const DEFAULT_SIMULATION = {
-  gravity: 9.81,
-  mass: 10,
-  rampFriction: 0.01,
-  groundFriction: -1
-}
-
-const RESET = {
-  isRunning: false,
-  rampAcceleration: 0,
-  startTime: 0,
-  startGroundTime: 0,
-  carVelocity: 0
-}
-
 class Car extends React.Component{
   constructor(props) {
     super(props)
     this.state = {
       carPos: { x: 100, y: 300 },
       simSettings: this.props.simSettings,
+      simConstants: this.props.simConstants,
       theta: 0,
       rampAcceleration: 0,
-      groundAcceleration: DEFAULT_SIMULATION.gravity * DEFAULT_SIMULATION.groundFriction,
+      groundAcceleration: 0,
       isDragging: false,
       isRunning: false,
       carVelocity: 0,
-      appearance: DEFAULT_APPEARANCE,
-      simConstants: DEFAULT_SIMULATION
+      appearance: DEFAULT_APPEARANCE
     }
     this.onClick = this.onClick.bind(this)
     this.onDrag = this.onDrag.bind(this)
@@ -51,10 +36,12 @@ class Car extends React.Component{
 
   componentDidMount() {
     this.updateRampAngles(this.props.simSettings)
+    this.updateSimConstants(this.props.simConstants)
   }
 
   componentWillReceiveProps(nextProps) {
     this.updateRampAngles(nextProps.simSettings)
+    this.updateSimConstants(nextProps.simConstants)
     this.setPositionInWorld(this.state.carPos.x)
   }
 
@@ -83,8 +70,9 @@ class Car extends React.Component{
     }
   }
 
-  updateSimConstants(newValues) {
-    this.setState({ simConstants: newValues })
+  updateSimConstants(newSimConstants) {
+    let groundAcceleration = newSimConstants.gravity * newSimConstants.groundFriction
+    this.setState({ simConstants: newSimConstants, groundAcceleration })
   }
 
   startSimulation() {

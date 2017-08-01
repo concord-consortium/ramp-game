@@ -21,11 +21,11 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loader: 'style!css!autoprefixer'
+        loader: 'style-loader!css-loader!autoprefixer-loader'
       },
       {
         test: /\.less$/,
-        loader: 'style!css!less!autoprefixer'
+        loader: 'style-loader!css-loader!less-loader!autoprefixer-loader'
       },
       {
         test: /\.json$/,
