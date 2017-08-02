@@ -1,5 +1,6 @@
 import React from 'react'
 import { Text, Group, Circle } from 'react-konva'
+import VehicleImage from './vehicle-image'
 
 import ReactAnimationFrame from 'react-animation-frame'
 
@@ -189,7 +190,7 @@ class Car extends React.Component{
   setPositionInWorld(carX, velocity) {
     const { simSettings } = this.state
     let newPos = {};
-    newPos.x = this.clampPosition(carX, 0, simSettings.SimWidth)
+    newPos.x = this.clampPosition(carX, simSettings.RampStartX, simSettings.SimWidth)
     newPos.y = this.getPositionOnRamp(carX)
     if (velocity) {
       this.setState({ carPos: newPos, carVelocity: velocity })
@@ -259,7 +260,7 @@ class Car extends React.Component{
   }
 
   render() {
-    const { appearance, hasClicked, carPos, fps, carVelocity, finalDistance } = this.state
+    const { appearance, hasClicked, carPos, fps, carVelocity, finalDistance, onRamp, simSettings } = this.state
     let height = 20
     let width = 20
     let center = carPos
@@ -267,13 +268,18 @@ class Car extends React.Component{
     let velText = 'vel: ' + Math.round(carVelocity)
     let xText = 'xPos: ' + Math.round(carPos.x)
     let finalDistanceText = finalDistance && finalDistance !== 0 ? "Final distance: " + finalDistance.toFixed(2) : ""
+    let angle = onRamp ? simSettings.RampAngle * 180 / Math.PI : 0
 
     return (
       <Group>
         <Text x={10} y={10} fontFamily={'Arial'} fontSize={12} text={fpsText} />
         <Text x={10} y={25} fontFamily={'Arial'} fontSize={12} text={velText} />
         <Text x={10} y={40} fontFamily={'Arial'} fontSize={12} text={finalDistanceText} />
-        <Circle x={center.x} y={center.y} width={width} height={height} fill={appearance.fillColor} stroke={appearance.stroke} strokeWidth={appearance.strokeWidth} onMouseDown={this.onDragStart} />
+        <Circle x={center.x} y={center.y}
+          width={width} height={height}
+          fill={appearance.fillColor} stroke={appearance.stroke} strokeWidth={appearance.strokeWidth}
+          onMouseDown={this.onDragStart} />
+        <VehicleImage x={center.x} y={center.y} width={60} height={20} angle={angle} />
       </Group>
     )
   }
