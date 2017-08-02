@@ -21,11 +21,9 @@ class Car extends React.Component{
       rampAcceleration: 0,
       groundAcceleration: 0,
       isDragging: false,
-      isRunning: false,
       carVelocity: 0,
       appearance: DEFAULT_APPEARANCE
     }
-    this.onClick = this.onClick.bind(this)
     this.onDrag = this.onDrag.bind(this)
     this.onDragStart = this.onDragStart.bind(this)
     this.onDragEnd = this.onDragEnd.bind(this)
@@ -43,6 +41,9 @@ class Car extends React.Component{
     this.updateRampAngles(nextProps.simSettings)
     this.updateSimConstants(nextProps.simConstants)
     this.setPositionInWorld(this.state.carPos.x)
+    if (nextProps.isRunning != this.props.isRunning) {
+      nextProps.isRunning ? this.startSimulation() : this.endSimulation()
+    }
   }
 
   updateRampAngles(newSettings) {
@@ -60,7 +61,6 @@ class Car extends React.Component{
         theta: newTheta,
         rampAcceleration,
         simSettings: newSettings,
-        isRunning: false,
         startTime: 0,
         startPos: carPos.x,
         onRamp: carPos.x < simSettings.RampEndX,
@@ -78,7 +78,6 @@ class Car extends React.Component{
   startSimulation() {
     const { carPos, simSettings } = this.state
     this.setState({
-      isRunning: true,
       startTime: 0,
       startPos: carPos.x,
       startGroundTime: 0,
@@ -97,7 +96,6 @@ class Car extends React.Component{
     }
 
     this.setState({
-      isRunning: false,
       startTime: 0,
       startPos: carPos.x,
       onRamp: carPos.x < simSettings.RampEndX,
@@ -109,7 +107,8 @@ class Car extends React.Component{
   }
 
   onAnimationFrame(currentTimestamp, previousTimestamp) {
-    const { carPos, isRunning, rampAcceleration, groundAcceleration, carVelocity, simSettings, startTime, startPos, startGroundTime, startGroundVelocity, simConstants, onRamp } = this.state;
+    const { carPos, rampAcceleration, groundAcceleration, carVelocity, simSettings, startTime, startPos, startGroundTime, startGroundVelocity, simConstants, onRamp } = this.state;
+    const { isRunning } = this.props
 
     if (isRunning) {
       let t = startTime
@@ -153,6 +152,7 @@ class Car extends React.Component{
               // car x position invalid or car is stopped
               v = 0
               this.endSimulation()
+              this.props.onSimulationRunningChange(false)
             } else {
               if (nextP >= p) {
                 v = this.calculateVelocity(sgv, slowAcceleration, egt)
@@ -187,7 +187,7 @@ class Car extends React.Component{
   }
 
   setPositionInWorld(carX, velocity) {
-    const { isRunning, simSettings } = this.state
+    const { simSettings } = this.state
     let newPos = {};
     newPos.x = this.clampPosition(carX, 0, simSettings.SimWidth)
     newPos.y = this.getPositionOnRamp(carX)
@@ -221,10 +221,6 @@ class Car extends React.Component{
     return y
   }
 
-  onClick(e) {
-    this.startSimulation()
-  }
-
   clampPosition(pos, min, max) {
     return pos <= min ? min : pos >= max ? max : pos
   }
@@ -239,7 +235,6 @@ class Car extends React.Component{
   onDragStart(e) {
     this.setState({
       isDragging: true,
-      isRunning: false,
       startTime: 0
     })
 
@@ -278,8 +273,7 @@ class Car extends React.Component{
         <Text x={10} y={10} fontFamily={'Arial'} fontSize={12} text={fpsText} />
         <Text x={10} y={25} fontFamily={'Arial'} fontSize={12} text={velText} />
         <Text x={10} y={40} fontFamily={'Arial'} fontSize={12} text={finalDistanceText} />
-
-        <Circle x={center.x} y={center.y} width={width} height={height} fill={appearance.fillColor} stroke={appearance.stroke} strokeWidth={appearance.strokeWidth} onClick={this.onClick} onMouseDown={this.onDragStart} />
+        <Circle x={center.x} y={center.y} width={width} height={height} fill={appearance.fillColor} stroke={appearance.stroke} strokeWidth={appearance.strokeWidth} onMouseDown={this.onDragStart} />
       </Group>
     )
   }

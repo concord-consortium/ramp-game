@@ -38,6 +38,8 @@ export default class SimulationBase extends React.Component {
     }
     this.setInclinePos = this.setInclinePos.bind(this)
     this.setConstants = this.setConstants.bind(this)
+    this.setSimulationRunning = this.setSimulationRunning.bind(this)
+    this.toggleSimulationRunning = this.toggleSimulationRunning.bind(this)
   }
 
   setInclinePos(p) {
@@ -50,17 +52,29 @@ export default class SimulationBase extends React.Component {
     this.setState({ newConstants })
   }
 
+  toggleSimulationRunning() {
+    const { isRunning } = this.state
+    this.setSimulationRunning(!isRunning)
+  }
+  setSimulationRunning(running) {
+    this.setState({ isRunning: running })
+  }
+
   render() {
-    const {simSettings, simConstants} = this.state
+    const { simSettings, simConstants, isRunning } = this.state
+    let runText = isRunning ? "Stop" : "Run"
+    let runSimulationClass = isRunning ? "run-simulation running" : "run-simulation stopped"
+
     return (
       <div className="ramp-simulation">
+        <div className={runSimulationClass} onClick={this.toggleSimulationRunning}>{runText}</div>
         <SimulationEditor {...this.state} onChange={this.setConstants} />
         <Stage width={simSettings.SimWidth} height={simSettings.SimHeight}>
           <Layer>
             <Ramp simSettings={simSettings} />
             <InclineControl simSettings={simSettings} onInclineChanged={this.setInclinePos} />
             <StaticElements simSettings={simSettings} />
-            <Car simSettings={simSettings} simConstants={simConstants} />
+            <Car simSettings={simSettings} simConstants={simConstants} isRunning={isRunning} onSimulationRunningChange={this.setSimulationRunning} />
           </Layer>
         </Stage>
       </div>
