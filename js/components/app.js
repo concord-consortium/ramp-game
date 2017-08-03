@@ -3,7 +3,7 @@ import SimulationBase from './simulation-base'
 
 const App = () => (
   <div className="appContainer">
-    <SimulationBase />
+    <SimulationBase width={document.body.clientWidth} height={document.body.clientHeight} groundheight={30}/>
   </div>
 )
 

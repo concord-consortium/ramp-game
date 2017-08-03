@@ -1,6 +1,7 @@
 import React from 'react'
 import { Text, Group, Circle } from 'react-konva'
 import VehicleImage from './vehicle-image'
+import { calculateRampAngle, calculateAcceleratedPosition, calculateVelocity, calculateTimeToGround, calculateRampAcceleration, calculateGroundAcceleration } from '../utils'
 
 import ReactAnimationFrame from 'react-animation-frame'
 
@@ -52,12 +53,8 @@ class Car extends React.Component{
 
     let newTheta = newSettings.RampAngle
     if (newTheta != theta) {
-      let g = simConstants.gravity, m = simConstants.mass, f = simConstants.rampFriction
-      let parallelForce = m * g * (Math.sin(newTheta))
-      let normalForce = m * g * (Math.cos(newTheta))
-      let frictionForce = normalForce * f
-      let rampAcceleration = (parallelForce - frictionForce) / m
-      if (rampAcceleration < 0) rampAcceleration = 0
+      let rampAcceleration = calculateRampAcceleration(simConstants, newTheta)
+
       this.setState({
         theta: newTheta,
         rampAcceleration,
@@ -72,7 +69,7 @@ class Car extends React.Component{
   }
 
   updateSimConstants(newSimConstants) {
-    let groundAcceleration = newSimConstants.gravity * newSimConstants.groundFriction
+    let groundAcceleration = calculateGroundAcceleration(newSimConstants)
     this.setState({ simConstants: newSimConstants, groundAcceleration })
   }
 
@@ -120,9 +117,9 @@ class Car extends React.Component{
 
       if (!startTime || startTime === 0) {
         t = currentTimestamp
-        sgt = this.calculateTimeToGround(po, simSettings.RampEndX, rampAcceleration) * 1000 + t
+        sgt = calculateTimeToGround(po, simSettings.RampEndX, rampAcceleration) * 1000 + t
         // get initial velocity when reaching the ground
-        sgv = this.calculateVelocity(0, rampAcceleration, (sgt-t)/1000)
+        sgv = calculateVelocity(0, rampAcceleration, (sgt-t)/1000)
         this.setState({ startTime: currentTimestamp, startGroundTime: sgt, startGroundVelocity: sgv })
       }
       else {
@@ -141,13 +138,13 @@ class Car extends React.Component{
 
           // car on ramp
           if (onRamp) {
-            p = this.calculateAcceleratedPosition(po, 0, et, rampAcceleration)
-            v = this.calculateVelocity(0, rampAcceleration, et)
+            p = calculateAcceleratedPosition(po, 0, et, rampAcceleration)
+            v = calculateVelocity(0, rampAcceleration, et)
           }
           // car on ground
           else {
             let egt = (currentTimestamp - sgt) / 1000
-            let nextP = this.calculateAcceleratedPosition(simSettings.RampEndX, sgv, egt, slowAcceleration)
+            let nextP = calculateAcceleratedPosition(simSettings.RampEndX, sgv, egt, slowAcceleration)
 
             if (nextP > simSettings.SimWidth || nextP - p < 0.01) {
               // car x position invalid or car is stopped
@@ -156,7 +153,7 @@ class Car extends React.Component{
               this.props.onSimulationRunningChange(false)
             } else {
               if (nextP >= p) {
-                v = this.calculateVelocity(sgv, slowAcceleration, egt)
+                v = calculateVelocity(sgv, slowAcceleration, egt)
                 p = nextP
               }
             }
@@ -171,22 +168,6 @@ class Car extends React.Component{
     }
   }
 
-  calculateAcceleratedPosition(originalPosition, initialVelocity, elapsedTime, acceleration) {
-    return (
-      originalPosition + (initialVelocity * elapsedTime) + (0.5 * acceleration * elapsedTime * elapsedTime)
-    )
-  }
-
-  calculateVelocity(initialVelocity, acceleration, elapsedTime) {
-    let v = initialVelocity + (acceleration * elapsedTime);
-    return v
-  }
-
-  calculateTimeToGround(originalPosition, groundPosition, acceleration) {
-    let t = Math.sqrt((groundPosition - originalPosition) * 2 / acceleration)
-    return t
-  }
-
   setPositionInWorld(carX, velocity) {
     const { simSettings } = this.state
     let newPos = {};
@@ -196,7 +177,7 @@ class Car extends React.Component{
       this.setState({ carPos: newPos, carVelocity: velocity })
     }
     else {
-      this.setState({ carPos: newPos })
+      this.setState({ carPos: newPos, onRamp: newPos.x < simSettings.RampEndX })
     }
   }
 
@@ -227,9 +208,10 @@ class Car extends React.Component{
   }
 
   onDrag(e) {
-    const { isDragging } = this.state
+    const { isDragging, simSettings } = this.state
     if (isDragging) {
       this.setPositionInWorld(e.layerX, 0)
+
     }
   }
 
@@ -272,9 +254,9 @@ class Car extends React.Component{
 
     return (
       <Group>
-        <Text x={10} y={10} fontFamily={'Arial'} fontSize={12} text={fpsText} />
-        <Text x={10} y={25} fontFamily={'Arial'} fontSize={12} text={velText} />
-        <Text x={10} y={40} fontFamily={'Arial'} fontSize={12} text={finalDistanceText} />
+        <Text x={10} y={60} fontFamily={'Arial'} fontSize={12} text={fpsText} />
+        <Text x={10} y={85} fontFamily={'Arial'} fontSize={12} text={velText} />
+        <Text x={10} y={100} fontFamily={'Arial'} fontSize={12} text={finalDistanceText} />
         <Circle x={center.x} y={center.y}
           width={width} height={height}
           fill={appearance.fillColor} stroke={appearance.stroke} strokeWidth={appearance.strokeWidth}

@@ -1,5 +1,6 @@
 import React from 'react'
 import { Rect, Circle } from 'react-konva'
+import { calculateRampAngle } from '../utils'
 
 const DEFAULT_APPEARANCE = {
   scale: 20,
@@ -31,7 +32,9 @@ export default class InclineControl extends React.Component{
     this.clampPosition = this.clampPosition.bind(this)
     this.updatePositions = this.updatePositions.bind(this)
   }
-
+  componentWillReceiveProps(nextProps) {
+    this.setState({simSettings: nextProps.simSettings})
+  }
   onHover(e) {
     this.setState({ appearance: DEFAULT_APPEARANCE })
   }
@@ -49,9 +52,7 @@ export default class InclineControl extends React.Component{
     let newPositions = simSettings
       newPositions.RampTopY = this.clampPosition(posY, 0, simSettings.RampBottomY)
       newPositions.RampStartX = this.clampPosition(posX, 0, simSettings.RampEndX)
-
-      let rampTop = simSettings.SimHeight - newPositions.RampTopY - newPositions.GroundHeight
-      newPositions.RampAngle = Math.atan(rampTop / (newPositions.RampEndX - newPositions.RampStartX))
+      newPositions.RampAngle = calculateRampAngle(simSettings.SimHeight,  newPositions.RampTopY, newPositions.GroundHeight, simSettings.RampStartX, simSettings.RampEndX)
 
       this.setState({
         simSettings: newPositions

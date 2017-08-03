@@ -4,6 +4,8 @@ import StaticElements from './simulation-static-elements'
 import InclineControl from './incline-control'
 import Car from './car'
 import SimulationEditor from './simulation-editor'
+import { calculateRampAngle } from '../utils'
+
 import '../../css/app.less';
 import '../../css/simulation-editor.less';
 
@@ -32,7 +34,6 @@ export default class SimulationBase extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      simSettings: DEFAULT_POSITIONS,
       simConstants: DEFAULT_SIMULATION,
       isRunning: false
     }
@@ -40,6 +41,37 @@ export default class SimulationBase extends React.Component {
     this.setConstants = this.setConstants.bind(this)
     this.setSimulationRunning = this.setSimulationRunning.bind(this)
     this.toggleSimulationRunning = this.toggleSimulationRunning.bind(this)
+    this.updateDimensions = this.updateDimensions.bind(this)
+  }
+
+  componentWillMount() {
+    this.updateDimensions()
+  }
+
+  updateDimensions() {
+    let width = this.props.width ? (this.props.width != document.body.clientWidth ? document.body.clientWidth : this.props.width) : document.body.clientWidth
+    let height = this.props.height ? (this.props.height != document.body.clientHeight ? document.body.clientHeight : this.props.height) : document.body.clientHeight
+    let groundheight = this.props.groundheight ? this.props.groundheight : 30
+
+    let newSettings = {
+        RampTopY: height / 6,
+        RampBottomY: height - groundheight,
+        RampStartX: width / 20,
+        RampEndX: width / 4,
+        CarInitialX: width / 8,
+        SimWidth: width,
+        SimHeight: height,
+        GroundHeight: groundheight
+    }
+    newSettings.RampAngle = calculateRampAngle(newSettings.SimHeight, newSettings.RampTopY, newSettings.GroundHeight, newSettings.RampStartX, newSettings.RampEndX)
+    this.setState({simSettings: newSettings})
+  }
+
+  componentDidMount() {
+    window.addEventListener("resize", this.updateDimensions);
+  }
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.updateDimensions);
   }
 
   setInclinePos(p) {
