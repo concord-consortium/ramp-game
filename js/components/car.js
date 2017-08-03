@@ -279,7 +279,7 @@ class Car extends React.Component{
           width={width} height={height}
           fill={appearance.fillColor} stroke={appearance.stroke} strokeWidth={appearance.strokeWidth}
           onMouseDown={this.onDragStart} />
-        <VehicleImage x={center.x} y={center.y} width={60} height={20} angle={angle} />
+        <VehicleImage x={center.x} y={center.y} width={60} height={20} angle={angle} onRamp={onRamp} />
       </Group>
     )
   }

@@ -19,16 +19,40 @@ export default class VehicleImage extends React.Component {
     }
   }
 
+  getCornerPosition(x, y, width, height, theta) {
+    // While the car is on the ramp calculate displacement for top left corner
+    // we want the bottom right corner point on the baseline of the image to match the data point
+
+    let bottomLeftPos = { x: 0, y: 0 }
+    let topLeftPos = { x: 0, y: 0 }
+
+    bottomLeftPos.x = x - (width * Math.cos(theta))
+    bottomLeftPos.y = y - (width * Math.sin(theta))
+
+    topLeftPos.x = bottomLeftPos.x + (height * Math.sin(theta))
+    topLeftPos.y = bottomLeftPos.y - (height * Math.cos(theta))
+
+    return topLeftPos
+  }
+
   render() {
-    const { x, y, width, height, angle } = this.props
-    let xPos = x - width/2
-    let yPos = y - height
+    const { x, y, width, height, angle, onRamp } = this.props
+
+    let topLeftPos = {x: 0, y: 0}
+    let imageAngle = angle
+
+    if (onRamp) {
+      topLeftPos = this.getCornerPosition(x, y, width, height, angle * Math.PI / 180)
+    } else {
+      // when car reaches the ground snap to midpoint of base of image
+      topLeftPos.x = x - width/2
+      topLeftPos.y = y - height
+    }
     return (
       <Image
         image={this.state.image}
-        x={xPos} y={yPos} width={width} height={height}
-        stroke={'black'}
-        rotation={angle}
+        x={topLeftPos.x} y={topLeftPos.y} width={width} height={height}
+        rotation={imageAngle}
       />
     );
   }
