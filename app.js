@@ -7150,7 +7150,7 @@ function calculateRampAngle(simHeight, topY, groundHeight, rampStartX, rampEndX)
   var rampAngle = Math.atan(rampTop / (rampEndX - rampStartX));
   return rampAngle;
 }
-function calculateAcceleratedPosition(originalPosition, initialVelocity, elapsedTime, acceleration) {
+function calculateAcceleratedPosition(originalPosition, initialVelocity, elapsedTime, acceleration, scale) {
   return originalPosition + initialVelocity * elapsedTime + 0.5 * acceleration * elapsedTime * elapsedTime;
 }
 
@@ -7159,7 +7159,7 @@ function calculateVelocity(initialVelocity, acceleration, elapsedTime) {
   return v;
 }
 
-function calculateTimeToGround(originalPosition, groundPosition, acceleration) {
+function calculateTimeToGround(originalPosition, groundPosition, acceleration, scale) {
   var t = Math.sqrt((groundPosition - originalPosition) * 2 / acceleration);
   return t;
 }
@@ -7180,13 +7180,23 @@ function calculateGroundAcceleration(simConstants) {
   return simConstants.gravity * simConstants.groundFriction;
 }
 
+function calculateDistanceUpRampInWorldUnits(simSettings, xPos, yPos) {
+  if (xPos > simSettings.RampEndX) return 0;else {
+    var xr = simSettings.RampEndX - xPos;
+    var yr = simSettings.SimHeight - simSettings.GroundHeight - yPos;
+    var rampDistanceInPixels = Math.sqrt(xr * xr + yr * yr);
+    return rampDistanceInPixels / simSettings.Scale;
+  }
+}
+
 module.exports = {
   calculateRampAngle: calculateRampAngle,
   calculateAcceleratedPosition: calculateAcceleratedPosition,
   calculateVelocity: calculateVelocity,
   calculateTimeToGround: calculateTimeToGround,
   calculateRampAcceleration: calculateRampAcceleration,
-  calculateGroundAcceleration: calculateGroundAcceleration
+  calculateGroundAcceleration: calculateGroundAcceleration,
+  calculateDistanceUpRampInWorldUnits: calculateDistanceUpRampInWorldUnits
 };
 
 /***/ }),
@@ -17253,7 +17263,7 @@ var Car = function (_React$Component) {
 
         if (!startTime || startTime === 0) {
           t = currentTimestamp;
-          sgt = (0, _utils.calculateTimeToGround)(po, simSettings.RampEndX, rampAcceleration) * 1000 + t;
+          sgt = (0, _utils.calculateTimeToGround)(po, simSettings.RampEndX, rampAcceleration, simSettings.Scale) * 1000 + t;
           // get initial velocity when reaching the ground
           sgv = (0, _utils.calculateVelocity)(0, rampAcceleration, (sgt - t) / 1000);
           this.setState({ startTime: currentTimestamp, startGroundTime: sgt, startGroundVelocity: sgv });
@@ -17273,13 +17283,13 @@ var Car = function (_React$Component) {
 
             // car on ramp
             if (onRamp) {
-              p = (0, _utils.calculateAcceleratedPosition)(po, 0, et, rampAcceleration);
+              p = (0, _utils.calculateAcceleratedPosition)(po, 0, et, rampAcceleration, simSettings.Scale);
               v = (0, _utils.calculateVelocity)(0, rampAcceleration, et);
             }
             // car on ground
             else {
                 var egt = (currentTimestamp - sgt) / 1000;
-                var nextP = (0, _utils.calculateAcceleratedPosition)(simSettings.RampEndX, sgv, egt, slowAcceleration);
+                var nextP = (0, _utils.calculateAcceleratedPosition)(simSettings.RampEndX, sgv, egt, slowAcceleration, simSettings.Scale);
 
                 if (nextP > simSettings.SimWidth || nextP - p < 0.01) {
                   // car x position invalid or car is stopped
@@ -17309,6 +17319,8 @@ var Car = function (_React$Component) {
       var newPos = {};
       newPos.x = this.clampPosition(carX, simSettings.RampStartX, simSettings.SimWidth);
       newPos.y = this.getPositionOnRamp(carX);
+      newPos.rampDistance = (0, _utils.calculateDistanceUpRampInWorldUnits)(simSettings, newPos.x, newPos.y);
+
       if (velocity) {
         this.setState({ carPos: newPos, carVelocity: velocity });
       } else {
@@ -17404,13 +17416,15 @@ var Car = function (_React$Component) {
       var xText = 'xPos: ' + Math.round(carPos.x);
       var finalDistanceText = finalDistance && finalDistance !== 0 ? "Final distance: " + finalDistance.toFixed(2) : "";
       var angle = onRamp ? simSettings.RampAngle * 180 / Math.PI : 0;
+      var rampDistanceText = carPos.rampDistance > 0 ? "Car ramp distance: " + carPos.rampDistance.toFixed(2) : "";
 
       return _react2.default.createElement(
         _reactKonva.Group,
         null,
-        _react2.default.createElement(_reactKonva.Text, { x: 10, y: 60, fontFamily: 'Arial', fontSize: 12, text: fpsText }),
-        _react2.default.createElement(_reactKonva.Text, { x: 10, y: 85, fontFamily: 'Arial', fontSize: 12, text: velText }),
-        _react2.default.createElement(_reactKonva.Text, { x: 10, y: 100, fontFamily: 'Arial', fontSize: 12, text: finalDistanceText }),
+        _react2.default.createElement(_reactKonva.Text, { x: 10, y: 20, fontFamily: 'Arial', fontSize: 12, text: fpsText }),
+        _react2.default.createElement(_reactKonva.Text, { x: 10, y: 35, fontFamily: 'Arial', fontSize: 12, text: velText }),
+        _react2.default.createElement(_reactKonva.Text, { x: 10, y: 50, fontFamily: 'Arial', fontSize: 12, text: finalDistanceText }),
+        _react2.default.createElement(_reactKonva.Text, { x: 10, y: 65, fontFamily: 'Arial', fontSize: 12, text: rampDistanceText }),
         _react2.default.createElement(_reactKonva.Circle, { x: center.x, y: center.y,
           width: width, height: height,
           fill: appearance.fillColor, stroke: appearance.stroke, strokeWidth: appearance.strokeWidth,
@@ -17701,20 +17715,15 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var DEFAULT_POSITIONS = {
-  RampTopY: 100,
-  RampBottomY: 560,
-  RampStartX: 30,
-  RampEndX: 300,
-  CarInitialX: 150,
-  SimWidth: 800,
-  SimHeight: 600,
-  GroundHeight: 40,
-  RampAngle: 60 * Math.PI / 180
-};
+// Meters of runoff at the end of the ramp
+var RUNOFF_LENGTH_SCALE = 5;
+var RAMP_LENGTH_SCALE = 1;
+var TOP_PADDING = 100; // pixels
+var SIM_PADDING = 10; // pixels
+
 var DEFAULT_SIMULATION = {
   gravity: 9.81,
-  mass: 10,
+  mass: 0.05, // going to assume a car weighing 50 grams
   rampFriction: 0.01,
   groundFriction: -1
 };
@@ -17742,31 +17751,46 @@ var SimulationBase = function (_React$Component) {
   _createClass(SimulationBase, [{
     key: 'componentWillMount',
     value: function componentWillMount() {
+      console.log(this.refs.simContainer);
       this.updateDimensions();
     }
   }, {
     key: 'updateDimensions',
     value: function updateDimensions() {
       var width = this.props.width ? this.props.width != document.body.clientWidth ? document.body.clientWidth : this.props.width : document.body.clientWidth;
+      width -= SIM_PADDING;
+
+      var rampEndX = width / 4;
+      var scale = (width - rampEndX) / RUNOFF_LENGTH_SCALE; // pixels per meter
+
+      // height has to go up to 1m above ground, so may need to adjust for this
+
       var height = this.props.height ? this.props.height != document.body.clientHeight ? document.body.clientHeight : this.props.height : document.body.clientHeight;
+      height -= SIM_PADDING;
       var groundheight = this.props.groundheight ? this.props.groundheight : 30;
 
       var newSettings = {
-        RampTopY: height / 6,
+        RampTopY: TOP_PADDING,
         RampBottomY: height - groundheight,
-        RampStartX: width / 20,
-        RampEndX: width / 4,
-        CarInitialX: width / 8,
+        RampStartX: 50,
+        RampEndX: rampEndX,
+        CarInitialX: 0, // calculate! width / 8,
         SimWidth: width,
         SimHeight: height,
-        GroundHeight: groundheight
+        GroundHeight: groundheight,
+        Scale: scale
       };
+
+      newSettings.RampTopY = TOP_PADDING + (RAMP_LENGTH_SCALE + RAMP_LENGTH_SCALE * 0.25) * Math.sin(60);
       newSettings.RampAngle = (0, _utils.calculateRampAngle)(newSettings.SimHeight, newSettings.RampTopY, newSettings.GroundHeight, newSettings.RampStartX, newSettings.RampEndX);
+      newSettings.CarInitialX = RAMP_LENGTH_SCALE * Math.cos(newSettings.RampAngle);
+
       this.setState({ simSettings: newSettings });
     }
   }, {
     key: 'componentDidMount',
     value: function componentDidMount() {
+      console.log(this.refs.simContainer);
       window.addEventListener("resize", this.updateDimensions);
     }
   }, {
@@ -17811,7 +17835,7 @@ var SimulationBase = function (_React$Component) {
 
       return _react2.default.createElement(
         'div',
-        { className: 'ramp-simulation' },
+        { className: 'ramp-simulation', ref: 'simContainer' },
         _react2.default.createElement(
           'div',
           { className: runSimulationClass, onClick: this.toggleSimulationRunning },
