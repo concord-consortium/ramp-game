@@ -3,7 +3,7 @@ function calculateRampAngle(simHeight, topY, groundHeight, rampStartX, rampEndX)
   let rampAngle = Math.atan(rampTop / (rampEndX - rampStartX))
   return rampAngle
 }
-function calculateAcceleratedPosition(originalPosition, initialVelocity, elapsedTime, acceleration) {
+function calculateAcceleratedPosition(originalPosition, initialVelocity, elapsedTime, acceleration, scale) {
   return (
     originalPosition + (initialVelocity * elapsedTime) + (0.5 * acceleration * elapsedTime * elapsedTime)
   )
@@ -14,7 +14,7 @@ function calculateVelocity(initialVelocity, acceleration, elapsedTime) {
   return v
 }
 
-function calculateTimeToGround(originalPosition, groundPosition, acceleration) {
+function calculateTimeToGround(originalPosition, groundPosition, acceleration, scale) {
   let t = Math.sqrt((groundPosition - originalPosition) * 2 / acceleration)
   return t
 }
@@ -33,11 +33,22 @@ function calculateGroundAcceleration(simConstants) {
   return simConstants.gravity * simConstants.groundFriction
 }
 
+function calculateDistanceUpRampInWorldUnits(simSettings, xPos, yPos) {
+  if (xPos > simSettings.RampEndX) return 0
+  else {
+    let xr = simSettings.RampEndX - xPos
+    let yr = simSettings.SimHeight - simSettings.GroundHeight - yPos
+    let rampDistanceInPixels = Math.sqrt((xr * xr) + (yr * yr))
+    return rampDistanceInPixels / simSettings.Scale
+  }
+}
+
 module.exports = {
   calculateRampAngle,
   calculateAcceleratedPosition,
   calculateVelocity,
   calculateTimeToGround,
   calculateRampAcceleration,
-  calculateGroundAcceleration
+  calculateGroundAcceleration,
+  calculateDistanceUpRampInWorldUnits
 }

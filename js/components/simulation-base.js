@@ -11,20 +11,15 @@ import '../../css/simulation-editor.less';
 
 import { Layer, Rect, Stage, Group } from 'react-konva'
 
-const DEFAULT_POSITIONS = {
-  RampTopY: 100,
-  RampBottomY: 560,
-  RampStartX: 30,
-  RampEndX: 300,
-  CarInitialX: 150,
-  SimWidth: 800,
-  SimHeight: 600,
-  GroundHeight: 40,
-  RampAngle: 60 * Math.PI / 180
-}
+// Meters of runoff at the end of the ramp
+const RUNOFF_LENGTH_SCALE = 5
+const RAMP_LENGTH_SCALE = 1
+const TOP_PADDING = 100 // pixels
+const SIM_PADDING = 10 // pixels
+
 const DEFAULT_SIMULATION = {
   gravity: 9.81,
-  mass: 10,
+  mass: 0.05, // going to assume a car weighing 50 grams
   rampFriction: 0.01,
   groundFriction: -1
 }
@@ -45,29 +40,45 @@ export default class SimulationBase extends React.Component {
   }
 
   componentWillMount() {
+    console.log(this.refs.simContainer)
     this.updateDimensions()
   }
 
   updateDimensions() {
     let width = this.props.width ? (this.props.width != document.body.clientWidth ? document.body.clientWidth : this.props.width) : document.body.clientWidth
+    width -= SIM_PADDING
+
+    let rampEndX = width / 4
+    let scale = (width - rampEndX)/ RUNOFF_LENGTH_SCALE // pixels per meter
+
+    // height has to go up to 1m above ground, so may need to adjust for this
+
     let height = this.props.height ? (this.props.height != document.body.clientHeight ? document.body.clientHeight : this.props.height) : document.body.clientHeight
+    height -= SIM_PADDING
     let groundheight = this.props.groundheight ? this.props.groundheight : 30
 
+
     let newSettings = {
-        RampTopY: height / 6,
+        RampTopY: TOP_PADDING,
         RampBottomY: height - groundheight,
-        RampStartX: width / 20,
-        RampEndX: width / 4,
-        CarInitialX: width / 8,
+        RampStartX: 50,
+        RampEndX: rampEndX,
+        CarInitialX: 0,// calculate! width / 8,
         SimWidth: width,
         SimHeight: height,
-        GroundHeight: groundheight
+        GroundHeight: groundheight,
+        Scale: scale
     }
+
+    newSettings.RampTopY = TOP_PADDING + (RAMP_LENGTH_SCALE + (RAMP_LENGTH_SCALE * 0.25)) * Math.sin(60)
     newSettings.RampAngle = calculateRampAngle(newSettings.SimHeight, newSettings.RampTopY, newSettings.GroundHeight, newSettings.RampStartX, newSettings.RampEndX)
-    this.setState({simSettings: newSettings})
+    newSettings.CarInitialX = RAMP_LENGTH_SCALE * Math.cos(newSettings.RampAngle)
+
+    this.setState({ simSettings: newSettings })
   }
 
   componentDidMount() {
+    console.log(this.refs.simContainer)
     window.addEventListener("resize", this.updateDimensions);
   }
   componentWillUnmount() {
@@ -98,7 +109,7 @@ export default class SimulationBase extends React.Component {
     let runSimulationClass = isRunning ? "run-simulation running" : "run-simulation stopped"
 
     return (
-      <div className="ramp-simulation">
+      <div className="ramp-simulation" ref="simContainer">
         <div className={runSimulationClass} onClick={this.toggleSimulationRunning}>{runText}</div>
         <SimulationEditor {...this.state} onChange={this.setConstants} />
         <Stage width={simSettings.SimWidth} height={simSettings.SimHeight}>

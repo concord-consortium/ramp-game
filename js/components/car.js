@@ -1,7 +1,15 @@
 import React from 'react'
 import { Text, Group, Circle } from 'react-konva'
 import VehicleImage from './vehicle-image'
-import { calculateRampAngle, calculateAcceleratedPosition, calculateVelocity, calculateTimeToGround, calculateRampAcceleration, calculateGroundAcceleration } from '../utils'
+import {
+  calculateRampAngle,
+  calculateAcceleratedPosition,
+  calculateVelocity,
+  calculateTimeToGround,
+  calculateRampAcceleration,
+  calculateGroundAcceleration,
+  calculateDistanceUpRampInWorldUnits
+} from '../utils'
 
 import ReactAnimationFrame from 'react-animation-frame'
 
@@ -117,7 +125,7 @@ class Car extends React.Component{
 
       if (!startTime || startTime === 0) {
         t = currentTimestamp
-        sgt = calculateTimeToGround(po, simSettings.RampEndX, rampAcceleration) * 1000 + t
+        sgt = calculateTimeToGround(po, simSettings.RampEndX, rampAcceleration, simSettings.Scale) * 1000 + t
         // get initial velocity when reaching the ground
         sgv = calculateVelocity(0, rampAcceleration, (sgt-t)/1000)
         this.setState({ startTime: currentTimestamp, startGroundTime: sgt, startGroundVelocity: sgv })
@@ -138,13 +146,13 @@ class Car extends React.Component{
 
           // car on ramp
           if (onRamp) {
-            p = calculateAcceleratedPosition(po, 0, et, rampAcceleration)
+            p = calculateAcceleratedPosition(po, 0, et, rampAcceleration, simSettings.Scale)
             v = calculateVelocity(0, rampAcceleration, et)
           }
           // car on ground
           else {
             let egt = (currentTimestamp - sgt) / 1000
-            let nextP = calculateAcceleratedPosition(simSettings.RampEndX, sgv, egt, slowAcceleration)
+            let nextP = calculateAcceleratedPosition(simSettings.RampEndX, sgv, egt, slowAcceleration, simSettings.Scale)
 
             if (nextP > simSettings.SimWidth || nextP - p < 0.01) {
               // car x position invalid or car is stopped
@@ -173,6 +181,8 @@ class Car extends React.Component{
     let newPos = {};
     newPos.x = this.clampPosition(carX, simSettings.RampStartX, simSettings.SimWidth)
     newPos.y = this.getPositionOnRamp(carX)
+    newPos.rampDistance = calculateDistanceUpRampInWorldUnits(simSettings, newPos.x, newPos.y)
+
     if (velocity) {
       this.setState({ carPos: newPos, carVelocity: velocity })
     }
@@ -251,12 +261,14 @@ class Car extends React.Component{
     let xText = 'xPos: ' + Math.round(carPos.x)
     let finalDistanceText = finalDistance && finalDistance !== 0 ? "Final distance: " + finalDistance.toFixed(2) : ""
     let angle = onRamp ? simSettings.RampAngle * 180 / Math.PI : 0
+    let rampDistanceText = carPos.rampDistance > 0 ? "Car ramp distance: " + carPos.rampDistance.toFixed(2) : ""
 
     return (
       <Group>
-        <Text x={10} y={60} fontFamily={'Arial'} fontSize={12} text={fpsText} />
-        <Text x={10} y={85} fontFamily={'Arial'} fontSize={12} text={velText} />
-        <Text x={10} y={100} fontFamily={'Arial'} fontSize={12} text={finalDistanceText} />
+        <Text x={10} y={20} fontFamily={'Arial'} fontSize={12} text={fpsText} />
+        <Text x={10} y={35} fontFamily={'Arial'} fontSize={12} text={velText} />
+        <Text x={10} y={50} fontFamily={'Arial'} fontSize={12} text={finalDistanceText} />
+        <Text x={10} y={65} fontFamily={'Arial'} fontSize={12} text={rampDistanceText} />
         <Circle x={center.x} y={center.y}
           width={width} height={height}
           fill={appearance.fillColor} stroke={appearance.stroke} strokeWidth={appearance.strokeWidth}
