@@ -43,6 +43,18 @@ function calculateDistanceUpRampInWorldUnits(simSettings, xPos, yPos) {
   }
 }
 
+// parse URL parameters
+function getURLParam(name, defaultValue = null) {
+  const url = window.location.href;
+  name = name.replace(/[\[\]]/g, "\\$&");
+  const regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
+  const results = regex.exec(url);
+  if (!results) return defaultValue;
+  if (!results[2]) return true;
+  const value = decodeURIComponent(results[2].replace(/\+/g, " "));
+  return value;
+}
+
 module.exports = {
   calculateRampAngle,
   calculateAcceleratedPosition,
@@ -50,5 +62,6 @@ module.exports = {
   calculateTimeToGround,
   calculateRampAcceleration,
   calculateGroundAcceleration,
-  calculateDistanceUpRampInWorldUnits
+  calculateDistanceUpRampInWorldUnits,
+  getURLParam
 }

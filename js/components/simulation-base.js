@@ -40,12 +40,14 @@ export default class SimulationBase extends React.Component {
   }
 
   componentWillMount() {
-    console.log(this.refs.simContainer)
-    this.updateDimensions()
+    this.updateDimensions(this.props)
+  }
+  componentWillReceiveProps(nextProps) {
+    this.updateDimensions(nextProps)
   }
 
-  updateDimensions() {
-    let width = this.props.width ? (this.props.width != document.body.clientWidth ? document.body.clientWidth : this.props.width) : document.body.clientWidth
+  updateDimensions(dimensions) {
+    let width = dimensions.width
     width -= SIM_PADDING
 
     let rampEndX = width / 4
@@ -53,9 +55,9 @@ export default class SimulationBase extends React.Component {
 
     // height has to go up to 1m above ground, so may need to adjust for this
 
-    let height = this.props.height ? (this.props.height != document.body.clientHeight ? document.body.clientHeight : this.props.height) : document.body.clientHeight
+    let height = dimensions.height
     height -= SIM_PADDING
-    let groundheight = this.props.groundheight ? this.props.groundheight : 30
+    let groundheight = dimensions.groundheight ? dimensions.groundheight : 30
 
 
     let newSettings = {
@@ -75,14 +77,6 @@ export default class SimulationBase extends React.Component {
     newSettings.CarInitialX = RAMP_LENGTH_SCALE * Math.cos(newSettings.RampAngle)
 
     this.setState({ simSettings: newSettings })
-  }
-
-  componentDidMount() {
-    console.log(this.refs.simContainer)
-    window.addEventListener("resize", this.updateDimensions);
-  }
-  componentWillUnmount() {
-    window.removeEventListener("resize", this.updateDimensions);
   }
 
   setInclinePos(p) {
@@ -109,7 +103,7 @@ export default class SimulationBase extends React.Component {
     let runSimulationClass = isRunning ? "run-simulation running" : "run-simulation stopped"
 
     return (
-      <div className="ramp-simulation" ref="simContainer">
+      <div className="ramp-simulation">
         <div className={runSimulationClass} onClick={this.toggleSimulationRunning}>{runText}</div>
         <SimulationEditor {...this.state} onChange={this.setConstants} />
         <Stage width={simSettings.SimWidth} height={simSettings.SimHeight}>
