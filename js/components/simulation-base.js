@@ -21,7 +21,7 @@ const DEFAULT_SIMULATION = {
   gravity: 9.81,
   mass: 0.05, // going to assume a car weighing 50 grams
   rampFriction: 0.01,
-  groundFriction: -1
+  groundFriction: -0.5
 }
 
 export default class SimulationBase extends React.Component {
@@ -37,6 +37,7 @@ export default class SimulationBase extends React.Component {
     this.setSimulationRunning = this.setSimulationRunning.bind(this)
     this.toggleSimulationRunning = this.toggleSimulationRunning.bind(this)
     this.updateDimensions = this.updateDimensions.bind(this)
+    this.resetSimulation = this.resetSimulation.bind(this)
   }
 
   componentWillMount() {
@@ -96,15 +97,21 @@ export default class SimulationBase extends React.Component {
   setSimulationRunning(running) {
     this.setState({ isRunning: running })
   }
+  resetSimulation() {
+    this.updateDimensions(this.props)
+  }
 
   render() {
     const { simSettings, simConstants, isRunning } = this.state
-    let runText = isRunning ? "Stop" : "Run"
+    let runIcon = isRunning ? <i className="material-icons">stop</i> : <i className="material-icons">play_arrow</i>
     let runSimulationClass = isRunning ? "run-simulation running" : "run-simulation stopped"
 
     return (
       <div className="ramp-simulation">
-        <div className={runSimulationClass} onClick={this.toggleSimulationRunning}>{runText}</div>
+        <div className='simulationControls'>
+          <div className={runSimulationClass} onClick={this.toggleSimulationRunning}>{runIcon}</div>
+          <div className={runSimulationClass} onClick={this.resetSimulation}><i className="material-icons">replay</i></div>
+        </div>
         <SimulationEditor {...this.state} onChange={this.setConstants} />
         <Stage width={simSettings.SimWidth} height={simSettings.SimHeight}>
           <Layer>
