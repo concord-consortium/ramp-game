@@ -8,10 +8,12 @@ import {
   calculateTimeToGround,
   calculateRampAcceleration,
   calculateGroundAcceleration,
-  calculateDistanceUpRampInWorldUnits
+  calculateDistanceUpRampInWorldUnits,
+  calculateDistanceInWorldUnits
 } from '../utils'
 
 import ReactAnimationFrame from 'react-animation-frame'
+import CodapHandler from './codap-handler'
 
 const DEFAULT_APPEARANCE = {
   scale: 20,
@@ -43,6 +45,7 @@ class Car extends React.Component{
   }
 
   componentDidMount() {
+    CodapHandler.setup()
     this.updateRampAngles(this.props.simSettings)
     this.updateSimConstants(this.props.simConstants)
   }
@@ -91,7 +94,8 @@ class Car extends React.Component{
       carVelocity: 0,
       startGroundVelocity: 0,
       isDragging: false,
-      finalDistance: 0
+      finalDistance: 0,
+      currentRun: []
     })
   }
   endSimulation() {
@@ -110,6 +114,8 @@ class Car extends React.Component{
       isDragging: false,
       finalDistance: d
     })
+
+    CodapHandler.sendItems(this.state)
   }
 
   onAnimationFrame(currentTimestamp, previousTimestamp) {
@@ -167,6 +173,7 @@ class Car extends React.Component{
             }
           }
           this.setPositionInWorld(p, v)
+          this.trackDistance(p, v, et)
         }
         else {
           this.endSimulation()
@@ -176,8 +183,31 @@ class Car extends React.Component{
     }
   }
 
+  trackDistance(p, velocity, t) {
+    const { currentRun, carPos, startPos, simSettings } = this.state
+    const { isRunning } = this.props
+    if (isRunning) {
+      let runData = currentRun
+      if (!runData) {
+        runData = []
+      }
+      if (runData.length > 1) {
+        let lastPoint = runData[runData.length - 2]
+        if (t - lastPoint.Timestamp > 0.5) {
+          let point = { Distance: calculateDistanceInWorldUnits(simSettings, startPos, carPos.x), Timestamp: t}
+          runData.push(point)
+          this.setState({ currentRun: runData })
+        }
+      } else {
+        let point = { Distance: calculateDistanceInWorldUnits(simSettings, startPos, carPos.x), Timestamp: t }
+        runData.push(point)
+        this.setState({ currentRun: runData })
+      }
+    }
+  }
   setPositionInWorld(carX, velocity) {
     const { simSettings } = this.state
+
     let newPos = {};
     newPos.x = this.clampPosition(carX, simSettings.RampStartX, simSettings.SimWidth)
     newPos.y = this.getPositionOnRamp(carX)

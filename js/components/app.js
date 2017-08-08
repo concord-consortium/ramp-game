@@ -2,9 +2,7 @@ import React, {PureComponent} from 'react'
 import SimulationBase from './simulation-base'
 import { getURLParam } from '../utils'
 
-
 export default class App extends React.Component {
-
 
   constructor(props) {
     super(props);
@@ -27,6 +25,7 @@ export default class App extends React.Component {
 
   componentDidMount() {
     window.addEventListener("resize", this.updateDimensions);
+
   }
   componentWillUnmount() {
     window.removeEventListener("resize", this.updateDimensions);

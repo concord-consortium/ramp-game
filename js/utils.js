@@ -43,6 +43,10 @@ function calculateDistanceUpRampInWorldUnits(simSettings, xPos, yPos) {
   }
 }
 
+function calculateDistanceInWorldUnits(simSettings, startPos, currentPos) {
+  return ( currentPos - startPos ) / simSettings.Scale
+}
+
 // parse URL parameters
 function getURLParam(name, defaultValue = null) {
   const url = window.location.href;
@@ -63,5 +67,6 @@ module.exports = {
   calculateRampAcceleration,
   calculateGroundAcceleration,
   calculateDistanceUpRampInWorldUnits,
+  calculateDistanceInWorldUnits,
   getURLParam
 }
