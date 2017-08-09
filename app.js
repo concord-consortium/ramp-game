@@ -17204,6 +17204,7 @@ var DEFAULT_APPEARANCE = {
   strokeWidth: 1
 };
 var TIMESCALE = 200;
+var MINFRAMEINTERVAL = 10; // 10ms == 60fps
 
 var Car = function (_React$Component) {
   _inherits(Car, _React$Component);
@@ -17243,7 +17244,7 @@ var Car = function (_React$Component) {
       this.updateSimConstants(nextProps.simConstants);
       this.setPositionInWorld(this.state.carPos.x);
       if (nextProps.isRunning != this.props.isRunning) {
-        nextProps.isRunning ? this.startSimulation() : this.endSimulation();
+        nextProps.isRunning ? this.startSimulation() : this.endSimulation(0);
       }
     }
   }, {
@@ -17288,6 +17289,8 @@ var Car = function (_React$Component) {
       this.setState({
         startTime: 0,
         startPos: carPos.x,
+        startHeightAboveGround: (0, _utils.calculateDistanceInWorldUnits)(simSettings, carPos.y, simSettings.SimHeight - simSettings.GroundHeight),
+        startDistanceUpRamp: carPos.rampDistance,
         startGroundTime: 0,
         onRamp: carPos.x < simSettings.RampEndX,
         carVelocity: 0,
@@ -17298,32 +17301,33 @@ var Car = function (_React$Component) {
     }
   }, {
     key: 'endSimulation',
-    value: function endSimulation() {
+    value: function endSimulation(endTimestamp) {
       var _state3 = this.state,
           carPos = _state3.carPos,
           simSettings = _state3.simSettings,
           currentRun = _state3.currentRun;
 
-      var d = 0;
-      if (carPos.x > simSettings.RampEndX) {
-        d = (carPos.x - simSettings.RampEndX) / (simSettings.SimWidth - simSettings.RampEndX) * 5;
-      }
-      var finalData = Object.assign({}, this.state);
-      finalData.finalDistance = d;
+      if (endTimestamp > 0) {
+        var d = 0;
+        if (carPos.x > simSettings.RampEndX) {
+          d = (carPos.x - simSettings.RampEndX) / (simSettings.SimWidth - simSettings.RampEndX) * 5;
+        }
+        var finalData = Object.assign({}, this.state);
+        finalData.finalDistance = d;
+        finalData.timeToGround = (finalData.startGroundTime - finalData.startTime) / 1000;
+        finalData.totalTime = (endTimestamp - finalData.startTime) / 1000;
+        if (currentRun && currentRun.length > 0) {
+          _codapHandler2.default.sendItems(finalData);
+        }
 
-      if (currentRun && currentRun.length > 0) {
-        _codapHandler2.default.sendItems(finalData);
+        this.setState({
+          startTime: 0,
+          carVelocity: 0,
+          startGroundVelocity: 0,
+          finalDistance: d,
+          currentRun: []
+        });
       }
-
-      this.setState({
-        startTime: 0,
-        startPos: carPos.x,
-        onRamp: carPos.x < simSettings.RampEndX,
-        carVelocity: 0,
-        startGroundVelocity: 0,
-        finalDistance: d,
-        currentRun: []
-      });
     }
   }, {
     key: 'onAnimationFrame',
@@ -17360,9 +17364,9 @@ var Car = function (_React$Component) {
           // calculate time since last animation frame - we lock the simulation to a max of 60fps
           var deltaTime = currentTimestamp - previousTimestamp;
           var elapsedTime = currentTimestamp - startTime;
-          // dt and et will be in ms, convert to seconds
-          var dt = deltaTime / TIMESCALE;
-          var et = elapsedTime / TIMESCALE;
+          // dt in ms, convert to seconds
+          var dt = deltaTime / 1000;
+          var et = elapsedTime / TIMESCALE; // scale simulation speed
           var fps = Math.round(1 / dt);
 
           var p = carPos.x;
@@ -17383,7 +17387,7 @@ var Car = function (_React$Component) {
                 if (nextP > simSettings.SimWidth || nextP - p < 0.01) {
                   // car x position invalid or car is stopped
                   v = 0;
-                  this.endSimulation();
+                  this.endSimulation(currentTimestamp);
                   this.props.onSimulationRunningChange(false);
                 } else {
                   if (nextP >= p) {
@@ -17395,7 +17399,7 @@ var Car = function (_React$Component) {
             this.setPositionInWorld(p, v);
             this.trackDistance(p, v, et);
           } else {
-            this.endSimulation();
+            this.endSimulation(currentTimestamp);
           }
           this.setState({ fps: fps, onRamp: carPos.x < simSettings.RampEndX });
         }
@@ -17416,15 +17420,26 @@ var Car = function (_React$Component) {
         if (!runData) {
           runData = [];
         }
+        t = t * TIMESCALE / 1000;
         if (runData.length > 1) {
-          var lastPoint = runData[runData.length - 2];
-          if (t - lastPoint.Timestamp > 0.5) {
-            var point = { Distance: (0, _utils.calculateDistanceInWorldUnits)(simSettings, startPos, carPos.x), Timestamp: t };
+          var lastPoint = runData[runData.length - 1];
+          if (t - lastPoint.Timestamp > 0.05) {
+            var point = {
+              x: (0, _utils.calculateDistanceInWorldUnits)(simSettings, startPos, carPos.x),
+              y: (0, _utils.calculateDistanceInWorldUnits)(simSettings, carPos.y, simSettings.SimHeight - simSettings.GroundHeight),
+              Timestamp: t,
+              Velocity: velocity
+            };
             runData.push(point);
             this.setState({ currentRun: runData });
           }
         } else {
-          var _point = { Distance: (0, _utils.calculateDistanceInWorldUnits)(simSettings, startPos, carPos.x), Timestamp: t };
+          var _point = {
+            x: (0, _utils.calculateDistanceInWorldUnits)(simSettings, startPos, carPos.x),
+            y: (0, _utils.calculateDistanceInWorldUnits)(simSettings, carPos.y, simSettings.SimHeight - simSettings.GroundHeight),
+            Timestamp: t,
+            Velocity: velocity
+          };
           runData.push(_point);
           this.setState({ currentRun: runData });
         }
@@ -17550,22 +17565,22 @@ var dataSetName = "CarRampSimulation";
 var dataSetTemplate = {
   name: "{name}",
   collections: [{
-    name: 'FinalDistances',
-    title: 'Final Distances',
+    name: 'RunSummary',
+    title: 'Run Summary',
     labels: {
-      pluralCase: "Distances",
+      pluralCase: "Summary",
       setOfCasesWithArticle: "a run"
     },
-    attrs: [{ name: "RunNumber", type: 'numeric', precision: 0 }, { name: "RampAngle", type: 'numeric', precision: 2 }, { name: "Mass", unit: "Kg", type: 'numeric', precision: 2 }, { name: "Gravity", unit: "m/s/s", type: 'numeric', precision: 2 }, { name: "RampFriction", type: 'numeric', precision: 2 }, { name: "GroundFriction", type: 'numeric', precision: 2 }, { name: "FinalDistance", type: 'numeric', precision: 2 }]
+    attrs: [{ name: "RunNumber", type: 'numeric', precision: 0 }, { name: "RampAngle", type: 'numeric', precision: 2 }, { name: "StartHeightAboveGround", type: 'numeric', precision: 2 }, { name: "StartDistanceUpRamp", type: 'numeric', precision: 2 }, { name: "Mass", unit: "Kg", type: 'numeric', precision: 2 }, { name: "Gravity", unit: "m/s/s", type: 'numeric', precision: 2 }, { name: "RampFriction", type: 'numeric', precision: 2 }, { name: "GroundFriction", type: 'numeric', precision: 2 }, { name: "TimeToGround", type: 'numeric', precision: 2 }, { name: "TotalTime", type: 'numeric', precision: 2 }, { name: "VelocityAtBottomOfRamp", type: 'numeric', precision: 2 }, { name: "FinalDistance", type: 'numeric', precision: 2 }]
   }, {
-    name: 'DistanceOverTime',
-    title: 'Distance over Time',
-    parent: 'FinalDistances',
+    name: 'RunDetails',
+    title: 'Run Details',
+    parent: 'RunSummary',
     labels: {
-      pluralCase: "Distances over time",
+      pluralCase: "Details",
       setOfCasesWithArticle: "a run"
     },
-    attrs: [{ name: "Timestamp", unit: "s", type: 'numeric', precision: 2 }, { name: "Distance", unit: "m", type: 'numeric', precision: 2 }]
+    attrs: [{ name: "Timestamp", unit: "s", type: 'numeric', precision: 2 }, { name: "Velocity", unit: "m/s", type: 'numeric', precision: 2 }, { name: "x", unit: "m", type: 'numeric', precision: 2 }, { name: "y", unit: "m", type: 'numeric', precision: 2 }]
   }]
 };
 
@@ -17623,10 +17638,15 @@ module.exports = {
     var runSummary = {
       RunNumber: runNumber,
       RampAngle: data.simSettings.RampAngle * 180 / Math.PI,
+      StartDistanceUpRamp: data.startDistanceUpRamp,
+      StartHeightAboveGround: data.startHeightAboveGround,
       Mass: data.simConstants.mass,
       Gravity: data.simConstants.gravity,
       RampFriction: data.simConstants.rampFriction,
       GroundFriction: data.simConstants.groundFriction,
+      VelocityAtBottomOfRamp: data.startGroundVelocity,
+      TimeToGround: data.timeToGround,
+      TotalTime: data.totalTime,
       FinalDistance: finalDistance
     };
     var runDetails = data.currentRun;
@@ -17634,7 +17654,9 @@ module.exports = {
     for (var i = 0; i < runDetails.length; i++) {
       var d = Object.assign({}, runSummary);
       d.Timestamp = runDetails[i].Timestamp;
-      d.Distance = runDetails[i].Distance;
+      d.x = runDetails[i].x;
+      d.y = runDetails[i].y;
+      d.Velocity = runDetails[i].Velocity;
       items.push(d);
     }
     return codapInterface.sendRequest({
