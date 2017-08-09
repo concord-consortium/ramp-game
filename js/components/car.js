@@ -99,10 +99,16 @@ class Car extends React.Component{
     })
   }
   endSimulation() {
-    const { carPos, simSettings } = this.state
+    const { carPos, simSettings, currentRun } = this.state
     let d = 0
     if (carPos.x > simSettings.RampEndX) {
       d = (carPos.x - simSettings.RampEndX)/(simSettings.SimWidth - simSettings.RampEndX) * 5
+    }
+    let finalData = Object.assign({}, this.state)
+    finalData.finalDistance = d
+
+    if (currentRun && currentRun.length > 0) {
+      CodapHandler.sendItems(finalData)
     }
 
     this.setState({
@@ -112,10 +118,9 @@ class Car extends React.Component{
       carVelocity: 0,
       startGroundVelocity: 0,
       isDragging: false,
-      finalDistance: d
+      finalDistance: d,
+      currentRun: []
     })
-
-    CodapHandler.sendItems(this.state)
   }
 
   onAnimationFrame(currentTimestamp, previousTimestamp) {
