@@ -17306,11 +17306,18 @@ var Car = function (_React$Component) {
     value: function endSimulation() {
       var _state3 = this.state,
           carPos = _state3.carPos,
-          simSettings = _state3.simSettings;
+          simSettings = _state3.simSettings,
+          currentRun = _state3.currentRun;
 
       var d = 0;
       if (carPos.x > simSettings.RampEndX) {
         d = (carPos.x - simSettings.RampEndX) / (simSettings.SimWidth - simSettings.RampEndX) * 5;
+      }
+      var finalData = Object.assign({}, this.state);
+      finalData.finalDistance = d;
+
+      if (currentRun && currentRun.length > 0) {
+        _codapHandler2.default.sendItems(finalData);
       }
 
       this.setState({
@@ -17320,10 +17327,9 @@ var Car = function (_React$Component) {
         carVelocity: 0,
         startGroundVelocity: 0,
         isDragging: false,
-        finalDistance: d
+        finalDistance: d,
+        currentRun: []
       });
-
-      _codapHandler2.default.sendItems(this.state);
     }
   }, {
     key: 'onAnimationFrame',
