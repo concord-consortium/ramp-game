@@ -31,7 +31,8 @@ const dataSetTemplate =
         },
         attrs: [
           { name: "Timestamp", unit:"s", type: 'numeric', precision: 2 },
-          { name: "Distance", unit: "m", type: 'numeric', precision: 2 }
+          { name: "Distance", unit: "m", type: 'numeric', precision: 2 },
+          { name: "Velocity", unity:"m/s", type: 'numeric', precision: 2 }
         ]
       }
     ]
@@ -103,6 +104,7 @@ var myState
       let d = Object.assign({}, runSummary)
       d.Timestamp = runDetails[i].Timestamp
       d.Distance = runDetails[i].Distance
+      d.Velocity = runDetails[i].Velocity
       items.push(d)
     }
     return codapInterface.sendRequest({

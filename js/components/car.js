@@ -22,6 +22,7 @@ const DEFAULT_APPEARANCE = {
   strokeWidth: 1
 }
 const TIMESCALE = 200
+const MINFRAMEINTERVAL = 10 // 10ms == 60fps
 
 class Car extends React.Component{
   constructor(props) {
@@ -139,9 +140,9 @@ class Car extends React.Component{
         // calculate time since last animation frame - we lock the simulation to a max of 60fps
         let deltaTime = currentTimestamp - previousTimestamp
         let elapsedTime = currentTimestamp - startTime
-        // dt and et will be in ms, convert to seconds
-        let dt = deltaTime / TIMESCALE
-        let et = elapsedTime / TIMESCALE
+        // dt in ms, convert to seconds
+        let dt = deltaTime / 1000
+        let et = elapsedTime / TIMESCALE // scale simulation speed
         let fps = Math.round(1 / dt)
 
         let p = carPos.x
@@ -190,15 +191,16 @@ class Car extends React.Component{
       if (!runData) {
         runData = []
       }
+      t = t * TIMESCALE / 1000
       if (runData.length > 1) {
-        let lastPoint = runData[runData.length - 2]
-        if (t - lastPoint.Timestamp > 0.5) {
-          let point = { Distance: calculateDistanceInWorldUnits(simSettings, startPos, carPos.x), Timestamp: t}
+        let lastPoint = runData[runData.length - 1]
+        if (t - lastPoint.Timestamp > 0.1) {
+          let point = { Distance: calculateDistanceInWorldUnits(simSettings, startPos, carPos.x), Timestamp: t, Velocity: velocity}
           runData.push(point)
           this.setState({ currentRun: runData })
         }
       } else {
-        let point = { Distance: calculateDistanceInWorldUnits(simSettings, startPos, carPos.x), Timestamp: t }
+        let point = { Distance: calculateDistanceInWorldUnits(simSettings, startPos, carPos.x), Timestamp: t, Velocity: velocity }
         runData.push(point)
         this.setState({ currentRun: runData })
       }
