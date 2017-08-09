@@ -5,34 +5,40 @@ const dataSetTemplate =
     name: "{name}",
     collections: [
       {
-        name: 'FinalDistances',
-        title: 'Final Distances',
+        name: 'RunSummary',
+        title: 'Run Summary',
         labels: {
-          pluralCase: "Distances",
+          pluralCase: "Summary",
           setOfCasesWithArticle: "a run"
         },
         attrs: [
           { name: "RunNumber", type: 'numeric', precision: 0},
           { name: "RampAngle", type: 'numeric', precision: 2 },
+          { name: "StartHeightAboveGround", type: 'numeric', precision: 2 },
+          { name: "StartDistanceUpRamp", type: 'numeric', precision: 2 },
           { name: "Mass", unit: "Kg", type: 'numeric', precision: 2 },
           { name: "Gravity", unit: "m/s/s", type: 'numeric', precision: 2 },
           { name: "RampFriction", type: 'numeric', precision: 2 },
           { name: "GroundFriction", type: 'numeric', precision: 2 },
+          { name: "TimeToGround", type: 'numeric', precision: 2 },
+          { name: "TotalTime", type: 'numeric', precision: 2 },
+          { name: "VelocityAtBottomOfRamp", type: 'numeric', precision: 2},
           { name: "FinalDistance", type: 'numeric', precision: 2}
         ]
       },
       {
-        name: 'DistanceOverTime',
-        title: 'Distance over Time',
-        parent: 'FinalDistances',
+        name: 'RunDetails',
+        title: 'Run Details',
+        parent: 'RunSummary',
         labels: {
-          pluralCase: "Distances over time",
+          pluralCase: "Details",
           setOfCasesWithArticle: "a run"
         },
         attrs: [
           { name: "Timestamp", unit:"s", type: 'numeric', precision: 2 },
-          { name: "Distance", unit: "m", type: 'numeric', precision: 2 },
-          { name: "Velocity", unity:"m/s", type: 'numeric', precision: 2 }
+          { name: "Velocity", unit: "m/s", type: 'numeric', precision: 2 },
+          { name: "x", unit: "m", type: 'numeric', precision: 2 },
+          { name: "y", unit: "m", type: 'numeric', precision: 2 }
         ]
       }
     ]
@@ -92,10 +98,15 @@ var myState
     let runSummary = {
       RunNumber: runNumber,
       RampAngle: data.simSettings.RampAngle * 180 / Math.PI,
+      StartDistanceUpRamp: data.startDistanceUpRamp,
+      StartHeightAboveGround: data.startHeightAboveGround,
       Mass: data.simConstants.mass,
       Gravity: data.simConstants.gravity,
       RampFriction: data.simConstants.rampFriction,
       GroundFriction: data.simConstants.groundFriction,
+      VelocityAtBottomOfRamp: data.startGroundVelocity,
+      TimeToGround: data.timeToGround,
+      TotalTime: data.totalTime,
       FinalDistance: finalDistance
     }
     let runDetails = data.currentRun
@@ -103,7 +114,8 @@ var myState
     for (var i = 0; i < runDetails.length; i++){
       let d = Object.assign({}, runSummary)
       d.Timestamp = runDetails[i].Timestamp
-      d.Distance = runDetails[i].Distance
+      d.x = runDetails[i].x
+      d.y = runDetails[i].y
       d.Velocity = runDetails[i].Velocity
       items.push(d)
     }

@@ -53,7 +53,7 @@ class Car extends React.Component{
     this.updateSimConstants(nextProps.simConstants)
     this.setPositionInWorld(this.state.carPos.x)
     if (nextProps.isRunning != this.props.isRunning) {
-      nextProps.isRunning ? this.startSimulation() : this.endSimulation()
+      nextProps.isRunning ? this.startSimulation() : this.endSimulation(0)
     }
   }
 
@@ -86,6 +86,8 @@ class Car extends React.Component{
     this.setState({
       startTime: 0,
       startPos: carPos.x,
+      startHeightAboveGround: calculateDistanceInWorldUnits(simSettings, carPos.y, simSettings.SimHeight - simSettings.GroundHeight),
+      startDistanceUpRamp: carPos.rampDistance,
       startGroundTime: 0,
       onRamp: carPos.x < simSettings.RampEndX,
       carVelocity: 0,
@@ -94,28 +96,29 @@ class Car extends React.Component{
       currentRun: []
     })
   }
-  endSimulation() {
+  endSimulation(endTimestamp) {
     const { carPos, simSettings, currentRun } = this.state
-    let d = 0
-    if (carPos.x > simSettings.RampEndX) {
-      d = (carPos.x - simSettings.RampEndX)/(simSettings.SimWidth - simSettings.RampEndX) * 5
-    }
-    let finalData = Object.assign({}, this.state)
-    finalData.finalDistance = d
+    if (endTimestamp > 0) {
+      let d = 0
+      if (carPos.x > simSettings.RampEndX) {
+        d = (carPos.x - simSettings.RampEndX)/(simSettings.SimWidth - simSettings.RampEndX) * 5
+      }
+      let finalData = Object.assign({}, this.state)
+      finalData.finalDistance = d
+      finalData.timeToGround = (finalData.startGroundTime - finalData.startTime) / 1000
+      finalData.totalTime = (endTimestamp - finalData.startTime) / 1000
+      if (currentRun && currentRun.length > 0) {
+        CodapHandler.sendItems(finalData)
+      }
 
-    if (currentRun && currentRun.length > 0) {
-      CodapHandler.sendItems(finalData)
+      this.setState({
+        startTime: 0,
+        carVelocity: 0,
+        startGroundVelocity: 0,
+        finalDistance: d,
+        currentRun: []
+      })
     }
-
-    this.setState({
-      startTime: 0,
-      startPos: carPos.x,
-      onRamp: carPos.x < simSettings.RampEndX,
-      carVelocity: 0,
-      startGroundVelocity: 0,
-      finalDistance: d,
-      currentRun: []
-    })
   }
 
   onAnimationFrame(currentTimestamp, previousTimestamp) {
@@ -163,7 +166,7 @@ class Car extends React.Component{
             if (nextP > simSettings.SimWidth || nextP - p < 0.01) {
               // car x position invalid or car is stopped
               v = 0
-              this.endSimulation()
+              this.endSimulation(currentTimestamp)
               this.props.onSimulationRunningChange(false)
             } else {
               if (nextP >= p) {
@@ -176,7 +179,7 @@ class Car extends React.Component{
           this.trackDistance(p, v, et)
         }
         else {
-          this.endSimulation()
+          this.endSimulation(currentTimestamp)
         }
         this.setState({ fps, onRamp: carPos.x < simSettings.RampEndX })
       }
@@ -194,13 +197,23 @@ class Car extends React.Component{
       t = t * TIMESCALE / 1000
       if (runData.length > 1) {
         let lastPoint = runData[runData.length - 1]
-        if (t - lastPoint.Timestamp > 0.1) {
-          let point = { Distance: calculateDistanceInWorldUnits(simSettings, startPos, carPos.x), Timestamp: t, Velocity: velocity}
+        if (t - lastPoint.Timestamp > 0.05) {
+          let point = {
+            x: calculateDistanceInWorldUnits(simSettings, startPos, carPos.x),
+            y: calculateDistanceInWorldUnits(simSettings, carPos.y, simSettings.SimHeight - simSettings.GroundHeight),
+            Timestamp: t,
+            Velocity: velocity
+          }
           runData.push(point)
           this.setState({ currentRun: runData })
         }
       } else {
-        let point = { Distance: calculateDistanceInWorldUnits(simSettings, startPos, carPos.x), Timestamp: t, Velocity: velocity }
+        let point = {
+            x: calculateDistanceInWorldUnits(simSettings, startPos, carPos.x),
+            y: calculateDistanceInWorldUnits(simSettings, carPos.y, simSettings.SimHeight - simSettings.GroundHeight),
+            Timestamp: t,
+            Velocity: velocity
+          }
         runData.push(point)
         this.setState({ currentRun: runData })
       }
