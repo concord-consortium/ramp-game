@@ -17200,9 +17200,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var DEFAULT_APPEARANCE = {
   scale: 20,
   fillColor: 'red',
-  stroke: 'black',
-  strokeWidth: 2
+  stroke: 'red',
+  strokeWidth: 1
 };
+var TIMESCALE = 200;
 
 var Car = function (_React$Component) {
   _inherits(Car, _React$Component);
@@ -17219,13 +17220,9 @@ var Car = function (_React$Component) {
       theta: 0,
       rampAcceleration: 0,
       groundAcceleration: 0,
-      isDragging: false,
       carVelocity: 0,
       appearance: DEFAULT_APPEARANCE
     };
-    _this.onDrag = _this.onDrag.bind(_this);
-    _this.onDragStart = _this.onDragStart.bind(_this);
-    _this.onDragEnd = _this.onDragEnd.bind(_this);
     _this.clampPosition = _this.clampPosition.bind(_this);
     _this.setPositionInWorld = _this.setPositionInWorld.bind(_this);
     _this.updateRampAngles = _this.updateRampAngles.bind(_this);
@@ -17271,8 +17268,7 @@ var Car = function (_React$Component) {
           startTime: 0,
           startPos: carPos.x,
           onRamp: carPos.x < simSettings.RampEndX,
-          carVelocity: 0,
-          isDragging: false
+          carVelocity: 0
         });
       }
     }
@@ -17296,7 +17292,6 @@ var Car = function (_React$Component) {
         onRamp: carPos.x < simSettings.RampEndX,
         carVelocity: 0,
         startGroundVelocity: 0,
-        isDragging: false,
         finalDistance: 0,
         currentRun: []
       });
@@ -17326,7 +17321,6 @@ var Car = function (_React$Component) {
         onRamp: carPos.x < simSettings.RampEndX,
         carVelocity: 0,
         startGroundVelocity: 0,
-        isDragging: false,
         finalDistance: d,
         currentRun: []
       });
@@ -17358,17 +17352,17 @@ var Car = function (_React$Component) {
 
         if (!startTime || startTime === 0) {
           t = currentTimestamp;
-          sgt = (0, _utils.calculateTimeToGround)(po, simSettings.RampEndX, rampAcceleration, simSettings.Scale) * 1000 + t;
+          sgt = (0, _utils.calculateTimeToGround)(po, simSettings.RampEndX, rampAcceleration, simSettings.Scale) * TIMESCALE + t;
           // get initial velocity when reaching the ground
-          sgv = (0, _utils.calculateVelocity)(0, rampAcceleration, (sgt - t) / 1000);
+          sgv = (0, _utils.calculateVelocity)(0, rampAcceleration, (sgt - t) / TIMESCALE);
           this.setState({ startTime: currentTimestamp, startGroundTime: sgt, startGroundVelocity: sgv });
         } else {
           // calculate time since last animation frame - we lock the simulation to a max of 60fps
           var deltaTime = currentTimestamp - previousTimestamp;
           var elapsedTime = currentTimestamp - startTime;
           // dt and et will be in ms, convert to seconds
-          var dt = deltaTime / 1000;
-          var et = elapsedTime / 1000;
+          var dt = deltaTime / TIMESCALE;
+          var et = elapsedTime / TIMESCALE;
           var fps = Math.round(1 / dt);
 
           var p = carPos.x;
@@ -17383,7 +17377,7 @@ var Car = function (_React$Component) {
             }
             // car on ground
             else {
-                var egt = (currentTimestamp - sgt) / 1000;
+                var egt = (currentTimestamp - sgt) / TIMESCALE;
                 var nextP = (0, _utils.calculateAcceleratedPosition)(simSettings.RampEndX, sgv, egt, slowAcceleration, simSettings.Scale);
 
                 if (nextP > simSettings.SimWidth || nextP - p < 0.01) {
@@ -17483,43 +17477,16 @@ var Car = function (_React$Component) {
       return pos <= min ? min : pos >= max ? max : pos;
     }
   }, {
-    key: 'onDrag',
-    value: function onDrag(e) {
+    key: 'generateNormalLine',
+    value: function generateNormalLine(x, y, lineLength) {
       var _state7 = this.state,
-          isDragging = _state7.isDragging,
-          simSettings = _state7.simSettings;
+          simSettings = _state7.simSettings,
+          onRamp = _state7.onRamp;
 
-      if (isDragging) {
-        this.setPositionInWorld(e.layerX, 0);
-      }
-    }
-  }, {
-    key: 'onDragStart',
-    value: function onDragStart(e) {
-      this.setState({
-        isDragging: true,
-        startTime: 0
-      });
-
-      document.addEventListener('mousemove', this.onDrag);
-      document.addEventListener('mouseup', this.onDragEnd);
-      document.addEventListener('touchmove', this.onDrag);
-      document.addEventListener('touchend', this.onDragEnd);
-
-      event.preventDefault();
-    }
-  }, {
-    key: 'onDragEnd',
-    value: function onDragEnd(e) {
-      this.setState({
-        isDragging: false
-      });
-      document.removeEventListener('mousemove', this.onDrag);
-      document.removeEventListener('mouseup', this.onDragEnd);
-      document.removeEventListener('touchmove', this.onDrag);
-      document.removeEventListener('touchend', this.onDragEnd);
-
-      event.preventDefault();
+      var endPointX = onRamp ? x + lineLength * Math.sin(simSettings.RampAngle) : x;
+      var endPointY = onRamp ? y - lineLength * Math.cos(simSettings.RampAngle) : y - lineLength;
+      var points = [x, y, endPointX, endPointY];
+      return points;
     }
   }, {
     key: 'render',
@@ -17534,8 +17501,9 @@ var Car = function (_React$Component) {
           onRamp = _state8.onRamp,
           simSettings = _state8.simSettings;
 
-      var height = 20;
-      var width = 20;
+      var height = 15;
+      var width = 45;
+      var lineLength = 22;
       var center = carPos;
       var fpsText = fps ? 'fps: ' + fps : "";
       var velText = 'vel: ' + Math.round(carVelocity);
@@ -17543,6 +17511,8 @@ var Car = function (_React$Component) {
       var finalDistanceText = finalDistance && finalDistance !== 0 ? "Final distance: " + finalDistance.toFixed(2) : "";
       var angle = onRamp ? simSettings.RampAngle * 180 / Math.PI : 0;
       var rampDistanceText = carPos.rampDistance > 0 ? "Car ramp distance: " + carPos.rampDistance.toFixed(2) : "";
+
+      var normalLinePoints = this.generateNormalLine(center.x, center.y, lineLength);
 
       return _react2.default.createElement(
         _reactKonva.Group,
@@ -17552,10 +17522,11 @@ var Car = function (_React$Component) {
         _react2.default.createElement(_reactKonva.Text, { x: 10, y: 50, fontFamily: 'Arial', fontSize: 12, text: finalDistanceText }),
         _react2.default.createElement(_reactKonva.Text, { x: 10, y: 65, fontFamily: 'Arial', fontSize: 12, text: rampDistanceText }),
         _react2.default.createElement(_reactKonva.Circle, { x: center.x, y: center.y,
-          width: width, height: height,
-          fill: appearance.fillColor, stroke: appearance.stroke, strokeWidth: appearance.strokeWidth,
-          onMouseDown: this.onDragStart }),
-        _react2.default.createElement(_vehicleImage2.default, { x: center.x, y: center.y, width: 60, height: 20, angle: angle, onRamp: onRamp })
+          radius: width / 10,
+          fill: appearance.fillColor
+        }),
+        _react2.default.createElement(_reactKonva.Line, { points: normalLinePoints, stroke: 'red', strokeWidth: 2 }),
+        _react2.default.createElement(_vehicleImage2.default, { x: center.x, y: center.y, width: width, height: height, angle: angle, onRamp: onRamp, setPositionInWorld: this.setPositionInWorld })
       );
     }
   }]);
@@ -18288,7 +18259,11 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+// to adjust where the center point of the image is, lower numbers place center near the front of the car
+var centerAdjust = 1.8;
+
 // try drag& drop rectangle
+
 var VehicleImage = function (_React$Component) {
   _inherits(VehicleImage, _React$Component);
 
@@ -18298,8 +18273,13 @@ var VehicleImage = function (_React$Component) {
     var _this = _possibleConstructorReturn(this, (VehicleImage.__proto__ || Object.getPrototypeOf(VehicleImage)).call(this, props));
 
     _this.state = {
-      image: null
+      image: null,
+      isDragging: false
     };
+    _this.onDrag = _this.onDrag.bind(_this);
+    _this.onDragStart = _this.onDragStart.bind(_this);
+    _this.onDragEnd = _this.onDragEnd.bind(_this);
+    _this.setPositionInWorld = _this.setPositionInWorld.bind(_this);
     return _this;
   }
 
@@ -18317,16 +18297,63 @@ var VehicleImage = function (_React$Component) {
       };
     }
   }, {
+    key: 'setPositionInWorld',
+    value: function setPositionInWorld(x) {
+      this.props.setPositionInWorld(x, 0);
+    }
+  }, {
+    key: 'onDrag',
+    value: function onDrag(e) {
+      var _state = this.state,
+          isDragging = _state.isDragging,
+          simSettings = _state.simSettings;
+
+      if (isDragging) {
+        this.setPositionInWorld(e.layerX, 0);
+      }
+    }
+  }, {
+    key: 'onDragStart',
+    value: function onDragStart(e) {
+      this.setState({
+        isDragging: true,
+        startTime: 0
+      });
+
+      document.addEventListener('mousemove', this.onDrag);
+      document.addEventListener('mouseup', this.onDragEnd);
+      document.addEventListener('touchmove', this.onDrag);
+      document.addEventListener('touchend', this.onDragEnd);
+
+      event.preventDefault();
+    }
+  }, {
+    key: 'onDragEnd',
+    value: function onDragEnd(e) {
+      this.setState({
+        isDragging: false
+      });
+      document.removeEventListener('mousemove', this.onDrag);
+      document.removeEventListener('mouseup', this.onDragEnd);
+      document.removeEventListener('touchmove', this.onDrag);
+      document.removeEventListener('touchend', this.onDragEnd);
+
+      event.preventDefault();
+    }
+  }, {
     key: 'getCornerPosition',
     value: function getCornerPosition(x, y, width, height, theta) {
       // While the car is on the ramp calculate displacement for top left corner
+      // Top left corner is the center of rotation for the image
       // we want the bottom right corner point on the baseline of the image to match the data point
 
       var bottomLeftPos = { x: 0, y: 0 };
-      var topLeftPos = { x: 0, y: 0 };
+      var topLeftPos = { x: 0, y: 0
 
-      bottomLeftPos.x = x - width * Math.cos(theta);
-      bottomLeftPos.y = y - width * Math.sin(theta);
+        // to position the image so that the nose of the car is at the calculation point,
+        // change this to x - (width * Math.cos(theta)) etc.
+      };bottomLeftPos.x = x - width / centerAdjust * Math.cos(theta);
+      bottomLeftPos.y = y - width / centerAdjust * Math.sin(theta);
 
       topLeftPos.x = bottomLeftPos.x + height * Math.sin(theta);
       topLeftPos.y = bottomLeftPos.y - height * Math.cos(theta);
@@ -18344,21 +18371,24 @@ var VehicleImage = function (_React$Component) {
           angle = _props.angle,
           onRamp = _props.onRamp;
 
+      var w = width * 0.75;
+      var h = height;
 
       var topLeftPos = { x: 0, y: 0 };
       var imageAngle = angle;
 
       if (onRamp) {
-        topLeftPos = this.getCornerPosition(x, y, width, height, angle * Math.PI / 180);
+        topLeftPos = this.getCornerPosition(x, y, w, h, angle * Math.PI / 180);
       } else {
         // when car reaches the ground snap to midpoint of base of image
-        topLeftPos.x = x - width / 2;
-        topLeftPos.y = y - height;
+        topLeftPos.x = x - w / centerAdjust;
+        topLeftPos.y = y - h;
       }
       return _react2.default.createElement(_reactKonva.Image, {
         image: this.state.image,
-        x: topLeftPos.x, y: topLeftPos.y, width: width, height: height,
-        rotation: imageAngle
+        x: topLeftPos.x, y: topLeftPos.y, width: w, height: h,
+        rotation: imageAngle,
+        onMouseDown: this.onDragStart
       });
     }
   }]);
