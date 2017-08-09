@@ -1,16 +1,21 @@
 import React from 'react'
 import { Image } from 'react-konva';
 
-// Car image is aligned to the right edge of the png with some spacing at the left edge
-const centerAdjust = 1.6
+// to adjust where the center point of the image is, lower numbers place center near the front of the car
+const centerAdjust = 1.8
 
 // try drag& drop rectangle
 export default class VehicleImage extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      image: null
+      image: null,
+      isDragging: false
     }
+    this.onDrag = this.onDrag.bind(this)
+    this.onDragStart = this.onDragStart.bind(this)
+    this.onDragEnd = this.onDragEnd.bind(this)
+    this.setPositionInWorld = this.setPositionInWorld.bind(this)
   }
   componentDidMount() {
     const image = new window.Image();
@@ -20,6 +25,44 @@ export default class VehicleImage extends React.Component {
         image: image
       });
     }
+  }
+
+  setPositionInWorld(x) {
+    this.props.setPositionInWorld(x, 0)
+  }
+
+  onDrag(e) {
+    const { isDragging, simSettings } = this.state
+    if (isDragging) {
+      this.setPositionInWorld(e.layerX, 0)
+
+    }
+  }
+
+  onDragStart(e) {
+    this.setState({
+      isDragging: true,
+      startTime: 0
+    })
+
+    document.addEventListener('mousemove', this.onDrag)
+    document.addEventListener('mouseup', this.onDragEnd)
+    document.addEventListener('touchmove', this.onDrag)
+    document.addEventListener('touchend', this.onDragEnd)
+
+    event.preventDefault();
+  }
+
+  onDragEnd(e) {
+    this.setState({
+      isDragging: false
+    })
+    document.removeEventListener('mousemove', this.onDrag)
+    document.removeEventListener('mouseup', this.onDragEnd)
+    document.removeEventListener('touchmove', this.onDrag)
+    document.removeEventListener('touchend', this.onDragEnd)
+
+    event.preventDefault();
   }
 
   getCornerPosition(x, y, width, height, theta) {
@@ -43,7 +86,7 @@ export default class VehicleImage extends React.Component {
 
   render() {
     const { x, y, width, height, angle, onRamp } = this.props
-    let w = width / 1.5
+    let w = width*0.75
     let h = height
 
     let topLeftPos = {x: 0, y: 0}
@@ -61,6 +104,7 @@ export default class VehicleImage extends React.Component {
         image={this.state.image}
         x={topLeftPos.x} y={topLeftPos.y} width={w} height={h}
         rotation={imageAngle}
+        onMouseDown={this.onDragStart}
       />
     );
   }

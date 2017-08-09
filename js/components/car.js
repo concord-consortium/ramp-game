@@ -1,5 +1,5 @@
 import React from 'react'
-import { Text, Group, Circle } from 'react-konva'
+import { Text, Group, Circle, Line, Rect } from 'react-konva'
 import VehicleImage from './vehicle-image'
 import {
   calculateRampAngle,
@@ -18,9 +18,10 @@ import CodapHandler from './codap-handler'
 const DEFAULT_APPEARANCE = {
   scale: 20,
   fillColor: 'red',
-  stroke: 'black',
-  strokeWidth: 2
+  stroke: 'red',
+  strokeWidth: 1
 }
+const TIMESCALE = 200
 
 class Car extends React.Component{
   constructor(props) {
@@ -32,13 +33,9 @@ class Car extends React.Component{
       theta: 0,
       rampAcceleration: 0,
       groundAcceleration: 0,
-      isDragging: false,
       carVelocity: 0,
       appearance: DEFAULT_APPEARANCE
     }
-    this.onDrag = this.onDrag.bind(this)
-    this.onDragStart = this.onDragStart.bind(this)
-    this.onDragEnd = this.onDragEnd.bind(this)
     this.clampPosition = this.clampPosition.bind(this)
     this.setPositionInWorld = this.setPositionInWorld.bind(this)
     this.updateRampAngles = this.updateRampAngles.bind(this)
@@ -73,8 +70,7 @@ class Car extends React.Component{
         startTime: 0,
         startPos: carPos.x,
         onRamp: carPos.x < simSettings.RampEndX,
-        carVelocity: 0,
-        isDragging: false
+        carVelocity: 0
       })
     }
   }
@@ -93,7 +89,6 @@ class Car extends React.Component{
       onRamp: carPos.x < simSettings.RampEndX,
       carVelocity: 0,
       startGroundVelocity: 0,
-      isDragging: false,
       finalDistance: 0,
       currentRun: []
     })
@@ -117,7 +112,6 @@ class Car extends React.Component{
       onRamp: carPos.x < simSettings.RampEndX,
       carVelocity: 0,
       startGroundVelocity: 0,
-      isDragging: false,
       finalDistance: d,
       currentRun: []
     })
@@ -136,9 +130,9 @@ class Car extends React.Component{
 
       if (!startTime || startTime === 0) {
         t = currentTimestamp
-        sgt = calculateTimeToGround(po, simSettings.RampEndX, rampAcceleration, simSettings.Scale) * 1000 + t
+        sgt = calculateTimeToGround(po, simSettings.RampEndX, rampAcceleration, simSettings.Scale) * TIMESCALE + t
         // get initial velocity when reaching the ground
-        sgv = calculateVelocity(0, rampAcceleration, (sgt-t)/1000)
+        sgv = calculateVelocity(0, rampAcceleration, (sgt-t)/TIMESCALE)
         this.setState({ startTime: currentTimestamp, startGroundTime: sgt, startGroundVelocity: sgv })
       }
       else {
@@ -146,8 +140,8 @@ class Car extends React.Component{
         let deltaTime = currentTimestamp - previousTimestamp
         let elapsedTime = currentTimestamp - startTime
         // dt and et will be in ms, convert to seconds
-        let dt = deltaTime / 1000
-        let et = elapsedTime / 1000
+        let dt = deltaTime / TIMESCALE
+        let et = elapsedTime / TIMESCALE
         let fps = Math.round(1 / dt)
 
         let p = carPos.x
@@ -162,7 +156,7 @@ class Car extends React.Component{
           }
           // car on ground
           else {
-            let egt = (currentTimestamp - sgt) / 1000
+            let egt = (currentTimestamp - sgt) / TIMESCALE
             let nextP = calculateAcceleratedPosition(simSettings.RampEndX, sgv, egt, slowAcceleration, simSettings.Scale)
 
             if (nextP > simSettings.SimWidth || nextP - p < 0.01) {
@@ -252,44 +246,19 @@ class Car extends React.Component{
     return pos <= min ? min : pos >= max ? max : pos
   }
 
-  onDrag(e) {
-    const { isDragging, simSettings } = this.state
-    if (isDragging) {
-      this.setPositionInWorld(e.layerX, 0)
-
-    }
-  }
-
-  onDragStart(e) {
-    this.setState({
-      isDragging: true,
-      startTime: 0
-    })
-
-    document.addEventListener('mousemove', this.onDrag)
-    document.addEventListener('mouseup', this.onDragEnd)
-    document.addEventListener('touchmove', this.onDrag)
-    document.addEventListener('touchend', this.onDragEnd)
-
-    event.preventDefault();
-  }
-
-  onDragEnd(e) {
-    this.setState({
-      isDragging: false
-    })
-    document.removeEventListener('mousemove', this.onDrag)
-    document.removeEventListener('mouseup', this.onDragEnd)
-    document.removeEventListener('touchmove', this.onDrag)
-    document.removeEventListener('touchend', this.onDragEnd)
-
-    event.preventDefault();
+  generateNormalLine(x, y, lineLength) {
+    const { simSettings, onRamp } = this.state
+    let endPointX = onRamp ? x + (lineLength * Math.sin(simSettings.RampAngle)) : x
+    let endPointY = onRamp ? y - (lineLength * Math.cos(simSettings.RampAngle)) : y - lineLength
+    let points = [ x, y, endPointX, endPointY]
+    return points
   }
 
   render() {
     const { appearance, hasClicked, carPos, fps, carVelocity, finalDistance, onRamp, simSettings } = this.state
-    let height = 20
-    let width = 20
+    let height = 15
+    let width = 45
+    let lineLength = 22
     let center = carPos
     let fpsText = fps ? 'fps: ' + fps : ""
     let velText = 'vel: ' + Math.round(carVelocity)
@@ -298,6 +267,8 @@ class Car extends React.Component{
     let angle = onRamp ? simSettings.RampAngle * 180 / Math.PI : 0
     let rampDistanceText = carPos.rampDistance > 0 ? "Car ramp distance: " + carPos.rampDistance.toFixed(2) : ""
 
+    let normalLinePoints = this.generateNormalLine(center.x, center.y, lineLength)
+
     return (
       <Group>
         <Text x={10} y={20} fontFamily={'Arial'} fontSize={12} text={fpsText} />
@@ -305,10 +276,11 @@ class Car extends React.Component{
         <Text x={10} y={50} fontFamily={'Arial'} fontSize={12} text={finalDistanceText} />
         <Text x={10} y={65} fontFamily={'Arial'} fontSize={12} text={rampDistanceText} />
         <Circle x={center.x} y={center.y}
-          width={width} height={height}
-          fill={appearance.fillColor} stroke={appearance.stroke} strokeWidth={appearance.strokeWidth}
-          onMouseDown={this.onDragStart} />
-        <VehicleImage x={center.x} y={center.y} width={60} height={20} angle={angle} onRamp={onRamp} />
+          radius={width/10}
+           fill={appearance.fillColor}
+        />
+        <Line points={normalLinePoints} stroke={'red'} strokeWidth={2} />
+        <VehicleImage x={center.x} y={center.y} width={width} height={height} angle={angle} onRamp={onRamp} setPositionInWorld={this.setPositionInWorld} />
       </Group>
     )
   }
