@@ -3,6 +3,7 @@ function calculateRampAngle(simHeight, topY, groundHeight, rampStartX, rampEndX)
   let rampAngle = Math.atan(rampTop / (rampEndX - rampStartX))
   return rampAngle
 }
+
 function calculateAcceleratedPosition(originalPosition, initialVelocity, elapsedTime, acceleration, scale) {
   return (
     originalPosition + (initialVelocity * elapsedTime) + (0.5 * acceleration * elapsedTime * elapsedTime)
@@ -33,6 +34,7 @@ function calculateGroundAcceleration(simConstants) {
   return simConstants.gravity * simConstants.groundFriction
 }
 
+// Vertical calculations are a little inverted since 0 for y is top of screen
 function calculateDistanceUpRampInWorldUnits(simSettings, xPos, yPos) {
   if (xPos > simSettings.RampEndX) return 0
   else {

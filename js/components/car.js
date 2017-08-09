@@ -16,7 +16,6 @@ import ReactAnimationFrame from 'react-animation-frame'
 import CodapHandler from './codap-handler'
 
 const DEFAULT_APPEARANCE = {
-  scale: 20,
   fillColor: 'red',
   stroke: 'red',
   strokeWidth: 1
@@ -219,6 +218,7 @@ class Car extends React.Component{
       }
     }
   }
+
   setPositionInWorld(carX, velocity) {
     const { simSettings } = this.state
 
@@ -241,9 +241,11 @@ class Car extends React.Component{
     let y = 0
 
     if (carX > simSettings.RampEndX) {
+      // on ground
       y = simSettings.SimHeight - simSettings.GroundHeight
     }
     else if (carX <= simSettings.RampStartX) {
+      // top of incline
       y = simSettings.RampTopY
     }
     else {
@@ -261,6 +263,7 @@ class Car extends React.Component{
     return pos <= min ? min : pos >= max ? max : pos
   }
 
+  // For drawing the normal to the calculation point
   generateNormalLine(x, y, lineLength) {
     const { simSettings, onRamp } = this.state
     let endPointX = onRamp ? x + (lineLength * Math.sin(simSettings.RampAngle)) : x
@@ -290,10 +293,7 @@ class Car extends React.Component{
         <Text x={10} y={35} fontFamily={'Arial'} fontSize={12} text={velText} />
         <Text x={10} y={50} fontFamily={'Arial'} fontSize={12} text={finalDistanceText} />
         <Text x={10} y={65} fontFamily={'Arial'} fontSize={12} text={rampDistanceText} />
-        <Circle x={center.x} y={center.y}
-          radius={width/10}
-           fill={appearance.fillColor}
-        />
+        <Circle x={center.x} y={center.y} radius={width/10} fill={appearance.fillColor} />
         <Line points={normalLinePoints} stroke={'red'} strokeWidth={2} />
         <VehicleImage x={center.x} y={center.y} width={width} height={height} angle={angle} onRamp={onRamp} setPositionInWorld={this.setPositionInWorld} />
       </Group>
@@ -301,4 +301,4 @@ class Car extends React.Component{
   }
 }
 // lock the refresh to a max of 60fps
-module.exports = ReactAnimationFrame(Car, 10)
+module.exports = ReactAnimationFrame(Car, MINFRAMEINTERVAL)

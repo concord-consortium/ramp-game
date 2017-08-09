@@ -4,7 +4,6 @@ import { Image } from 'react-konva';
 // to adjust where the center point of the image is, lower numbers place center near the front of the car
 const centerAdjust = 1.8
 
-// try drag& drop rectangle
 export default class VehicleImage extends React.Component {
   constructor(props) {
     super(props)
@@ -78,6 +77,7 @@ export default class VehicleImage extends React.Component {
     bottomLeftPos.x = x - (width/centerAdjust * Math.cos(theta))
     bottomLeftPos.y = y - (width/centerAdjust * Math.sin(theta))
 
+    // top left corner is a distance (height) along a normal to the incline
     topLeftPos.x = bottomLeftPos.x + (height * Math.sin(theta))
     topLeftPos.y = bottomLeftPos.y - (height * Math.cos(theta))
 

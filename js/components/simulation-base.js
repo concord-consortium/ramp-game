@@ -98,7 +98,9 @@ export default class SimulationBase extends React.Component {
     this.setState({ isRunning: running })
   }
   resetSimulation() {
-    this.updateDimensions(this.props)
+    this.setSimulationRunning(false)
+    // TODO: need to pass a notification to the car to reposition the car back at the last start point
+    // Knowledge of car position is all handled in there.
   }
 
   render() {

@@ -24,7 +24,6 @@ export default class InclineControl extends React.Component{
       color: 'darkgrey',
       appearance: HIDDEN_APPEARANCE
     }
-    //this.onClick = this.onClick.bind(this)
     this.onDrag = this.onDrag.bind(this)
     this.onDragStart = this.onDragStart.bind(this)
     this.onDragEnd = this.onDragEnd.bind(this)
@@ -42,7 +41,6 @@ export default class InclineControl extends React.Component{
   onDrag(e) {
     const { isDragging } = this.state
     if (isDragging) {
-      //console.log(e);
       this.updatePositions(e.layerX, e.layerY)
     }
   }
@@ -65,7 +63,6 @@ export default class InclineControl extends React.Component{
   }
 
   onDragStart(e) {
-    //console.log("drag start", e.evt.layerY)
     this.setState({
       isDragging: true
     })
