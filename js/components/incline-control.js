@@ -1,100 +1,72 @@
-import React from 'react'
+import React, { PureComponent } from 'react'
 import { Circle } from 'react-konva'
-import { calculateRampAngle } from '../utils'
 
-const DEFAULT_APPEARANCE = {
-  scale: 20,
-  fillColor: 'white',
-  stroke: 'black',
-  strokeWidth: 2
-}
-const HIDDEN_APPEARANCE = {
-  scale: 10,
-  fillColor: 'white',
-  stroke: 'black',
-  strokeWidth: 1
-}
-
-export default class InclineControl extends React.Component {
+export default class InclineControl extends PureComponent {
   constructor (props) {
     super(props)
     this.state = {
-      simSettings: this.props.simSettings,
-      isDragging: false,
-      color: 'darkgrey',
-      appearance: HIDDEN_APPEARANCE
+      active: false
     }
+    this.onHover = this.onHover.bind(this)
+    this.onHoverEnd = this.onHoverEnd.bind(this)
     this.onDrag = this.onDrag.bind(this)
     this.onDragStart = this.onDragStart.bind(this)
     this.onDragEnd = this.onDragEnd.bind(this)
-    this.onHover = this.onHover.bind(this)
-    this.clampPosition = this.clampPosition.bind(this)
-    this.updatePositions = this.updatePositions.bind(this)
-  }
-  componentWillReceiveProps (nextProps) {
-    this.setState({simSettings: nextProps.simSettings})
-  }
-  onHover (e) {
-    this.setState({ appearance: DEFAULT_APPEARANCE })
   }
 
-  onDrag (e) {
-    const { isDragging } = this.state
-    if (isDragging) {
-      this.updatePositions(e.layerX, e.layerY)
+  onHover () {
+    const { draggable } = this.props
+    if (draggable) {
+      this.setState({active: true})
+      document.body.style.cursor = 'pointer'
     }
   }
 
-  updatePositions (posX, posY) {
-    const { simSettings } = this.state
-    let newPositions = simSettings
-    newPositions.RampTopY = this.clampPosition(posY, 0, simSettings.RampBottomY)
-    newPositions.RampStartX = this.clampPosition(posX, 0, simSettings.RampEndX)
-    newPositions.RampAngle = calculateRampAngle(simSettings.SimHeight, newPositions.RampTopY, newPositions.GroundHeight, simSettings.RampStartX, simSettings.RampEndX)
-
-    this.setState({
-      simSettings: newPositions
-    })
-    this.props.onInclineChanged(newPositions)
+  onHoverEnd () {
+    const { draggable } = this.props
+    if (draggable) {
+      document.body.style.cursor = 'auto'
+      this.setState({active: false})
+    }
   }
 
-  clampPosition (pos, min, max) {
-    return pos <= min ? min : pos >= max ? max : pos
+  onDragStart () {
+    const { draggable } = this.props
+    if (draggable) {
+      this.setState({active: true})
+      document.addEventListener('mousemove', this.onDrag)
+      document.addEventListener('mouseup', this.onDragEnd)
+      document.addEventListener('touchmove', this.onDrag)
+      document.addEventListener('touchend', this.onDragEnd)
+    }
   }
 
-  onDragStart (e) {
-    this.setState({
-      isDragging: true
-    })
-
-    document.addEventListener('mousemove', this.onDrag)
-    document.addEventListener('mouseup', this.onDragEnd)
-    document.addEventListener('touchmove', this.onDrag)
-    document.addEventListener('touchend', this.onDragEnd)
-
-    event.preventDefault()
+  onDragEnd () {
+    const { draggable } = this.props
+    if (draggable) {
+      this.setState({active: false})
+      document.removeEventListener('mousemove', this.onDrag)
+      document.removeEventListener('mouseup', this.onDragEnd)
+      document.removeEventListener('touchmove', this.onDrag)
+      document.removeEventListener('touchend', this.onDragEnd)
+    }
   }
 
-  onDragEnd (e) {
-    this.setState({
-      isDragging: false,
-      appearance: HIDDEN_APPEARANCE
-    })
-    document.removeEventListener('mousemove', this.onDrag)
-    document.removeEventListener('mouseup', this.onDragEnd)
-    document.removeEventListener('touchmove', this.onDrag)
-    document.removeEventListener('touchend', this.onDragEnd)
-
-    event.preventDefault()
-    this.updatePositions(e.layerX, e.layerY)
+  onDrag (e) {
+    const { onDrag } = this.props
+    const x = e.touches ? e.touches[0].pageX : e.layerX
+    const y = e.touches ? e.touches[0].pageY : e.layerY
+    onDrag(x, y)
   }
 
   render () {
-    const { appearance, simSettings } = this.state
-    let radius = appearance.scale / 2
-    let center = { x: simSettings.RampStartX, y: simSettings.RampTopY }
+    const {x, y} = this.props
+    const {active} = this.state
+    const radius = active ? 15 : 10
+    const fill = active ? '#ddd' : '#fff'
     return (
-      <Circle x={center.x} y={center.y} radius={radius} fill={appearance.fillColor} stroke={appearance.stroke} strokeWidth={appearance.strokeWidth} onMouseDown={this.onDragStart} onMouseOver={this.onHover} />
+      <Circle x={x} y={y} radius={radius} fill={fill} stroke={'black'} strokeWidth={1} onMouseOver={this.onHover}
+        onMouseOut={this.onHoverEnd} onMouseDown={this.onDragStart} onTouchStart={this.onDragStart} />
     )
   }
 }

@@ -1,7 +1,9 @@
 # Inquiry Space 2
+
 This repository reproduces the Inquiry Space project, previously designed in NetLogo, in Javascript.
 
 ## Testing
+
 Latest published builds for the IS2 demo are deployed to https://concord-consortium.github.io/inquiry-space-2/
 
 ## Development
@@ -26,4 +28,5 @@ and open http://localhost:8080/ or http://localhost:8080/webpack-dev-server/ (au
 ## Deployment
 
 #### Github Pages:
+
 Run `./build-and-deploy.sh`

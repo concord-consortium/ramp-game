@@ -2,59 +2,57 @@
 
 const appName = 'InquirySpace2'
 const dataSetName = 'CarRampSimulation'
-const dataSetTemplate =
-  {
-    name: '{name}',
-    collections: [
-      {
-        name: 'RunSummary',
-        title: 'Run Summary',
-        labels: {
-          pluralCase: 'Summary',
-          setOfCasesWithArticle: 'a run'
-        },
-        attrs: [
-          { name: 'RunNumber', type: 'numeric', precision: 0 },
-          { name: 'RampAngle', type: 'numeric', precision: 2 },
-          { name: 'StartHeightAboveGround', type: 'numeric', precision: 2 },
-          { name: 'StartDistanceUpRamp', type: 'numeric', precision: 2 },
-          { name: 'Mass', unit: 'Kg', type: 'numeric', precision: 2 },
-          { name: 'Gravity', unit: 'm/s/s', type: 'numeric', precision: 2 },
-          { name: 'RampFriction', type: 'numeric', precision: 2 },
-          { name: 'GroundFriction', type: 'numeric', precision: 2 },
-          { name: 'TimeToGround', type: 'numeric', precision: 2 },
-          { name: 'TotalTime', type: 'numeric', precision: 2 },
-          { name: 'VelocityAtBottomOfRamp', type: 'numeric', precision: 2 },
-          { name: 'FinalDistance', type: 'numeric', precision: 2 }
-        ]
+const dataSetTemplate = {
+  name: '{name}',
+  collections: [
+    {
+      name: 'RunSummary',
+      title: 'Run Summary',
+      labels: {
+        pluralCase: 'Summary',
+        setOfCasesWithArticle: 'a run'
       },
-      {
-        name: 'RunDetails',
-        title: 'Run Details',
-        parent: 'RunSummary',
-        labels: {
-          pluralCase: 'Details',
-          setOfCasesWithArticle: 'a run'
-        },
-        attrs: [
-          { name: 'Timestamp', unit: 's', type: 'numeric', precision: 2 },
-          { name: 'Velocity', unit: 'm/s', type: 'numeric', precision: 2 },
-          { name: 'x', unit: 'm', type: 'numeric', precision: 2 },
-          { name: 'y', unit: 'm', type: 'numeric', precision: 2 }
-        ]
-      }
-    ]
-  }
+      attrs: [
+        {name: 'RunNumber', type: 'numeric', precision: 0},
+        {name: 'RampAngle', type: 'numeric', precision: 2},
+        {name: 'StartHeightAboveGround', type: 'numeric', precision: 2},
+        {name: 'StartDistanceUpRamp', type: 'numeric', precision: 2},
+        {name: 'Mass', unit: 'Kg', type: 'numeric', precision: 2},
+        {name: 'Gravity', unit: 'm/s/s', type: 'numeric', precision: 2},
+        {name: 'RampFriction', type: 'numeric', precision: 2},
+        {name: 'GroundFriction', type: 'numeric', precision: 2},
+        {name: 'TimeToGround', type: 'numeric', precision: 2},
+        {name: 'TotalTime', type: 'numeric', precision: 2},
+        {name: 'VelocityAtBottomOfRamp', type: 'numeric', precision: 2},
+        {name: 'FinalDistance', type: 'numeric', precision: 2}
+      ]
+    },
+    {
+      name: 'RunDetails',
+      title: 'Run Details',
+      parent: 'RunSummary',
+      labels: {
+        pluralCase: 'Details',
+        setOfCasesWithArticle: 'a run'
+      },
+      attrs: [
+        {name: 'Timestamp', unit: 's', type: 'numeric', precision: 2},
+        {name: 'Velocity', unit: 'm/s', type: 'numeric', precision: 2},
+        {name: 'x', unit: 'm', type: 'numeric', precision: 2},
+        {name: 'y', unit: 'm', type: 'numeric', precision: 2}
+      ]
+    }
+  ]
+}
 
 const config = {
   name: dataSetName,
   title: appName,
-  dimensions: { width: 650, height: 350 },
+  dimensions: {width: 650, height: 350},
   version: '0.1'
 }
-var myState
 
-module.exports = {
+export default {
 
   setup: function () {
     codapInterface.init(config).then(function (iResult) {

@@ -1,127 +1,228 @@
-import React from 'react'
+import React, { PureComponent } from 'react'
 import Ramp from './ramp'
-import StaticElements from './simulation-static-elements'
+import Ground from './ground'
 import InclineControl from './incline-control'
-import Car from './car'
-import SimulationEditor from './simulation-editor'
-import { calculateRampAngle } from '../utils'
-
-import '../../css/app.less'
-import '../../css/simulation-editor.less'
+import c from '../sim-constants'
+import VehicleImage from './vehicle-image'
+import { rampAngle, rampLength, carX, carY, carRampDist, simulationTime } from '../physics'
 
 import { Layer, Stage } from 'react-konva'
 
-// Meters of runoff at the end of the ramp
-const RUNOFF_LENGTH_SCALE = 5
-const RAMP_LENGTH_SCALE = 1
-const TOP_PADDING = 100 // pixels
-const SIM_PADDING = 10 // pixels
+// MKS units are used everywhere: meters, kilograms and seconds.
+const MIN_X = -1.55
+const MIN_Y = -0.5
+const MAX_X = 5.05
+const MAX_Y = 3
 
-const DEFAULT_SIMULATION = {
-  gravity: 9.81,
-  mass: 0.05, // going to assume a car weighing 50 grams
-  rampFriction: 0.01,
-  groundFriction: -0.5
+function getScaleX (pixelMeterRatio) {
+  return function scaleX (worldX) {
+    return (worldX - MIN_X) * pixelMeterRatio
+  }
 }
 
-export default class SimulationBase extends React.Component {
+function getScaleY (pixelMeterRatio) {
+  return function scaleY (worldY) {
+    return (MAX_Y - worldY) * pixelMeterRatio
+  }
+}
+
+export default class SimulationBase extends PureComponent {
   constructor (props) {
     super(props)
     this.state = {
-      simConstants: DEFAULT_SIMULATION,
-      isRunning: false
+      isRunning: false,
+      gravity: 9.81,
+      mass: 0.05,
+      rampFriction: 0.3,
+      groundFriction: 0.3,
+      rampTopX: -1,
+      rampTopY: 1,
+      initialCarX: -0.5,
+      elapsedTime: 0,
+      scaleX: getScaleX(this.pixelMeterRatio),
+      scaleY: getScaleY(this.pixelMeterRatio)
     }
-    this.setInclinePos = this.setInclinePos.bind(this)
-    this.setConstants = this.setConstants.bind(this)
-    this.setSimulationRunning = this.setSimulationRunning.bind(this)
+
     this.toggleSimulationRunning = this.toggleSimulationRunning.bind(this)
-    this.updateDimensions = this.updateDimensions.bind(this)
     this.resetSimulation = this.resetSimulation.bind(this)
+    this.handleInclineChange = this.handleInclineChange.bind(this)
+    this.handleCarPosChange = this.handleCarPosChange.bind(this)
+    this.rafHandler = this.rafHandler.bind(this)
   }
 
-  componentWillMount () {
-    this.updateDimensions(this.props)
-  }
-
-  componentWillReceiveProps (nextProps) {
-    this.updateDimensions(nextProps)
-  }
-
-  updateDimensions (dimensions) {
-    let width = dimensions.width
-    width -= SIM_PADDING
-
-    let rampEndX = width / 4
-    let scale = (width - rampEndX) / RUNOFF_LENGTH_SCALE // pixels per meter
-
-    // height has to go up to 1m above ground, so may need to adjust for this
-
-    let height = dimensions.height
-    height -= SIM_PADDING
-    let groundheight = dimensions.groundheight ? dimensions.groundheight : 30
-
-    let newSettings = {
-      RampTopY: TOP_PADDING,
-      RampBottomY: height - groundheight,
-      RampStartX: 50,
-      RampEndX: rampEndX,
-      CarInitialX: 0, // calculate! width / 8,
-      SimWidth: width,
-      SimHeight: height,
-      GroundHeight: groundheight,
-      Scale: scale
+  componentDidUpdate (prevProps, prevState) {
+    const { isRunning } = this.state
+    const { width, height } = this.props
+    if (isRunning && !prevState.isRunning) {
+      if (isNaN(simulationTime(this.state))) {
+        window.alert("Ramp friction is too big, car won't start moving")
+        this.setState({
+          isRunning: false
+        })
+      } else {
+        window.requestAnimationFrame(this.rafHandler)
+      }
     }
-
-    newSettings.RampTopY = TOP_PADDING + (RAMP_LENGTH_SCALE + (RAMP_LENGTH_SCALE * 0.25)) * Math.sin(60)
-    newSettings.RampAngle = calculateRampAngle(newSettings.SimHeight, newSettings.RampTopY, newSettings.GroundHeight, newSettings.RampStartX, newSettings.RampEndX)
-    newSettings.CarInitialX = RAMP_LENGTH_SCALE * Math.cos(newSettings.RampAngle)
-
-    this.setState({ simSettings: newSettings })
+    if (width !== prevProps.width || height !== prevProps.height) {
+      this.setState({
+        scaleX: getScaleX(this.pixelMeterRatio),
+        scaleY: getScaleY(this.pixelMeterRatio)
+      })
+    }
   }
 
-  setInclinePos (p) {
-    this.setState({ simSettings: p })
+  get draggingActive () {
+    const { elapsedTime } = this.state
+    return elapsedTime === 0
   }
 
-  setConstants (constantProp, value) {
-    let newConstants = this.state.simConstants
-    newConstants[constantProp] = value
-    this.setState({ newConstants })
+  get simWidth () {
+    return this.props.width
+  }
+
+  get simHeight () {
+    return this.props.height
+  }
+
+  get pixelMeterRatio () {
+    const xScale = this.simWidth / (MAX_X - MIN_X)
+    const yScale = this.simHeight / (MAX_Y - MIN_Y)
+    return Math.min(xScale, yScale)
+  }
+
+  get rampAngle () {
+    const { rampTopX, rampTopY } = this.state
+    return rampAngle(rampTopX, rampTopY)
+  }
+
+  get carAngle () {
+    const { rampTopX, rampTopY } = this.state
+    if (this.carX < c.rampEndX) {
+      return rampAngle(rampTopX, rampTopY)
+    }
+    return 0
+  }
+
+  get carX () {
+    return carX(this.state)
+  }
+
+  get carY () {
+    const { rampTopX, rampTopY } = this.state
+    return carY(this.carX, rampTopX, rampTopY)
+  }
+
+  get carRampDist () {
+    const { initialCarX, rampTopX, rampTopY } = this.state
+    return carRampDist(initialCarX, rampTopX, rampTopY)
+  }
+
+  invScaleX (screenX) {
+    return screenX / this.pixelMeterRatio + MIN_X
+  }
+
+  invScaleY (screenY) {
+    return MAX_Y - screenY / this.pixelMeterRatio
   }
 
   toggleSimulationRunning () {
     const { isRunning } = this.state
-    this.setSimulationRunning(!isRunning)
-  }
-
-  setSimulationRunning (running) {
-    this.setState({ isRunning: running })
+    this.setState({ isRunning: !isRunning })
   }
 
   resetSimulation () {
-    this.setSimulationRunning(false)
-    // TODO: need to pass a notification to the car to reposition the car back at the last start point
-    // Knowledge of car position is all handled in there.
+    this.setState({ elapsedTime: 0, isRunning: false })
+  }
+
+  rafHandler (timestamp) {
+    const { elapsedTime, isRunning } = this.state
+    if (isRunning) {
+      window.requestAnimationFrame(this.rafHandler)
+    } else {
+      this._prevTime = null
+      return
+    }
+    if (!this._prevTime) {
+      this._prevTime = timestamp
+      return
+    }
+    const dt = timestamp - this._prevTime
+    this._prevTime = timestamp
+    const simTime = simulationTime(this.state)
+    const newElapsedTime = Math.min(simTime, elapsedTime + dt / 1000)
+    this.setState({
+      elapsedTime: newElapsedTime,
+      isRunning: newElapsedTime < simTime
+    })
+  }
+
+  handleInclineChange (newXScreen, newYScreen) {
+    if (!this.draggingActive) {
+      return
+    }
+    let newXWorld = this.invScaleX(newXScreen)
+    let newYWorld = this.invScaleY(newYScreen)
+    if (newXWorld < c.rampStartX) {
+      newXWorld = c.rampStartX
+    } else if (newXWorld > c.rampEndX - 1e-4) {
+      // 1e-4 so angle is never 90 deg and we don't need to handle it in a special way.
+      newXWorld = c.rampEndX - 1e-4
+    }
+    if (newYWorld < c.rampBottomY + 0.2) {
+      newYWorld = c.rampBottomY + 0.2
+    } else if (newYWorld > MAX_Y - 0.2) {
+      newYWorld = MAX_Y - 0.2
+    }
+
+    const newCarRampDist = Math.min(this.carRampDist, rampLength(newXWorld, newYWorld))
+    this.setState({
+      rampTopX: newXWorld,
+      rampTopY: newYWorld,
+      initialCarX: c.rampEndX - newCarRampDist * Math.cos(rampAngle(newXWorld, newYWorld)),
+    })
+  }
+
+  handleCarPosChange (newXScreen, newYScreen) {
+    const { rampTopX, rampTopY } = this.state
+    if (!this.draggingActive) {
+      return
+    }
+    let newXWorld = this.invScaleX(newXScreen)
+    let newYWorld = this.invScaleY(newYScreen)
+    const rampAngle = this.rampAngle
+    if (rampAngle < Math.PI * 0.33) {
+      // control via X
+      if (newXWorld < rampTopX) {
+        newXWorld = rampTopX
+      } else if (newXWorld > c.rampEndX) {
+        newXWorld = c.rampEndX
+      }
+    } else {
+      // control via Y
+      if (newYWorld < c.rampBottomY) {
+        newYWorld = c.rampBottomY
+      } else if (newYWorld > rampTopY) {
+        newYWorld = rampTopY
+      }
+      newXWorld = c.rampEndX - (newYWorld - c.rampBottomY) / Math.tan(rampAngle)
+    }
+    this.setState({
+      initialCarX: newXWorld
+    })
   }
 
   render () {
-    const { simSettings, simConstants, isRunning } = this.state
-    let runIcon = isRunning ? <i className='material-icons'>stop</i> : <i className='material-icons'>play_arrow</i>
-    let runSimulationClass = isRunning ? 'run-simulation running' : 'run-simulation stopped'
-
+    const { rampTopX, rampTopY, scaleX, scaleY } = this.state
     return (
       <div className='ramp-simulation'>
-        <div className='simulationControls'>
-          <div className={runSimulationClass} onClick={this.toggleSimulationRunning}>{runIcon}</div>
-          <div className={runSimulationClass} onClick={this.resetSimulation}><i className='material-icons'>replay</i></div>
-        </div>
-        <SimulationEditor {...this.state} onChange={this.setConstants} />
-        <Stage width={simSettings.SimWidth} height={simSettings.SimHeight}>
+        <Stage width={this.simWidth} height={this.simHeight}>
           <Layer>
-            <Ramp simSettings={simSettings} />
-            <InclineControl simSettings={simSettings} onInclineChanged={this.setInclinePos} />
-            <StaticElements simSettings={simSettings} />
-            <Car simSettings={simSettings} simConstants={simConstants} isRunning={isRunning} onSimulationRunningChange={this.setSimulationRunning} />
+            <Ramp sx={scaleX} sy={scaleY} pointX={rampTopX} pointY={rampTopY} />
+            <Ground sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} />
+            <InclineControl x={scaleX(rampTopX)} y={scaleY(rampTopY)}
+              draggable={this.draggingActive} onDrag={this.handleInclineChange} />
+            <VehicleImage sx={scaleX} sy={scaleY} x={this.carX} y={this.carY} angle={this.carAngle}
+              draggable={this.draggingActive} onDrag={this.handleCarPosChange} />
           </Layer>
         </Stage>
       </div>

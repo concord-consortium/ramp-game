@@ -2,23 +2,22 @@ import React from 'react'
 import SimulationBase from './simulation-base'
 import { getURLParam } from '../utils'
 
+import '../../css/app.less'
+
 export default class App extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
       width: getURLParam('w') ? getURLParam('w') : document.body.clientWidth,
-      height: getURLParam('h') ? getURLParam('h') : document.body.clientHeight,
-      dynamicResize: getURLParam('dynamicsize') ? getURLParam('dynamicsize') === 'true' : true
+      height: getURLParam('h') ? getURLParam('h') : document.body.clientHeight
     }
     this.updateDimensions = this.updateDimensions.bind(this)
   }
 
   updateDimensions () {
-    const { width, height, dynamicResize } = this.state
-    if (dynamicResize) {
-      if (width !== document.body.clientWidth || height !== document.body.clientHeight) {
-        this.setState({ width: document.body.clientWidth, height: document.body.clientHeight })
-      }
+    const { width, height } = this.state
+    if (width !== document.body.clientWidth || height !== document.body.clientHeight) {
+      this.setState({ width: document.body.clientWidth, height: document.body.clientHeight })
     }
   }
 
@@ -34,7 +33,7 @@ export default class App extends React.Component {
     const { width, height } = this.state
     return (
       <div className='appContainer' >
-        <SimulationBase width={width} height={height} groundheight={30} />
+        <SimulationBase width={width} height={height} />
       </div>
     )
   }
