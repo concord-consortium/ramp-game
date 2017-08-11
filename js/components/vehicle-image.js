@@ -1,11 +1,11 @@
 import React from 'react'
-import { Image } from 'react-konva';
+import { Image } from 'react-konva'
 
 // to adjust where the center point of the image is, lower numbers place center near the front of the car
 const centerAdjust = 1.8
 
 export default class VehicleImage extends React.Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
     this.state = {
       image: null,
@@ -16,29 +16,29 @@ export default class VehicleImage extends React.Component {
     this.onDragEnd = this.onDragEnd.bind(this)
     this.setPositionInWorld = this.setPositionInWorld.bind(this)
   }
-  componentDidMount() {
-    const image = new window.Image();
-    image.src = './fastcar.png';
+
+  componentDidMount () {
+    const image = new window.Image()
+    image.src = './fastcar.png'
     image.onload = () => {
       this.setState({
         image: image
-      });
+      })
     }
   }
 
-  setPositionInWorld(x) {
+  setPositionInWorld (x) {
     this.props.setPositionInWorld(x, 0)
   }
 
-  onDrag(e) {
-    const { isDragging, simSettings } = this.state
+  onDrag (e) {
+    const { isDragging } = this.state
     if (isDragging) {
       this.setPositionInWorld(e.layerX, 0)
-
     }
   }
 
-  onDragStart(e) {
+  onDragStart (e) {
     this.setState({
       isDragging: true,
       startTime: 0
@@ -49,10 +49,10 @@ export default class VehicleImage extends React.Component {
     document.addEventListener('touchmove', this.onDrag)
     document.addEventListener('touchend', this.onDragEnd)
 
-    event.preventDefault();
+    event.preventDefault()
   }
 
-  onDragEnd(e) {
+  onDragEnd (e) {
     this.setState({
       isDragging: false
     })
@@ -61,10 +61,10 @@ export default class VehicleImage extends React.Component {
     document.removeEventListener('touchmove', this.onDrag)
     document.removeEventListener('touchend', this.onDragEnd)
 
-    event.preventDefault();
+    event.preventDefault()
   }
 
-  getCornerPosition(x, y, width, height, theta) {
+  getCornerPosition (x, y, width, height, theta) {
     // While the car is on the ramp calculate displacement for top left corner
     // Top left corner is the center of rotation for the image
     // we want the bottom right corner point on the baseline of the image to match the data point
@@ -74,8 +74,8 @@ export default class VehicleImage extends React.Component {
 
     // to position the image so that the nose of the car is at the calculation point,
     // change this to x - (width * Math.cos(theta)) etc.
-    bottomLeftPos.x = x - (width/centerAdjust * Math.cos(theta))
-    bottomLeftPos.y = y - (width/centerAdjust * Math.sin(theta))
+    bottomLeftPos.x = x - (width / centerAdjust * Math.cos(theta))
+    bottomLeftPos.y = y - (width / centerAdjust * Math.sin(theta))
 
     // top left corner is a distance (height) along a normal to the incline
     topLeftPos.x = bottomLeftPos.x + (height * Math.sin(theta))
@@ -84,9 +84,9 @@ export default class VehicleImage extends React.Component {
     return topLeftPos
   }
 
-  render() {
+  render () {
     const { x, y, width, height, angle, onRamp } = this.props
-    let w = width*0.75
+    let w = width * 0.75
     let h = height
 
     let topLeftPos = {x: 0, y: 0}
@@ -96,7 +96,7 @@ export default class VehicleImage extends React.Component {
       topLeftPos = this.getCornerPosition(x, y, w, h, angle * Math.PI / 180)
     } else {
       // when car reaches the ground snap to midpoint of base of image
-      topLeftPos.x = x - w/centerAdjust
+      topLeftPos.x = x - w / centerAdjust
       topLeftPos.y = y - h
     }
     return (
@@ -106,6 +106,6 @@ export default class VehicleImage extends React.Component {
         rotation={imageAngle}
         onMouseDown={this.onDragStart}
       />
-    );
+    )
   }
 }

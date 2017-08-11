@@ -1,29 +1,31 @@
-const appName = "InquirySpace2"
-const dataSetName = "CarRampSimulation"
+/* global codapInterface */
+
+const appName = 'InquirySpace2'
+const dataSetName = 'CarRampSimulation'
 const dataSetTemplate =
   {
-    name: "{name}",
+    name: '{name}',
     collections: [
       {
         name: 'RunSummary',
         title: 'Run Summary',
         labels: {
-          pluralCase: "Summary",
-          setOfCasesWithArticle: "a run"
+          pluralCase: 'Summary',
+          setOfCasesWithArticle: 'a run'
         },
         attrs: [
-          { name: "RunNumber", type: 'numeric', precision: 0},
-          { name: "RampAngle", type: 'numeric', precision: 2 },
-          { name: "StartHeightAboveGround", type: 'numeric', precision: 2 },
-          { name: "StartDistanceUpRamp", type: 'numeric', precision: 2 },
-          { name: "Mass", unit: "Kg", type: 'numeric', precision: 2 },
-          { name: "Gravity", unit: "m/s/s", type: 'numeric', precision: 2 },
-          { name: "RampFriction", type: 'numeric', precision: 2 },
-          { name: "GroundFriction", type: 'numeric', precision: 2 },
-          { name: "TimeToGround", type: 'numeric', precision: 2 },
-          { name: "TotalTime", type: 'numeric', precision: 2 },
-          { name: "VelocityAtBottomOfRamp", type: 'numeric', precision: 2},
-          { name: "FinalDistance", type: 'numeric', precision: 2}
+          { name: 'RunNumber', type: 'numeric', precision: 0 },
+          { name: 'RampAngle', type: 'numeric', precision: 2 },
+          { name: 'StartHeightAboveGround', type: 'numeric', precision: 2 },
+          { name: 'StartDistanceUpRamp', type: 'numeric', precision: 2 },
+          { name: 'Mass', unit: 'Kg', type: 'numeric', precision: 2 },
+          { name: 'Gravity', unit: 'm/s/s', type: 'numeric', precision: 2 },
+          { name: 'RampFriction', type: 'numeric', precision: 2 },
+          { name: 'GroundFriction', type: 'numeric', precision: 2 },
+          { name: 'TimeToGround', type: 'numeric', precision: 2 },
+          { name: 'TotalTime', type: 'numeric', precision: 2 },
+          { name: 'VelocityAtBottomOfRamp', type: 'numeric', precision: 2 },
+          { name: 'FinalDistance', type: 'numeric', precision: 2 }
         ]
       },
       {
@@ -31,57 +33,57 @@ const dataSetTemplate =
         title: 'Run Details',
         parent: 'RunSummary',
         labels: {
-          pluralCase: "Details",
-          setOfCasesWithArticle: "a run"
+          pluralCase: 'Details',
+          setOfCasesWithArticle: 'a run'
         },
         attrs: [
-          { name: "Timestamp", unit:"s", type: 'numeric', precision: 2 },
-          { name: "Velocity", unit: "m/s", type: 'numeric', precision: 2 },
-          { name: "x", unit: "m", type: 'numeric', precision: 2 },
-          { name: "y", unit: "m", type: 'numeric', precision: 2 }
+          { name: 'Timestamp', unit: 's', type: 'numeric', precision: 2 },
+          { name: 'Velocity', unit: 'm/s', type: 'numeric', precision: 2 },
+          { name: 'x', unit: 'm', type: 'numeric', precision: 2 },
+          { name: 'y', unit: 'm', type: 'numeric', precision: 2 }
         ]
       }
     ]
   }
 
 const config = {
-    name: dataSetName,
-    title: appName,
-    dimensions: { width: 650, height: 350 },
-    version: '0.1'
+  name: dataSetName,
+  title: appName,
+  dimensions: { width: 650, height: 350 },
+  version: '0.1'
 }
 var myState
 
- module.exports = {
+module.exports = {
 
-   setup: function () {
+  setup: function () {
     codapInterface.init(config).then(function (iResult) {
       // get interactive state so we can save the sample set index.
-      myState = codapInterface.getInteractiveState();
+      myState = codapInterface.getInteractiveState()
       // Determine if CODAP already has the Data Context we need.
-      return requestDataContext(dataSetName);
+      return requestDataContext(dataSetName)
     }).then(function (iResult) {
       // if we did not find a data set, make one
       if (iResult && !iResult.success) {
         // If not not found, create it.
-        return requestCreateDataSet(dataSetName, dataSetTemplate);
+        return requestCreateDataSet(dataSetName, dataSetTemplate)
       } else {
         // else we are fine as we are, so return a resolved promise.
-        return Promise.resolve(iResult);
+        return Promise.resolve(iResult)
       }
     }).catch(function (msg) {
       // handle errors
-      console.log(msg);
-    });
+      console.log(msg)
+    })
     let requestDataContext = (name) => {
       return codapInterface.sendRequest({
         action: 'get',
         resource: 'dataContext[' + name + ']'
-      });
+      })
     }
     let requestCreateDataSet = (name, template) => {
-      var dataSetDef = Object.assign({}, template);
-      dataSetDef.name = name;
+      var dataSetDef = Object.assign({}, template)
+      dataSetDef.name = name
       return codapInterface.sendRequest({
         action: 'create',
         resource: 'dataContext',
@@ -111,7 +113,7 @@ var myState
     }
     let runDetails = data.currentRun
     let items = []
-    for (var i = 0; i < runDetails.length; i++){
+    for (var i = 0; i < runDetails.length; i++) {
       let d = Object.assign({}, runSummary)
       d.Timestamp = runDetails[i].Timestamp
       d.x = runDetails[i].x

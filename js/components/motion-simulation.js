@@ -1,40 +1,33 @@
 import React, { PureComponent } from 'react'
 import Matter from 'matter-js'
 
- var Engine = Matter.Engine,
-        Render = Matter.Render,
-        Runner = Matter.Runner,
-        Composites = Matter.Composites,
-        Common = Matter.Common,
-        MouseConstraint = Matter.MouseConstraint,
-        Mouse = Matter.Mouse,
-        World = Matter.World,
-        Vertices = Matter.Vertices,
-		    Body = Matter.Body,
-        Vector = Matter.Vector,
-        Events = Matter.Events,
-        Bodies = Matter.Bodies;
-
+const Engine = Matter.Engine
+const Render = Matter.Render
+const Runner = Matter.Runner
+const MouseConstraint = Matter.MouseConstraint
+const Mouse = Matter.Mouse
+const World = Matter.World
+const Body = Matter.Body
+const Events = Matter.Events
+const Bodies = Matter.Bodies
 
 export default class MotionJSSimulation extends PureComponent {
-  constructor(props) {
-    super(props)
-  }
-  componentDidMount() {
+  componentDidMount () {
     this.physicsInit()
   }
-  physicsInit() {
-    const rotationAngle = -Math.PI / 3.5,
-    worldWidth = 800,
-    worldHeight = 600,
-    groundHeight = 40
+
+  physicsInit () {
+    const rotationAngle = -Math.PI / 3.5
+    const worldWidth = 800
+    const worldHeight = 600
+    const groundHeight = 40
 
     // bodies are positioned via their center of mass. This is easy to calculate for a rectangle.
     const ground = Bodies.rectangle(
-      worldWidth/2 ,worldHeight - (groundHeight/2), worldWidth, groundHeight,
+      worldWidth / 2, worldHeight - (groundHeight / 2), worldWidth, groundHeight,
       {
         isStatic: true,
-        id: "ground",
+        id: 'ground',
         restitution: 0,
         render: {
           opacity: 1,
@@ -51,11 +44,11 @@ export default class MotionJSSimulation extends PureComponent {
     )
 
     const leftWall = Bodies.rectangle(
-     0,0, 20, 1000,
+     0, 0, 20, 1000,
       {
         isStatic: true,
         restitution: 0,
-        id: "wall"
+        id: 'wall'
       }
     )
     Body.rotate(leftWall, rotationAngle)
@@ -69,8 +62,8 @@ export default class MotionJSSimulation extends PureComponent {
         friction: 0.02,
         sleepThreshold: 5,
         restitution: 0,
-        slop:0,
-        label: "car",
+        slop: 0,
+        label: 'car',
         render: {
           sprite: {
             texture: 'fastcar.png',
@@ -84,72 +77,71 @@ export default class MotionJSSimulation extends PureComponent {
 
     Body.rotate(carTest, -rotationAngle)
 
-    let engine = Engine.create(),
-    world = engine.world
+    const engine = Engine.create()
+    const world = engine.world
 
-		engine.world.gravity.x = 0;
-    engine.world.gravity.y = 2;
+    engine.world.gravity.x = 0
+    engine.world.gravity.y = 2
 
     // create renderer
-    let render = Render.create({
-        element: this.refs.canvas,
-        engine: engine,
-        options: {
-            width: worldWidth,
-            height: worldHeight,
-            showVelocity: true,
-            wireframes: false
-        }
-    });
+    const render = Render.create({
+      element: this.refs.canvas,
+      engine: engine,
+      options: {
+        width: worldWidth,
+        height: worldHeight,
+        showVelocity: true,
+        wireframes: false
+      }
+    })
 
-    Render.run(render);
+    Render.run(render)
 
     // create runner
-    let runner = Runner.create();
-    Runner.run(runner, engine);
+    const runner = Runner.create()
+    Runner.run(runner, engine)
 
     World.add(world, [ground, leftWall, leftWallPivot, carTest])
 
-
     // add mouse control
-    let mouse = Mouse.create(render.canvas),
-        mouseConstraint = MouseConstraint.create(engine, {
-            mouse: mouse,
-            constraint: {
-                stiffness: 1,
-                render: {
-                    visible: false
-                }
-            }
-        });
+    const mouse = Mouse.create(render.canvas)
+    const mouseConstraint = MouseConstraint.create(engine, {
+      mouse: mouse,
+      constraint: {
+        stiffness: 1,
+        render: {
+          visible: false
+        }
+      }
+    })
 
-    World.add(world, mouseConstraint);
-    Events.on(carTest, "sleepStart", function (e) {
-      console.log("sleepStart")
+    World.add(world, mouseConstraint)
+    Events.on(carTest, 'sleepStart', function (e) {
+      console.log('sleepStart')
     })
-    Events.on(carTest, "sleepEnd", function (e) {
-      console.log("sleepEnd")
+    Events.on(carTest, 'sleepEnd', function (e) {
+      console.log('sleepEnd')
     })
-    Events.on(engine, "afterUpdate", function (e) {
-      //console.log(e.source);
-      //console.log(circleTest)
-      //console.log(carTest.angularSpeed)
-      //console.log(carTest.velocity.x && carTest.position.x > 200)
+    Events.on(engine, 'afterUpdate', function (e) {
+      // console.log(e.source);
+      // console.log(circleTest)
+      // console.log(carTest.angularSpeed)
+      // console.log(carTest.velocity.x && carTest.position.x > 200)
       if (carTest.velocity.x < 0.01 && carTest.position.x > 200) {
         carTest.position = { x: Math.round(carTest.position.x), y: Math.round(carTest.position.y) }
-        //console.log(carTest.position, 3)
+        // console.log(carTest.position, 3)
       }
     })
   }
 
-  tickData(e) {
-    //console.log(e.position)
+  tickData (e) {
+    // console.log(e.position)
   }
 
-  render() {
+  render () {
     return (
       <div>
-        <div ref="canvas"></div>
+        <div ref='canvas' />
       </div>
     )
   }

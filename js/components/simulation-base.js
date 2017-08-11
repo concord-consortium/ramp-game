@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import React from 'react'
 import Ramp from './ramp'
 import StaticElements from './simulation-static-elements'
 import InclineControl from './incline-control'
@@ -6,10 +6,10 @@ import Car from './car'
 import SimulationEditor from './simulation-editor'
 import { calculateRampAngle } from '../utils'
 
-import '../../css/app.less';
-import '../../css/simulation-editor.less';
+import '../../css/app.less'
+import '../../css/simulation-editor.less'
 
-import { Layer, Rect, Stage, Group } from 'react-konva'
+import { Layer, Stage } from 'react-konva'
 
 // Meters of runoff at the end of the ramp
 const RUNOFF_LENGTH_SCALE = 5
@@ -25,9 +25,8 @@ const DEFAULT_SIMULATION = {
 }
 
 export default class SimulationBase extends React.Component {
-
-  constructor(props) {
-    super(props);
+  constructor (props) {
+    super(props)
     this.state = {
       simConstants: DEFAULT_SIMULATION,
       isRunning: false
@@ -40,19 +39,20 @@ export default class SimulationBase extends React.Component {
     this.resetSimulation = this.resetSimulation.bind(this)
   }
 
-  componentWillMount() {
+  componentWillMount () {
     this.updateDimensions(this.props)
   }
-  componentWillReceiveProps(nextProps) {
+
+  componentWillReceiveProps (nextProps) {
     this.updateDimensions(nextProps)
   }
 
-  updateDimensions(dimensions) {
+  updateDimensions (dimensions) {
     let width = dimensions.width
     width -= SIM_PADDING
 
     let rampEndX = width / 4
-    let scale = (width - rampEndX)/ RUNOFF_LENGTH_SCALE // pixels per meter
+    let scale = (width - rampEndX) / RUNOFF_LENGTH_SCALE // pixels per meter
 
     // height has to go up to 1m above ground, so may need to adjust for this
 
@@ -60,17 +60,16 @@ export default class SimulationBase extends React.Component {
     height -= SIM_PADDING
     let groundheight = dimensions.groundheight ? dimensions.groundheight : 30
 
-
     let newSettings = {
-        RampTopY: TOP_PADDING,
-        RampBottomY: height - groundheight,
-        RampStartX: 50,
-        RampEndX: rampEndX,
-        CarInitialX: 0,// calculate! width / 8,
-        SimWidth: width,
-        SimHeight: height,
-        GroundHeight: groundheight,
-        Scale: scale
+      RampTopY: TOP_PADDING,
+      RampBottomY: height - groundheight,
+      RampStartX: 50,
+      RampEndX: rampEndX,
+      CarInitialX: 0, // calculate! width / 8,
+      SimWidth: width,
+      SimHeight: height,
+      GroundHeight: groundheight,
+      Scale: scale
     }
 
     newSettings.RampTopY = TOP_PADDING + (RAMP_LENGTH_SCALE + (RAMP_LENGTH_SCALE * 0.25)) * Math.sin(60)
@@ -80,39 +79,41 @@ export default class SimulationBase extends React.Component {
     this.setState({ simSettings: newSettings })
   }
 
-  setInclinePos(p) {
+  setInclinePos (p) {
     this.setState({ simSettings: p })
   }
 
-  setConstants(constantProp, value) {
+  setConstants (constantProp, value) {
     let newConstants = this.state.simConstants
     newConstants[constantProp] = value
     this.setState({ newConstants })
   }
 
-  toggleSimulationRunning() {
+  toggleSimulationRunning () {
     const { isRunning } = this.state
     this.setSimulationRunning(!isRunning)
   }
-  setSimulationRunning(running) {
+
+  setSimulationRunning (running) {
     this.setState({ isRunning: running })
   }
-  resetSimulation() {
+
+  resetSimulation () {
     this.setSimulationRunning(false)
     // TODO: need to pass a notification to the car to reposition the car back at the last start point
     // Knowledge of car position is all handled in there.
   }
 
-  render() {
+  render () {
     const { simSettings, simConstants, isRunning } = this.state
-    let runIcon = isRunning ? <i className="material-icons">stop</i> : <i className="material-icons">play_arrow</i>
-    let runSimulationClass = isRunning ? "run-simulation running" : "run-simulation stopped"
+    let runIcon = isRunning ? <i className='material-icons'>stop</i> : <i className='material-icons'>play_arrow</i>
+    let runSimulationClass = isRunning ? 'run-simulation running' : 'run-simulation stopped'
 
     return (
-      <div className="ramp-simulation">
+      <div className='ramp-simulation'>
         <div className='simulationControls'>
           <div className={runSimulationClass} onClick={this.toggleSimulationRunning}>{runIcon}</div>
-          <div className={runSimulationClass} onClick={this.resetSimulation}><i className="material-icons">replay</i></div>
+          <div className={runSimulationClass} onClick={this.resetSimulation}><i className='material-icons'>replay</i></div>
         </div>
         <SimulationEditor {...this.state} onChange={this.setConstants} />
         <Stage width={simSettings.SimWidth} height={simSettings.SimHeight}>
@@ -127,4 +128,3 @@ export default class SimulationBase extends React.Component {
     )
   }
 }
-
