@@ -17980,7 +17980,7 @@ function generateData(runNumber, options) {
       TotalTime: outputs.totalTime,
       FinalDistance: outputs.finalDistance,
 
-      Timestamp: options.elapsedTime,
+      Timestamp: time,
       x: outputs.carX,
       y: outputs.carY,
       Velocity: outputs.velocity
@@ -18653,7 +18653,7 @@ var SimulationBase = function (_PureComponent) {
       var _this2 = this;
 
       this.codapHandler.init().then(function (_) {
-        _this2.setState({ codapAvailable: true });
+        _this2.setState({ codapPresent: true });
       }).catch(function (msg) {
         console.log('CODAP not available');
       });
