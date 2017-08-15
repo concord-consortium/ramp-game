@@ -1,0 +1,58 @@
+.controls {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 100;
+  transform-origin: top right;
+
+  @media (max-width: 720px), (max-height: 320px) {
+    transform: scale(0.84);
+  }
+  @media (max-width: 590px), (max-height: 250px) {
+    transform: scale(0.7);
+  }
+  @media (max-width: 465px), (max-height: 210px) {
+    transform: scale(0.6);
+  }
+
+  .buttons {
+    text-align: right;
+  }
+
+  button {
+    margin: 10px;
+  }
+
+  .label {
+    display: inline-block;
+    font-size: 16px;
+    vertical-align: middle;
+  }
+
+  .slider-container, .output-container {
+    text-align: right;
+  }
+
+  .slider {
+    text-align: left;
+    display: inline-block;
+    width: 250px;
+    margin: 3px 10px 3px 0;
+    vertical-align: middle;
+    input {
+      width: 45px;
+    }
+  }
+
+  .output {
+    display: inline-block;
+    width: 45px;
+    margin: 3px 10px 3px 10px;
+    padding: 0;
+    input {
+      text-align: center;
+      color: #333 !important;
+    }
+  }
+
+}

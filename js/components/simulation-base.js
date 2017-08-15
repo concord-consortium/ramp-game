@@ -2,9 +2,10 @@ import React, { PureComponent } from 'react'
 import Ramp from './ramp'
 import Ground from './ground'
 import InclineControl from './incline-control'
+import Controls from './controls'
 import c from '../sim-constants'
 import VehicleImage from './vehicle-image'
-import { rampAngle, rampLength, carX, carY, carRampDist, simulationTime } from '../physics'
+import { rampAngle, rampLength, carX, carY, carRampDist, finalDist, simulationTime } from '../physics'
 
 import { Layer, Stage } from 'react-konva'
 
@@ -13,6 +14,16 @@ const MIN_X = -1.55
 const MIN_Y = -0.5
 const MAX_X = 5.05
 const MAX_Y = 3
+
+const DEFAULT_OPTIONS = {
+  gravity: 9.81,
+  mass: 0.05,
+  rampFriction: 0.3,
+  groundFriction: 0.3,
+  rampTopX: -1,
+  rampTopY: 1,
+  initialCarX: -0.5
+}
 
 function getScaleX (pixelMeterRatio) {
   return function scaleX (worldX) {
@@ -31,22 +42,23 @@ export default class SimulationBase extends PureComponent {
     super(props)
     this.state = {
       isRunning: false,
-      gravity: 9.81,
-      mass: 0.05,
-      rampFriction: 0.3,
-      groundFriction: 0.3,
-      rampTopX: -1,
-      rampTopY: 1,
-      initialCarX: -0.5,
+      gravity: DEFAULT_OPTIONS.gravity,
+      mass: DEFAULT_OPTIONS.mass,
+      rampFriction: DEFAULT_OPTIONS.rampFriction,
+      groundFriction: DEFAULT_OPTIONS.groundFriction,
+      rampTopX: DEFAULT_OPTIONS.rampTopX,
+      rampTopY: DEFAULT_OPTIONS.rampTopY,
+      initialCarX: DEFAULT_OPTIONS.initialCarX,
       elapsedTime: 0,
       scaleX: getScaleX(this.pixelMeterRatio),
       scaleY: getScaleY(this.pixelMeterRatio)
     }
 
-    this.toggleSimulationRunning = this.toggleSimulationRunning.bind(this)
-    this.resetSimulation = this.resetSimulation.bind(this)
+    this.reset = this.reset.bind(this)
+    this.handleOptionsChange = this.handleOptionsChange.bind(this)
     this.handleInclineChange = this.handleInclineChange.bind(this)
     this.handleCarPosChange = this.handleCarPosChange.bind(this)
+    this.sendDataToCodap = this.sendDataToCodap.bind(this)
     this.rafHandler = this.rafHandler.bind(this)
   }
 
@@ -117,6 +129,15 @@ export default class SimulationBase extends PureComponent {
     return carRampDist(initialCarX, rampTopX, rampTopY)
   }
 
+  get finalDist () {
+    return finalDist(this.state)
+  }
+
+  get simFinished () {
+    const { elapsedTime } = this.state
+    return elapsedTime === simulationTime(this.state)
+  }
+
   invScaleX (screenX) {
     return screenX / this.pixelMeterRatio + MIN_X
   }
@@ -125,13 +146,17 @@ export default class SimulationBase extends PureComponent {
     return MAX_Y - screenY / this.pixelMeterRatio
   }
 
-  toggleSimulationRunning () {
-    const { isRunning } = this.state
-    this.setState({ isRunning: !isRunning })
+  reset () {
+    const newState = {
+      isRunning: false,
+      elapsedTime: 0
+    }
+    Object.assign(newState, DEFAULT_OPTIONS)
+    this.setState(newState)
   }
 
-  resetSimulation () {
-    this.setState({ elapsedTime: 0, isRunning: false })
+  handleOptionsChange (newOptions) {
+    this.setState(newOptions)
   }
 
   rafHandler (timestamp) {
@@ -207,14 +232,25 @@ export default class SimulationBase extends PureComponent {
       newXWorld = c.rampEndX - (newYWorld - c.rampBottomY) / Math.tan(rampAngle)
     }
     this.setState({
-      initialCarX: newXWorld
+      initialCarX: Math.min(newXWorld, -0.1)
     })
+  }
+
+  sendDataToCodap () {
   }
 
   render () {
     const { rampTopX, rampTopY, scaleX, scaleY } = this.state
     return (
-      <div className='ramp-simulation'>
+      <div>
+        <Controls
+          options={this.state} setOptions={this.handleOptionsChange}
+          reset={this.reset}
+          saveData={this.sendDataToCodap}
+          simFinished={this.simFinished}
+          carRampDist={this.carRampDist}
+          finalDist={this.finalDist}
+        />
         <Stage width={this.simWidth} height={this.simHeight}>
           <Layer>
             <Ramp sx={scaleX} sy={scaleY} pointX={rampTopX} pointY={rampTopY} />

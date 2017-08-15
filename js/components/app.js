@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { PureComponent } from 'react'
 import SimulationBase from './simulation-base'
 import { getURLParam } from '../utils'
 
 import '../../css/app.less'
 
-export default class App extends React.Component {
+export default class App extends PureComponent {
   constructor (props) {
     super(props)
     this.state = {
@@ -32,7 +32,7 @@ export default class App extends React.Component {
   render () {
     const { width, height } = this.state
     return (
-      <div className='appContainer' >
+      <div className='app' >
         <SimulationBase width={width} height={height} />
       </div>
     )

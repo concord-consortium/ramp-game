@@ -75,6 +75,19 @@ export function carY (carX, rampTopX, rampTopY) {
   }
 }
 
+export function finalDist ({ initialCarX, gravity, rampFriction, groundFriction, rampTopX, rampTopY }) {
+  const cRampDist = carRampDist(initialCarX, rampTopX, rampTopY)
+  const rAngle = rampAngle(rampTopX, rampTopY)
+  const rAcceleration = rampAcceleration(gravity, rampFriction, rAngle)
+  const rTravelTime = rampTravelTime(cRampDist, rAcceleration)
+
+  const gInitialVelocity = rAcceleration * rTravelTime
+  const gAcceleration = groundAcceleration(gravity, groundFriction)
+  const gTravelTime = groundTravelTime(gInitialVelocity, gAcceleration)
+
+  return c.rampEndX + groundDisplacement(gInitialVelocity, gAcceleration, gTravelTime)
+}
+
 export function simulationTime ({ initialCarX, gravity, rampFriction, groundFriction, rampTopX, rampTopY }) {
   const cRampDist = carRampDist(initialCarX, rampTopX, rampTopY)
   const rAngle = rampAngle(rampTopX, rampTopY)
