@@ -65,11 +65,14 @@ export function calcOutputs ({ initialCarX, gravity, rampFriction, groundFrictio
   const timeOnGround = calcTimeOnGround(velocityAtBottomOfRamp, groundAcceleration)
   const totalTime = timeToGround + timeOnGround
   let carX
+  let carVelocity
   if (elapsedTime < timeToGround) {
     carX = initialCarX + calcRampDisplacement(rampAcceleration, elapsedTime) * Math.cos(rampAngle)
+    carVelocity = rampAcceleration * elapsedTime
   } else {
     const groundElapsedTime = Math.min(elapsedTime - timeToGround, timeOnGround)
     carX = c.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, groundElapsedTime)
+    carVelocity = velocityAtBottomOfRamp + groundAcceleration * groundElapsedTime
   }
   return {
     rampAngle,
@@ -79,6 +82,7 @@ export function calcOutputs ({ initialCarX, gravity, rampFriction, groundFrictio
     carX,
     carY: calcCarY(carX, rampAngle),
     carAngle: carX < c.rampEndX ? rampAngle : 0,
+    carVelocity,
     rampLength: calcRampLength(rampTopX, rampTopY),
     startHeightAboveGround: calcCarY(initialCarX, rampAngle),
     totalTime: timeToGround + timeOnGround,

@@ -104,7 +104,7 @@ function generateData (runNumber, options) {
       Timestamp: time,
       x: outputs.carX,
       y: outputs.carY,
-      Velocity: outputs.velocity
+      Velocity: outputs.carVelocity
     })
 
     time += TIMESTEP
