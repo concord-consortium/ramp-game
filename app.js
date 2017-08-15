@@ -8030,11 +8030,14 @@ function calcOutputs(_ref) {
   var timeOnGround = calcTimeOnGround(velocityAtBottomOfRamp, groundAcceleration);
   var totalTime = timeToGround + timeOnGround;
   var carX = void 0;
+  var carVelocity = void 0;
   if (elapsedTime < timeToGround) {
     carX = initialCarX + calcRampDisplacement(rampAcceleration, elapsedTime) * Math.cos(rampAngle);
+    carVelocity = rampAcceleration * elapsedTime;
   } else {
     var groundElapsedTime = Math.min(elapsedTime - timeToGround, timeOnGround);
     carX = _simConstants2.default.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, groundElapsedTime);
+    carVelocity = velocityAtBottomOfRamp + groundAcceleration * groundElapsedTime;
   }
   return {
     rampAngle: rampAngle,
@@ -8044,6 +8047,7 @@ function calcOutputs(_ref) {
     carX: carX,
     carY: calcCarY(carX, rampAngle),
     carAngle: carX < _simConstants2.default.rampEndX ? rampAngle : 0,
+    carVelocity: carVelocity,
     rampLength: calcRampLength(rampTopX, rampTopY),
     startHeightAboveGround: calcCarY(initialCarX, rampAngle),
     totalTime: timeToGround + timeOnGround,
@@ -17983,7 +17987,7 @@ function generateData(runNumber, options) {
       Timestamp: time,
       x: outputs.carX,
       y: outputs.carY,
-      Velocity: outputs.velocity
+      Velocity: outputs.carVelocity
     });
 
     time += TIMESTEP;
