@@ -5,7 +5,8 @@ import InclineControl from './incline-control'
 import Controls from './controls'
 import c from '../sim-constants'
 import VehicleImage from './vehicle-image'
-import { rampAngle, rampLength, carX, carY, carRampDist, finalDist, simulationTime } from '../physics'
+import { calcOutputs, calcRampLength, calcRampAngle } from '../physics'
+import CodapHandler from '../codap-handler'
 
 import { Layer, Stage } from 'react-konva'
 
@@ -51,8 +52,13 @@ export default class SimulationBase extends PureComponent {
       initialCarX: DEFAULT_OPTIONS.initialCarX,
       elapsedTime: 0,
       scaleX: getScaleX(this.pixelMeterRatio),
-      scaleY: getScaleY(this.pixelMeterRatio)
+      scaleY: getScaleY(this.pixelMeterRatio),
+      codapPresent: false
     }
+
+    this.outputs = calcOutputs(this.state)
+
+    this.codapHandler = new CodapHandler()
 
     this.reset = this.reset.bind(this)
     this.handleOptionsChange = this.handleOptionsChange.bind(this)
@@ -62,11 +68,25 @@ export default class SimulationBase extends PureComponent {
     this.rafHandler = this.rafHandler.bind(this)
   }
 
+  componentDidMount () {
+    this.codapHandler.init()
+      .then(_ => {
+        this.setState({ codapPresent: true })
+      })
+      .catch(msg => {
+        console.log('CODAP not available')
+      })
+  }
+
+  componentWillUpdate (nextProps, nextState) {
+    this.outputs = calcOutputs(nextState)
+  }
+
   componentDidUpdate (prevProps, prevState) {
     const { isRunning } = this.state
     const { width, height } = this.props
     if (isRunning && !prevState.isRunning) {
-      if (isNaN(simulationTime(this.state))) {
+      if (isNaN(this.outputs.totalTime)) {
         window.alert("Ramp friction is too big, car won't start moving")
         this.setState({
           isRunning: false
@@ -100,42 +120,6 @@ export default class SimulationBase extends PureComponent {
     const xScale = this.simWidth / (MAX_X - MIN_X)
     const yScale = this.simHeight / (MAX_Y - MIN_Y)
     return Math.min(xScale, yScale)
-  }
-
-  get rampAngle () {
-    const { rampTopX, rampTopY } = this.state
-    return rampAngle(rampTopX, rampTopY)
-  }
-
-  get carAngle () {
-    const { rampTopX, rampTopY } = this.state
-    if (this.carX < c.rampEndX) {
-      return rampAngle(rampTopX, rampTopY)
-    }
-    return 0
-  }
-
-  get carX () {
-    return carX(this.state)
-  }
-
-  get carY () {
-    const { rampTopX, rampTopY } = this.state
-    return carY(this.carX, rampTopX, rampTopY)
-  }
-
-  get carRampDist () {
-    const { initialCarX, rampTopX, rampTopY } = this.state
-    return carRampDist(initialCarX, rampTopX, rampTopY)
-  }
-
-  get finalDist () {
-    return finalDist(this.state)
-  }
-
-  get simFinished () {
-    const { elapsedTime } = this.state
-    return elapsedTime === simulationTime(this.state)
   }
 
   invScaleX (screenX) {
@@ -173,11 +157,10 @@ export default class SimulationBase extends PureComponent {
     }
     const dt = timestamp - this._prevTime
     this._prevTime = timestamp
-    const simTime = simulationTime(this.state)
-    const newElapsedTime = Math.min(simTime, elapsedTime + dt / 1000)
+    const newElapsedTime = Math.min(this.outputs.totalTime, elapsedTime + dt / 1000)
     this.setState({
       elapsedTime: newElapsedTime,
-      isRunning: newElapsedTime < simTime
+      isRunning: newElapsedTime < this.outputs.totalTime
     })
   }
 
@@ -199,11 +182,11 @@ export default class SimulationBase extends PureComponent {
       newYWorld = MAX_Y - 0.2
     }
 
-    const newCarRampDist = Math.min(this.carRampDist, rampLength(newXWorld, newYWorld))
+    const newCarRampDist = Math.min(this.outputs.startDistanceUpRamp, calcRampLength(newXWorld, newYWorld))
     this.setState({
       rampTopX: newXWorld,
       rampTopY: newYWorld,
-      initialCarX: c.rampEndX - newCarRampDist * Math.cos(rampAngle(newXWorld, newYWorld)),
+      initialCarX: c.rampEndX - newCarRampDist * Math.cos(calcRampAngle(newXWorld, newYWorld))
     })
   }
 
@@ -214,7 +197,7 @@ export default class SimulationBase extends PureComponent {
     }
     let newXWorld = this.invScaleX(newXScreen)
     let newYWorld = this.invScaleY(newYScreen)
-    const rampAngle = this.rampAngle
+    const rampAngle = this.outputs.rampAngle
     if (rampAngle < Math.PI * 0.33) {
       // control via X
       if (newXWorld < rampTopX) {
@@ -237,27 +220,29 @@ export default class SimulationBase extends PureComponent {
   }
 
   sendDataToCodap () {
+    this.codapHandler.generateAndSendData(this.state)
   }
 
   render () {
-    const { rampTopX, rampTopY, scaleX, scaleY } = this.state
+    const { rampTopX, rampTopY, scaleX, scaleY, codapPresent } = this.state
+    const { simulationFinished, startDistanceUpRamp, finalDistance, carX, carY, rampAngle, carAngle } = this.outputs
     return (
       <div>
         <Controls
           options={this.state} setOptions={this.handleOptionsChange}
           reset={this.reset}
-          saveData={this.sendDataToCodap}
-          simFinished={this.simFinished}
-          carRampDist={this.carRampDist}
-          finalDist={this.finalDist}
+          saveData={codapPresent ? this.sendDataToCodap : false}
+          simFinished={simulationFinished}
+          carRampDist={startDistanceUpRamp}
+          finalDist={finalDistance}
         />
         <Stage width={this.simWidth} height={this.simHeight}>
           <Layer>
-            <Ramp sx={scaleX} sy={scaleY} pointX={rampTopX} pointY={rampTopY} />
+            <Ramp sx={scaleX} sy={scaleY} pointX={rampTopX} pointY={rampTopY} angle={rampAngle} />
             <Ground sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} />
             <InclineControl x={scaleX(rampTopX)} y={scaleY(rampTopY)}
               draggable={this.draggingActive} onDrag={this.handleInclineChange} />
-            <VehicleImage sx={scaleX} sy={scaleY} x={this.carX} y={this.carY} angle={this.carAngle}
+            <VehicleImage sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle}
               draggable={this.draggingActive} onDrag={this.handleCarPosChange} />
           </Layer>
         </Stage>
