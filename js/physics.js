@@ -10,9 +10,9 @@ export function calcRampLength (rampTopX, rampTopY) {
   return Math.sqrt(x * x + y * y)
 }
 
-export function calcStartDistanceUpRamp (initialCarX, rampAngle) {
-  const x = initialCarX - c.rampEndX
-  const y = calcCarY(initialCarX, rampAngle) - c.rampBottomY
+export function calcDistanceUpRamp (carX, rampAngle) {
+  const x = carX - c.rampEndX
+  const y = calcCarY(carX, rampAngle) - c.rampBottomY
   return Math.sqrt(x * x + y * y)
 }
 
@@ -57,7 +57,7 @@ export function calcCarY (carX, rampAngle) {
 
 export function calcOutputs ({ initialCarX, gravity, surfaceFriction, rampTopX, rampTopY, elapsedTime }) {
   const rampAngle = calcRampAngle(rampTopX, rampTopY)
-  const startDistanceUpRamp = calcStartDistanceUpRamp(initialCarX, rampAngle)
+  const startDistanceUpRamp = calcDistanceUpRamp(initialCarX, rampAngle)
   const rampAcceleration = calcRampAcceleration(gravity, surfaceFriction, rampAngle)
   const timeToGround = calcTimeToGround(startDistanceUpRamp, rampAcceleration)
   const velocityAtBottomOfRamp = rampAcceleration * timeToGround
@@ -66,17 +66,21 @@ export function calcOutputs ({ initialCarX, gravity, surfaceFriction, rampTopX, 
   const totalTime = timeToGround + timeOnGround
   let carX
   let carVelocity
+  let distanceFromEndOfRamp
   if (elapsedTime < timeToGround) {
     carX = initialCarX + calcRampDisplacement(rampAcceleration, elapsedTime) * Math.cos(rampAngle)
     carVelocity = rampAcceleration * elapsedTime
+    distanceFromEndOfRamp = -1 * calcDistanceUpRamp(carX, rampAngle)
   } else {
     const groundElapsedTime = Math.min(elapsedTime - timeToGround, timeOnGround)
-    carX = c.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, groundElapsedTime)
+    distanceFromEndOfRamp = calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, groundElapsedTime)
+    carX = c.rampEndX + distanceFromEndOfRamp
     carVelocity = velocityAtBottomOfRamp + groundAcceleration * groundElapsedTime
   }
   return {
     rampAngle,
     startDistanceUpRamp,
+    distanceFromEndOfRamp,
     velocityAtBottomOfRamp,
     timeToGround,
     carX,

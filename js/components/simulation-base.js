@@ -223,7 +223,7 @@ export default class SimulationBase extends PureComponent {
 
   render () {
     const { rampTopX, rampTopY, scaleX, scaleY, codapPresent } = this.state
-    const { simulationFinished, startDistanceUpRamp, finalDistance, carX, carY, rampAngle, carAngle } = this.outputs
+    const { simulationFinished, startDistanceUpRamp, distanceFromEndOfRamp, carX, carY, rampAngle, carAngle } = this.outputs
     return (
       <div>
         <Controls
@@ -231,8 +231,8 @@ export default class SimulationBase extends PureComponent {
           reset={this.reset}
           saveData={codapPresent ? this.sendDataToCodap : false}
           simFinished={simulationFinished}
-          carRampDist={startDistanceUpRamp}
-          finalDist={finalDistance}
+          startDistanceUpRamp={startDistanceUpRamp}
+          distanceFromEndOfRamp={distanceFromEndOfRamp}
         />
         <Stage width={this.simWidth} height={this.simHeight}>
           <Layer>

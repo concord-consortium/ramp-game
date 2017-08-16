@@ -47,7 +47,7 @@ export default class Controls extends PureComponent {
   }
 
   render () {
-    const { simFinished, saveData, carRampDist, finalDist } = this.props
+    const { simFinished, saveData, startDistanceUpRamp, distanceFromEndOfRamp } = this.props
     const { gravity, mass, surfaceFriction } = this.props.options
     return (
       <div className='controls'>
@@ -78,12 +78,12 @@ export default class Controls extends PureComponent {
           </div>
         </div>
         <div className='output-container'>
-          <div className='label'>Car ramp distance</div>
-          <Input className='output' type='text' value={carRampDist.toFixed(2)} disabled />
+          <div className='label'>Start car ramp distance</div>
+          <Input className='output' type='text' value={startDistanceUpRamp.toFixed(2)} disabled />
         </div>
         <div className='output-container'>
-          <div className='label'>Final distance</div>
-          <Input className='output' type='text' value={simFinished ? finalDist.toFixed(2) : '?'} disabled />
+          <div className='label'>Distance from end of ramp</div>
+          <Input className='output' type='text' value={distanceFromEndOfRamp.toFixed(2)} disabled />
         </div>
       </div>
     )
