@@ -174,8 +174,8 @@ export default class SimulationBase extends PureComponent {
     }
     let newXWorld = this.invScaleX(newXScreen)
     let newYWorld = this.invScaleY(newYScreen)
-    if (newXWorld < c.rampStartX) {
-      newXWorld = c.rampStartX
+    if (newXWorld < c.rampStartX + 0.3) {
+      newXWorld = c.rampStartX + 0.3
     } else if (newXWorld > c.rampEndX - 1e-4) {
       // 1e-4 so angle is never 90 deg and we don't need to handle it in a special way.
       newXWorld = c.rampEndX - 1e-4
