@@ -18127,7 +18127,8 @@ var Controls = function (_PureComponent) {
           saveData = _props2.saveData,
           startDistanceUpRamp = _props2.startDistanceUpRamp,
           distanceFromEndOfRamp = _props2.distanceFromEndOfRamp,
-          setupNewRun = _props2.setupNewRun;
+          setupNewRun = _props2.setupNewRun,
+          dataSaved = _props2.dataSaved;
       var _props$options = this.props.options,
           gravity = _props$options.gravity,
           mass = _props$options.mass,
@@ -18140,7 +18141,7 @@ var Controls = function (_PureComponent) {
           'div',
           { className: 'buttons' },
           _react2.default.createElement(_button.Button, { label: this.startStopLabel, onClick: this.startStop, disabled: simFinished, raised: true, primary: true }),
-          saveData && _react2.default.createElement(_button.Button, { label: 'Save data', onClick: saveData, disabled: !simFinished, raised: true, primary: true }),
+          saveData && _react2.default.createElement(_button.Button, { label: 'Save data', onClick: saveData, disabled: !simFinished || dataSaved, raised: true, primary: true }),
           _react2.default.createElement(_button.Button, { label: 'New run', onClick: setupNewRun, disabled: !this.simStarted, raised: true, primary: true })
         ),
         _react2.default.createElement(
@@ -18732,8 +18733,8 @@ var SimulationBase = function (_PureComponent) {
       }
       var newXWorld = this.invScaleX(newXScreen);
       var newYWorld = this.invScaleY(newYScreen);
-      if (newXWorld < _simConstants2.default.rampStartX) {
-        newXWorld = _simConstants2.default.rampStartX;
+      if (newXWorld < _simConstants2.default.rampStartX + 0.3) {
+        newXWorld = _simConstants2.default.rampStartX + 0.3;
       } else if (newXWorld > _simConstants2.default.rampEndX - 1e-4) {
         // 1e-4 so angle is never 90 deg and we don't need to handle it in a special way.
         newXWorld = _simConstants2.default.rampEndX - 1e-4;
@@ -18798,7 +18799,8 @@ var SimulationBase = function (_PureComponent) {
           rampTopY = _state4.rampTopY,
           scaleX = _state4.scaleX,
           scaleY = _state4.scaleY,
-          codapPresent = _state4.codapPresent;
+          codapPresent = _state4.codapPresent,
+          dataSaved = _state4.dataSaved;
       var _outputs = this.outputs,
           simulationFinished = _outputs.simulationFinished,
           startDistanceUpRamp = _outputs.startDistanceUpRamp,
@@ -18815,6 +18817,7 @@ var SimulationBase = function (_PureComponent) {
           options: this.state, setOptions: this.handleOptionsChange,
           setupNewRun: this.setupNewRun,
           saveData: codapPresent ? this.sendDataToCodap : false,
+          dataSaved: dataSaved,
           simFinished: simulationFinished,
           startDistanceUpRamp: startDistanceUpRamp,
           distanceFromEndOfRamp: distanceFromEndOfRamp
@@ -18894,7 +18897,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var CAR_WIDTH = 45;
-var CAR_HEIGHT = 20;
+var CAR_HEIGHT = 33;
 
 var VehicleImage = function (_PureComponent) {
   _inherits(VehicleImage, _PureComponent);
@@ -18976,7 +18979,7 @@ var VehicleImage = function (_PureComponent) {
       var _this2 = this;
 
       var image = new window.Image();
-      image.src = './fastcar.png';
+      image.src = './fastcar-arrow.png';
       image.onload = function () {
         _this2.setState({
           image: image
@@ -18997,7 +19000,7 @@ var VehicleImage = function (_PureComponent) {
       return _react2.default.createElement(_reactKonva.Image, {
         image: image,
         x: sx(x), y: sy(y), width: CAR_WIDTH, height: CAR_HEIGHT,
-        offsetX: 0.5 * CAR_WIDTH, offsetY: CAR_HEIGHT,
+        offsetX: 0.5 * CAR_WIDTH, offsetY: CAR_HEIGHT * 0.7,
         rotation: angle * 180 / Math.PI,
         onMouseOver: this.onHover, onMouseOut: this.onHoverEnd,
         onMouseDown: this.onDragStart, onTouchStart: this.onDragStart
