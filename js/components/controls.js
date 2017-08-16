@@ -53,11 +53,11 @@ export default class Controls extends PureComponent {
       <div className='controls'>
         <div className='buttons'>
           <Button label={this.startStopLabel} onClick={this.startStop} disabled={simFinished} raised primary />
-          <Button label='New run' onClick={this.setNewRun} disabled={!this.simStarted} raised primary />
           {
             saveData &&
             <Button label='Save data' onClick={saveData} disabled={!simFinished} raised primary />
           }
+          <Button label='New run' onClick={this.setNewRun} disabled={!this.simStarted} raised primary />
         </div>
         <div className='slider-container'>
           <div className='label'>Gravity</div>
