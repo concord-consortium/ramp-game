@@ -11,7 +11,7 @@ import CodapHandler from '../codap-handler'
 import { Layer, Stage } from 'react-konva'
 
 // MKS units are used everywhere: meters, kilograms and seconds.
-const MIN_X = -1.55
+const MIN_X = -2.3
 const MIN_Y = -0.5
 const MAX_X = 5.05
 const MAX_Y = 3
