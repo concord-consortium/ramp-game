@@ -25,6 +25,9 @@ const DEFAULT_OPTIONS = {
   initialCarX: -0.5
 }
 
+const DISCARD_DATA_MSG = 'Pressing "New run" without pressing "Save data" will discard the current data. ' +
+  'Set up a new run without saving the data first?'
+
 function getScaleX (pixelMeterRatio) {
   return function scaleX (worldX) {
     return (worldX - MIN_X) * pixelMeterRatio
@@ -51,14 +54,15 @@ export default class SimulationBase extends PureComponent {
       elapsedTime: 0,
       scaleX: getScaleX(this.pixelMeterRatio),
       scaleY: getScaleY(this.pixelMeterRatio),
-      codapPresent: false
+      codapPresent: false,
+      dataSaved: false
     }
 
     this.outputs = calcOutputs(this.state)
 
     this.codapHandler = new CodapHandler()
 
-    this.reset = this.reset.bind(this)
+    this.setupNewRun = this.setupNewRun.bind(this)
     this.handleOptionsChange = this.handleOptionsChange.bind(this)
     this.handleInclineChange = this.handleInclineChange.bind(this)
     this.handleCarPosChange = this.handleCarPosChange.bind(this)
@@ -128,13 +132,15 @@ export default class SimulationBase extends PureComponent {
     return MAX_Y - screenY / this.pixelMeterRatio
   }
 
-  reset () {
-    const newState = {
-      isRunning: false,
-      elapsedTime: 0
+  setupNewRun () {
+    const { codapPresent, dataSaved } = this.state
+    if (!codapPresent || (codapPresent && dataSaved) || (codapPresent && !dataSaved && window.confirm(DISCARD_DATA_MSG))) {
+      this.setState({
+        isRunning: false,
+        elapsedTime: 0,
+        dataSaved: false
+      })
     }
-    Object.assign(newState, DEFAULT_OPTIONS)
-    this.setState(newState)
   }
 
   handleOptionsChange (newOptions) {
@@ -219,6 +225,7 @@ export default class SimulationBase extends PureComponent {
 
   sendDataToCodap () {
     this.codapHandler.generateAndSendData(this.state)
+    this.setState({ dataSaved: true })
   }
 
   render () {
@@ -228,7 +235,7 @@ export default class SimulationBase extends PureComponent {
       <div>
         <Controls
           options={this.state} setOptions={this.handleOptionsChange}
-          reset={this.reset}
+          setupNewRun={this.setupNewRun}
           saveData={codapPresent ? this.sendDataToCodap : false}
           simFinished={simulationFinished}
           startDistanceUpRamp={startDistanceUpRamp}

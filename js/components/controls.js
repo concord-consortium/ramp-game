@@ -8,7 +8,6 @@ import '../../css/controls.less'
 export default class Controls extends PureComponent {
   constructor (props) {
     super(props)
-    this.setNewRun = this.setNewRun.bind(this)
     this.startStop = this.toggleOption.bind(this, 'isRunning')
     this.setGravity = this.setOption.bind(this, 'gravity')
     this.setMass = this.setOption.bind(this, 'mass')
@@ -38,16 +37,8 @@ export default class Controls extends PureComponent {
     setOptions({ [name]: !options[name] })
   }
 
-  setNewRun () {
-    const { setOptions } = this.props
-    setOptions({
-      isRunning: false,
-      elapsedTime: 0
-    })
-  }
-
   render () {
-    const { simFinished, saveData, startDistanceUpRamp, distanceFromEndOfRamp } = this.props
+    const { simFinished, saveData, startDistanceUpRamp, distanceFromEndOfRamp, setupNewRun } = this.props
     const { gravity, mass, surfaceFriction } = this.props.options
     return (
       <div className='controls'>
@@ -57,7 +48,7 @@ export default class Controls extends PureComponent {
             saveData &&
             <Button label='Save data' onClick={saveData} disabled={!simFinished} raised primary />
           }
-          <Button label='New run' onClick={this.setNewRun} disabled={!this.simStarted} raised primary />
+          <Button label='New run' onClick={setupNewRun} disabled={!this.simStarted} raised primary />
         </div>
         <div className='slider-container'>
           <div className='label'>Gravity</div>
