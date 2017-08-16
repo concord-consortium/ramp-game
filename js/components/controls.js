@@ -38,7 +38,7 @@ export default class Controls extends PureComponent {
   }
 
   render () {
-    const { simFinished, saveData, startDistanceUpRamp, distanceFromEndOfRamp, setupNewRun } = this.props
+    const { simFinished, saveData, startDistanceUpRamp, distanceFromEndOfRamp, setupNewRun, dataSaved } = this.props
     const { gravity, mass, surfaceFriction } = this.props.options
     return (
       <div className='controls'>
@@ -46,7 +46,7 @@ export default class Controls extends PureComponent {
           <Button label={this.startStopLabel} onClick={this.startStop} disabled={simFinished} raised primary />
           {
             saveData &&
-            <Button label='Save data' onClick={saveData} disabled={!simFinished} raised primary />
+            <Button label='Save data' onClick={saveData} disabled={!simFinished || dataSaved} raised primary />
           }
           <Button label='New run' onClick={setupNewRun} disabled={!this.simStarted} raised primary />
         </div>
