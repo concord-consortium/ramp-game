@@ -215,7 +215,7 @@ export default class SimulationBase extends PureComponent {
       newXWorld = c.rampEndX - (newYWorld - c.rampBottomY) / Math.tan(rampAngle)
     }
     this.setState({
-      initialCarX: Math.min(newXWorld, -0.1)
+      initialCarX: Math.min(newXWorld, c.rampEndX - 1e-6)
     })
   }
 
