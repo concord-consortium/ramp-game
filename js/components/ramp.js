@@ -17,7 +17,7 @@ export default class Ramp extends PureComponent {
       <Group>
         <Line points={points} closed fill={'grey'} stroke={'black'} strokeWidth={1} />
         <Arc x={sx(c.rampEndX)} y={sy(c.rampBottomY)} outerRadius={40} innerRadius={0} fill={'#dddddd'} stroke={0} angle={angleInDeg} rotation={180} />
-        <Text x={sx(c.rampEndX) - 35} y={sy(c.rampBottomY) - 17} fontFamily={'Arial'} fontSize={14} text={Math.round(angleInDeg)} fill={'navy'} />
+        <Text x={sx(c.rampEndX) - 35} y={sy(c.rampBottomY) - 17} fontFamily={'Arial'} fontSize={14} text={Math.round(angleInDeg) + '°'} fill={'navy'} />
       </Group>
     )
   }

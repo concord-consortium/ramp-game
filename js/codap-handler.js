@@ -26,17 +26,17 @@ const DATA_SET_TEMPLATE = {
         setOfCasesWithArticle: 'a run'
       },
       attrs: [
-        {name: 'RunNumber', type: 'numeric', precision: 0},
-        {name: 'RampAngle', type: 'numeric', precision: 2},
-        {name: 'StartHeightAboveGround', type: 'numeric', precision: 2},
-        {name: 'StartDistanceUpRamp', type: 'numeric', precision: 2},
-        {name: 'Mass', unit: 'Kg', type: 'numeric', precision: 2},
-        {name: 'Gravity', unit: 'm/s/s', type: 'numeric', precision: 2},
-        {name: 'SurfaceFriction', type: 'numeric', precision: 2},
-        {name: 'TimeToGround', type: 'numeric', precision: 2},
-        {name: 'TotalTime', type: 'numeric', precision: 2},
-        {name: 'VelocityAtBottomOfRamp', type: 'numeric', precision: 2},
-        {name: 'FinalDistance', type: 'numeric', precision: 2}
+        {name: 'Run number', type: 'categorical'},
+        {name: 'Ramp angle', unit: '°', type: 'numeric', precision: 2},
+        {name: 'Start height above ground', unit: 'm', type: 'numeric', precision: 2},
+        {name: 'Start distance up ramp', unit: 'm', type: 'numeric', precision: 2},
+        {name: 'Mass', unit: 'kg', type: 'numeric', precision: 2},
+        {name: 'Gravity', unit: 'm/s²', type: 'numeric', precision: 2},
+        {name: 'Surface friction', type: 'numeric', precision: 2},
+        {name: 'Time to ground', unit: 's', type: 'numeric', precision: 2},
+        {name: 'Total time', unit: 's', type: 'numeric', precision: 2},
+        {name: 'Velocity at bottom of ramp', unit: 'm/s', type: 'numeric', precision: 2},
+        {name: 'Final distance', unit: 'm', type: 'numeric', precision: 2}
       ]
     },
     {
@@ -48,10 +48,10 @@ const DATA_SET_TEMPLATE = {
         setOfCasesWithArticle: 'a run'
       },
       attrs: [
-        {name: 'Timestamp', unit: 's', type: 'numeric', precision: 2},
+        {name: 'Time', unit: 's', type: 'numeric', precision: 2},
         {name: 'Velocity', unit: 'm/s', type: 'numeric', precision: 2},
-        {name: 'x', unit: 'm', type: 'numeric', precision: 2},
-        {name: 'y', unit: 'm', type: 'numeric', precision: 2}
+        {name: 'X', unit: 'm', type: 'numeric', precision: 2},
+        {name: 'Y', unit: 'm', type: 'numeric', precision: 2}
       ]
     }
   ]
@@ -85,24 +85,24 @@ function generateData (runNumber, options) {
     const outputs = calcOutputs(optionsCopy)
 
     data.push({
-      RunNumber: runNumber,
+      'Run number': runNumber,
 
-      Mass: options.mass,
-      Gravity: options.gravity,
-      SurfaceFriction: options.surfaceFriction,
+      'Mass': options.mass,
+      'Gravity': options.gravity,
+      'Surface friction': options.surfaceFriction,
 
-      RampAngle: outputs.rampAngle * 180 / Math.PI,
-      StartDistanceUpRamp: outputs.startDistanceUpRamp,
-      StartHeightAboveGround: outputs.startHeightAboveGround,
-      VelocityAtBottomOfRamp: outputs.velocityAtBottomOfRamp,
-      TimeToGround: outputs.timeToGround,
-      TotalTime: outputs.totalTime,
-      FinalDistance: outputs.finalDistance,
+      'Ramp angle': outputs.rampAngle * 180 / Math.PI,
+      'Start distance up ramp': outputs.startDistanceUpRamp,
+      'Start height above ground': outputs.startHeightAboveGround,
+      'Velocity at bottom of ramp': outputs.velocityAtBottomOfRamp,
+      'Time to ground': outputs.timeToGround,
+      'Total time': outputs.totalTime,
+      'Final distance': outputs.finalDistance,
 
-      Timestamp: time,
-      x: outputs.carX,
-      y: outputs.carY,
-      Velocity: outputs.carVelocity
+      'Time': time,
+      'X': outputs.carX,
+      'Y': outputs.carY,
+      'Velocity': outputs.carVelocity
     })
 
     time += TIMESTEP
