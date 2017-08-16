@@ -6,7 +6,7 @@ const TIMESTEP = 0.05
 const DATA_SET_NAME = 'CarRampSimulation'
 
 const CONFIG = {
-  title: 'InquirySpace2',
+  title: 'Ramp simulation',
   name: DATA_SET_NAME,
   dimensions: {
     width: 650,
