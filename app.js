@@ -18799,7 +18799,7 @@ var SimulationBase = function (_PureComponent) {
         newXWorld = _simConstants2.default.rampEndX - (newYWorld - _simConstants2.default.rampBottomY) / Math.tan(rampAngle);
       }
       this.setState({
-        initialCarX: Math.min(newXWorld, -0.1)
+        initialCarX: Math.min(newXWorld, _simConstants2.default.rampEndX - 1e-6)
       });
     }
   }, {
