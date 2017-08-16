@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react'
 import { Image } from 'react-konva'
 
 const CAR_WIDTH = 45
-const CAR_HEIGHT = 20
+const CAR_HEIGHT = 33
 
 export default class VehicleImage extends PureComponent {
   constructor (props) {
@@ -64,7 +64,7 @@ export default class VehicleImage extends PureComponent {
 
   componentDidMount () {
     const image = new window.Image()
-    image.src = './fastcar.png'
+    image.src = './fastcar-arrow.png'
     image.onload = () => {
       this.setState({
         image: image
@@ -79,7 +79,7 @@ export default class VehicleImage extends PureComponent {
       <Image
         image={image}
         x={sx(x)} y={sy(y)} width={CAR_WIDTH} height={CAR_HEIGHT}
-        offsetX={0.5 * CAR_WIDTH} offsetY={CAR_HEIGHT}
+        offsetX={0.5 * CAR_WIDTH} offsetY={CAR_HEIGHT * 0.7}
         rotation={angle * 180 / Math.PI}
         onMouseOver={this.onHover} onMouseOut={this.onHoverEnd}
         onMouseDown={this.onDragStart} onTouchStart={this.onDragStart}
