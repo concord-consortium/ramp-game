@@ -5902,7 +5902,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = {
-  rampStartX: -1.5,
+  rampStartX: -2.25,
   rampEndX: 0,
   rampBottomY: 0,
   runoffEndX: 5
@@ -7941,7 +7941,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.calcRampAngle = calcRampAngle;
 exports.calcRampLength = calcRampLength;
-exports.calcStartDistanceUpRamp = calcStartDistanceUpRamp;
+exports.calcDistanceUpRamp = calcDistanceUpRamp;
 exports.calcRampAcceleration = calcRampAcceleration;
 exports.calcRampDisplacement = calcRampDisplacement;
 exports.calcTimeToGround = calcTimeToGround;
@@ -7967,16 +7967,16 @@ function calcRampLength(rampTopX, rampTopY) {
   return Math.sqrt(x * x + y * y);
 }
 
-function calcStartDistanceUpRamp(initialCarX, rampAngle) {
-  var x = initialCarX - _simConstants2.default.rampEndX;
-  var y = calcCarY(initialCarX, rampAngle) - _simConstants2.default.rampBottomY;
+function calcDistanceUpRamp(carX, rampAngle) {
+  var x = carX - _simConstants2.default.rampEndX;
+  var y = calcCarY(carX, rampAngle) - _simConstants2.default.rampBottomY;
   return Math.sqrt(x * x + y * y);
 }
 
-function calcRampAcceleration(gravity, rampFriction, rampAngle) {
+function calcRampAcceleration(gravity, surfaceFriction, rampAngle) {
   var parallelAcceleration = gravity * Math.sin(rampAngle);
   var normalAcceleration = gravity * Math.cos(rampAngle);
-  var rampAcceleration = parallelAcceleration - normalAcceleration * rampFriction;
+  var rampAcceleration = parallelAcceleration - normalAcceleration * surfaceFriction;
   if (rampAcceleration < 0) {
     return 0;
   }
@@ -7992,8 +7992,8 @@ function calcTimeToGround(startDistanceUpRamp, rampAcceleration) {
   return Math.sqrt(2 * startDistanceUpRamp / rampAcceleration);
 }
 
-function calcGroundAcceleration(gravity, groundFriction) {
-  return -1 * gravity * groundFriction;
+function calcGroundAcceleration(gravity, surfaceFriction) {
+  return -1 * gravity * surfaceFriction;
 }
 
 function calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, elapsedTime) {
@@ -8015,33 +8015,36 @@ function calcCarY(carX, rampAngle) {
 function calcOutputs(_ref) {
   var initialCarX = _ref.initialCarX,
       gravity = _ref.gravity,
-      rampFriction = _ref.rampFriction,
-      groundFriction = _ref.groundFriction,
+      surfaceFriction = _ref.surfaceFriction,
       rampTopX = _ref.rampTopX,
       rampTopY = _ref.rampTopY,
       elapsedTime = _ref.elapsedTime;
 
   var rampAngle = calcRampAngle(rampTopX, rampTopY);
-  var startDistanceUpRamp = calcStartDistanceUpRamp(initialCarX, rampAngle);
-  var rampAcceleration = calcRampAcceleration(gravity, rampFriction, rampAngle);
+  var startDistanceUpRamp = calcDistanceUpRamp(initialCarX, rampAngle);
+  var rampAcceleration = calcRampAcceleration(gravity, surfaceFriction, rampAngle);
   var timeToGround = calcTimeToGround(startDistanceUpRamp, rampAcceleration);
   var velocityAtBottomOfRamp = rampAcceleration * timeToGround;
-  var groundAcceleration = calcGroundAcceleration(gravity, groundFriction);
+  var groundAcceleration = calcGroundAcceleration(gravity, surfaceFriction);
   var timeOnGround = calcTimeOnGround(velocityAtBottomOfRamp, groundAcceleration);
   var totalTime = timeToGround + timeOnGround;
   var carX = void 0;
   var carVelocity = void 0;
+  var distanceFromEndOfRamp = void 0;
   if (elapsedTime < timeToGround) {
     carX = initialCarX + calcRampDisplacement(rampAcceleration, elapsedTime) * Math.cos(rampAngle);
     carVelocity = rampAcceleration * elapsedTime;
+    distanceFromEndOfRamp = -1 * calcDistanceUpRamp(carX, rampAngle);
   } else {
     var groundElapsedTime = Math.min(elapsedTime - timeToGround, timeOnGround);
-    carX = _simConstants2.default.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, groundElapsedTime);
+    distanceFromEndOfRamp = calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, groundElapsedTime);
+    carX = _simConstants2.default.rampEndX + distanceFromEndOfRamp;
     carVelocity = velocityAtBottomOfRamp + groundAcceleration * groundElapsedTime;
   }
   return {
     rampAngle: rampAngle,
     startDistanceUpRamp: startDistanceUpRamp,
+    distanceFromEndOfRamp: distanceFromEndOfRamp,
     velocityAtBottomOfRamp: velocityAtBottomOfRamp,
     timeToGround: timeToGround,
     carX: carX,
@@ -17910,7 +17913,7 @@ var TIMESTEP = 0.05;
 var DATA_SET_NAME = 'CarRampSimulation';
 
 var CONFIG = {
-  title: 'InquirySpace2',
+  title: 'Ramp simulation',
   name: DATA_SET_NAME,
   dimensions: {
     width: 650,
@@ -17928,7 +17931,7 @@ var DATA_SET_TEMPLATE = {
       pluralCase: 'Summary',
       setOfCasesWithArticle: 'a run'
     },
-    attrs: [{ name: 'RunNumber', type: 'numeric', precision: 0 }, { name: 'RampAngle', type: 'numeric', precision: 2 }, { name: 'StartHeightAboveGround', type: 'numeric', precision: 2 }, { name: 'StartDistanceUpRamp', type: 'numeric', precision: 2 }, { name: 'Mass', unit: 'Kg', type: 'numeric', precision: 2 }, { name: 'Gravity', unit: 'm/s/s', type: 'numeric', precision: 2 }, { name: 'RampFriction', type: 'numeric', precision: 2 }, { name: 'GroundFriction', type: 'numeric', precision: 2 }, { name: 'TimeToGround', type: 'numeric', precision: 2 }, { name: 'TotalTime', type: 'numeric', precision: 2 }, { name: 'VelocityAtBottomOfRamp', type: 'numeric', precision: 2 }, { name: 'FinalDistance', type: 'numeric', precision: 2 }]
+    attrs: [{ name: 'Run number', type: 'categorical' }, { name: 'Ramp angle', unit: '°', type: 'numeric', precision: 2 }, { name: 'Start height above ground', unit: 'm', type: 'numeric', precision: 2 }, { name: 'Start car ramp distance', unit: 'm', type: 'numeric', precision: 2 }, { name: 'Mass', unit: 'kg', type: 'numeric', precision: 2 }, { name: 'Gravity', unit: 'm/s²', type: 'numeric', precision: 2 }, { name: 'Surface friction', type: 'numeric', precision: 2 }, { name: 'Time to ground', unit: 's', type: 'numeric', precision: 2 }, { name: 'Total time', unit: 's', type: 'numeric', precision: 2 }, { name: 'Velocity at bottom of ramp', unit: 'm/s', type: 'numeric', precision: 2 }, { name: 'Final distance', unit: 'm', type: 'numeric', precision: 2 }]
   }, {
     name: 'RunDetails',
     title: 'Run Details',
@@ -17937,7 +17940,7 @@ var DATA_SET_TEMPLATE = {
       pluralCase: 'Details',
       setOfCasesWithArticle: 'a run'
     },
-    attrs: [{ name: 'Timestamp', unit: 's', type: 'numeric', precision: 2 }, { name: 'Velocity', unit: 'm/s', type: 'numeric', precision: 2 }, { name: 'x', unit: 'm', type: 'numeric', precision: 2 }, { name: 'y', unit: 'm', type: 'numeric', precision: 2 }]
+    attrs: [{ name: 'Time', unit: 's', type: 'numeric', precision: 2 }, { name: 'Velocity', unit: 'm/s', type: 'numeric', precision: 2 }, { name: 'X', unit: 'm', type: 'numeric', precision: 2 }, { name: 'Y', unit: 'm', type: 'numeric', precision: 2 }]
   }]
 };
 
@@ -17969,25 +17972,24 @@ function generateData(runNumber, options) {
     var outputs = (0, _physics.calcOutputs)(optionsCopy);
 
     data.push({
-      RunNumber: runNumber,
+      'Run number': runNumber,
 
-      Mass: options.mass,
-      Gravity: options.gravity,
-      RampFriction: options.rampFriction,
-      GroundFriction: options.groundFriction,
+      'Mass': options.mass,
+      'Gravity': options.gravity,
+      'Surface friction': options.surfaceFriction,
 
-      RampAngle: outputs.rampAngle * 180 / Math.PI,
-      StartDistanceUpRamp: outputs.startDistanceUpRamp,
-      StartHeightAboveGround: outputs.startHeightAboveGround,
-      VelocityAtBottomOfRamp: outputs.velocityAtBottomOfRamp,
-      TimeToGround: outputs.timeToGround,
-      TotalTime: outputs.totalTime,
-      FinalDistance: outputs.finalDistance,
+      'Ramp angle': outputs.rampAngle * 180 / Math.PI,
+      'Start car ramp distance': outputs.startDistanceUpRamp,
+      'Start height above ground': outputs.startHeightAboveGround,
+      'Velocity at bottom of ramp': outputs.velocityAtBottomOfRamp,
+      'Time to ground': outputs.timeToGround,
+      'Total time': outputs.totalTime,
+      'Final distance': outputs.finalDistance,
 
-      Timestamp: time,
-      x: outputs.carX,
-      y: outputs.carY,
-      Velocity: outputs.carVelocity
+      'Time': time,
+      'X': outputs.carX,
+      'Y': outputs.carY,
+      'Velocity': outputs.carVelocity
     });
 
     time += TIMESTEP;
@@ -18091,12 +18093,10 @@ var Controls = function (_PureComponent) {
 
     var _this = _possibleConstructorReturn(this, (Controls.__proto__ || Object.getPrototypeOf(Controls)).call(this, props));
 
-    _this.setNewRun = _this.setNewRun.bind(_this);
     _this.startStop = _this.toggleOption.bind(_this, 'isRunning');
     _this.setGravity = _this.setOption.bind(_this, 'gravity');
     _this.setMass = _this.setOption.bind(_this, 'mass');
-    _this.setRampFriction = _this.setOption.bind(_this, 'rampFriction');
-    _this.setGroundFriction = _this.setOption.bind(_this, 'groundFriction');
+    _this.setSurfaceFriction = _this.setOption.bind(_this, 'surfaceFriction');
     return _this;
   }
 
@@ -18120,28 +18120,18 @@ var Controls = function (_PureComponent) {
       setOptions(_defineProperty({}, name, !options[name]));
     }
   }, {
-    key: 'setNewRun',
-    value: function setNewRun() {
-      var setOptions = this.props.setOptions;
-
-      setOptions({
-        isRunning: false,
-        elapsedTime: 0
-      });
-    }
-  }, {
     key: 'render',
     value: function render() {
       var _props2 = this.props,
           simFinished = _props2.simFinished,
           saveData = _props2.saveData,
-          carRampDist = _props2.carRampDist,
-          finalDist = _props2.finalDist;
+          startDistanceUpRamp = _props2.startDistanceUpRamp,
+          distanceFromEndOfRamp = _props2.distanceFromEndOfRamp,
+          setupNewRun = _props2.setupNewRun;
       var _props$options = this.props.options,
           gravity = _props$options.gravity,
           mass = _props$options.mass,
-          rampFriction = _props$options.rampFriction,
-          groundFriction = _props$options.groundFriction;
+          surfaceFriction = _props$options.surfaceFriction;
 
       return _react2.default.createElement(
         'div',
@@ -18150,8 +18140,8 @@ var Controls = function (_PureComponent) {
           'div',
           { className: 'buttons' },
           _react2.default.createElement(_button.Button, { label: this.startStopLabel, onClick: this.startStop, disabled: simFinished, raised: true, primary: true }),
-          _react2.default.createElement(_button.Button, { label: 'New run', onClick: this.setNewRun, disabled: !this.simStarted, raised: true, primary: true }),
-          saveData && _react2.default.createElement(_button.Button, { label: 'Save data', onClick: saveData, disabled: !simFinished, raised: true, primary: true })
+          saveData && _react2.default.createElement(_button.Button, { label: 'Save data', onClick: saveData, disabled: !simFinished, raised: true, primary: true }),
+          _react2.default.createElement(_button.Button, { label: 'New run', onClick: setupNewRun, disabled: !this.simStarted, raised: true, primary: true })
         ),
         _react2.default.createElement(
           'div',
@@ -18187,26 +18177,12 @@ var Controls = function (_PureComponent) {
           _react2.default.createElement(
             'div',
             { className: 'label' },
-            'Ramp friction'
+            'Surface friction'
           ),
           _react2.default.createElement(
             'div',
             { className: 'slider' },
-            _react2.default.createElement(_slider2.default, { min: 0.01, max: 1, editable: true, value: rampFriction, onChange: this.setRampFriction, disabled: this.simStarted })
-          )
-        ),
-        _react2.default.createElement(
-          'div',
-          { className: 'slider-container' },
-          _react2.default.createElement(
-            'div',
-            { className: 'label' },
-            'Ground friction'
-          ),
-          _react2.default.createElement(
-            'div',
-            { className: 'slider' },
-            _react2.default.createElement(_slider2.default, { min: 0.01, max: 1, editable: true, value: groundFriction, onChange: this.setGroundFriction, disabled: this.simStarted })
+            _react2.default.createElement(_slider2.default, { min: 0.01, max: 1, editable: true, value: surfaceFriction, onChange: this.setSurfaceFriction, disabled: this.simStarted })
           )
         ),
         _react2.default.createElement(
@@ -18215,9 +18191,9 @@ var Controls = function (_PureComponent) {
           _react2.default.createElement(
             'div',
             { className: 'label' },
-            'Car ramp distance'
+            'Start car ramp distance'
           ),
-          _react2.default.createElement(_input2.default, { className: 'output', type: 'text', value: carRampDist.toFixed(2), disabled: true })
+          _react2.default.createElement(_input2.default, { className: 'output', type: 'text', value: startDistanceUpRamp.toFixed(2), disabled: true })
         ),
         _react2.default.createElement(
           'div',
@@ -18225,9 +18201,9 @@ var Controls = function (_PureComponent) {
           _react2.default.createElement(
             'div',
             { className: 'label' },
-            'Final distance'
+            'Distance from end of ramp'
           ),
-          _react2.default.createElement(_input2.default, { className: 'output', type: 'text', value: simFinished ? finalDist.toFixed(2) : '?', disabled: true })
+          _react2.default.createElement(_input2.default, { className: 'output', type: 'text', value: distanceFromEndOfRamp.toFixed(2), disabled: true })
         )
       );
     }
@@ -18520,7 +18496,7 @@ var Ramp = function (_PureComponent) {
         null,
         _react2.default.createElement(_reactKonva.Line, { points: points, closed: true, fill: 'grey', stroke: 'black', strokeWidth: 1 }),
         _react2.default.createElement(_reactKonva.Arc, { x: sx(_simConstants2.default.rampEndX), y: sy(_simConstants2.default.rampBottomY), outerRadius: 40, innerRadius: 0, fill: '#dddddd', stroke: 0, angle: angleInDeg, rotation: 180 }),
-        _react2.default.createElement(_reactKonva.Text, { x: sx(_simConstants2.default.rampEndX) - 35, y: sy(_simConstants2.default.rampBottomY) - 17, fontFamily: 'Arial', fontSize: 14, text: Math.round(angleInDeg), fill: 'navy' })
+        _react2.default.createElement(_reactKonva.Text, { x: sx(_simConstants2.default.rampEndX) - 35, y: sy(_simConstants2.default.rampBottomY) - 17, fontFamily: 'Arial', fontSize: 14, text: Math.round(angleInDeg) + '°', fill: 'navy' })
       );
     }
   }]);
@@ -18588,7 +18564,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 // MKS units are used everywhere: meters, kilograms and seconds.
-var MIN_X = -1.55;
+var MIN_X = -2.3;
 var MIN_Y = -0.5;
 var MAX_X = 5.05;
 var MAX_Y = 3;
@@ -18596,12 +18572,13 @@ var MAX_Y = 3;
 var DEFAULT_OPTIONS = {
   gravity: 9.81,
   mass: 0.05,
-  rampFriction: 0.3,
-  groundFriction: 0.3,
+  surfaceFriction: 0.3,
   rampTopX: -1,
   rampTopY: 1,
   initialCarX: -0.5
 };
+
+var DISCARD_DATA_MSG = 'Pressing "New run" without pressing "Save data" will discard the current data. ' + 'Set up a new run without saving the data first?';
 
 function getScaleX(pixelMeterRatio) {
   return function scaleX(worldX) {
@@ -18627,22 +18604,22 @@ var SimulationBase = function (_PureComponent) {
       isRunning: false,
       gravity: DEFAULT_OPTIONS.gravity,
       mass: DEFAULT_OPTIONS.mass,
-      rampFriction: DEFAULT_OPTIONS.rampFriction,
-      groundFriction: DEFAULT_OPTIONS.groundFriction,
+      surfaceFriction: DEFAULT_OPTIONS.surfaceFriction,
       rampTopX: DEFAULT_OPTIONS.rampTopX,
       rampTopY: DEFAULT_OPTIONS.rampTopY,
       initialCarX: DEFAULT_OPTIONS.initialCarX,
       elapsedTime: 0,
       scaleX: getScaleX(_this.pixelMeterRatio),
       scaleY: getScaleY(_this.pixelMeterRatio),
-      codapPresent: false
+      codapPresent: false,
+      dataSaved: false
     };
 
     _this.outputs = (0, _physics.calcOutputs)(_this.state);
 
     _this.codapHandler = new _codapHandler2.default();
 
-    _this.reset = _this.reset.bind(_this);
+    _this.setupNewRun = _this.setupNewRun.bind(_this);
     _this.handleOptionsChange = _this.handleOptionsChange.bind(_this);
     _this.handleInclineChange = _this.handleInclineChange.bind(_this);
     _this.handleCarPosChange = _this.handleCarPosChange.bind(_this);
@@ -18703,14 +18680,19 @@ var SimulationBase = function (_PureComponent) {
       return MAX_Y - screenY / this.pixelMeterRatio;
     }
   }, {
-    key: 'reset',
-    value: function reset() {
-      var newState = {
-        isRunning: false,
-        elapsedTime: 0
-      };
-      Object.assign(newState, DEFAULT_OPTIONS);
-      this.setState(newState);
+    key: 'setupNewRun',
+    value: function setupNewRun() {
+      var _state = this.state,
+          codapPresent = _state.codapPresent,
+          dataSaved = _state.dataSaved;
+
+      if (!codapPresent || codapPresent && dataSaved || codapPresent && !dataSaved && window.confirm(DISCARD_DATA_MSG)) {
+        this.setState({
+          isRunning: false,
+          elapsedTime: 0,
+          dataSaved: false
+        });
+      }
     }
   }, {
     key: 'handleOptionsChange',
@@ -18720,9 +18702,9 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'rafHandler',
     value: function rafHandler(timestamp) {
-      var _state = this.state,
-          elapsedTime = _state.elapsedTime,
-          isRunning = _state.isRunning;
+      var _state2 = this.state,
+          elapsedTime = _state2.elapsedTime,
+          isRunning = _state2.isRunning;
 
       if (isRunning) {
         window.requestAnimationFrame(this.rafHandler);
@@ -18772,9 +18754,9 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'handleCarPosChange',
     value: function handleCarPosChange(newXScreen, newYScreen) {
-      var _state2 = this.state,
-          rampTopX = _state2.rampTopX,
-          rampTopY = _state2.rampTopY;
+      var _state3 = this.state,
+          rampTopX = _state3.rampTopX,
+          rampTopY = _state3.rampTopY;
 
       if (!this.draggingActive) {
         return;
@@ -18806,20 +18788,21 @@ var SimulationBase = function (_PureComponent) {
     key: 'sendDataToCodap',
     value: function sendDataToCodap() {
       this.codapHandler.generateAndSendData(this.state);
+      this.setState({ dataSaved: true });
     }
   }, {
     key: 'render',
     value: function render() {
-      var _state3 = this.state,
-          rampTopX = _state3.rampTopX,
-          rampTopY = _state3.rampTopY,
-          scaleX = _state3.scaleX,
-          scaleY = _state3.scaleY,
-          codapPresent = _state3.codapPresent;
+      var _state4 = this.state,
+          rampTopX = _state4.rampTopX,
+          rampTopY = _state4.rampTopY,
+          scaleX = _state4.scaleX,
+          scaleY = _state4.scaleY,
+          codapPresent = _state4.codapPresent;
       var _outputs = this.outputs,
           simulationFinished = _outputs.simulationFinished,
           startDistanceUpRamp = _outputs.startDistanceUpRamp,
-          finalDistance = _outputs.finalDistance,
+          distanceFromEndOfRamp = _outputs.distanceFromEndOfRamp,
           carX = _outputs.carX,
           carY = _outputs.carY,
           rampAngle = _outputs.rampAngle,
@@ -18830,11 +18813,11 @@ var SimulationBase = function (_PureComponent) {
         null,
         _react2.default.createElement(_controls2.default, {
           options: this.state, setOptions: this.handleOptionsChange,
-          reset: this.reset,
+          setupNewRun: this.setupNewRun,
           saveData: codapPresent ? this.sendDataToCodap : false,
           simFinished: simulationFinished,
-          carRampDist: startDistanceUpRamp,
-          finalDist: finalDistance
+          startDistanceUpRamp: startDistanceUpRamp,
+          distanceFromEndOfRamp: distanceFromEndOfRamp
         }),
         _react2.default.createElement(
           _reactKonva.Stage,
