@@ -32,8 +32,7 @@ const DATA_SET_TEMPLATE = {
         {name: 'StartDistanceUpRamp', type: 'numeric', precision: 2},
         {name: 'Mass', unit: 'Kg', type: 'numeric', precision: 2},
         {name: 'Gravity', unit: 'm/s/s', type: 'numeric', precision: 2},
-        {name: 'RampFriction', type: 'numeric', precision: 2},
-        {name: 'GroundFriction', type: 'numeric', precision: 2},
+        {name: 'SurfaceFriction', type: 'numeric', precision: 2},
         {name: 'TimeToGround', type: 'numeric', precision: 2},
         {name: 'TotalTime', type: 'numeric', precision: 2},
         {name: 'VelocityAtBottomOfRamp', type: 'numeric', precision: 2},
@@ -90,8 +89,7 @@ function generateData (runNumber, options) {
 
       Mass: options.mass,
       Gravity: options.gravity,
-      RampFriction: options.rampFriction,
-      GroundFriction: options.groundFriction,
+      SurfaceFriction: options.surfaceFriction,
 
       RampAngle: outputs.rampAngle * 180 / Math.PI,
       StartDistanceUpRamp: outputs.startDistanceUpRamp,

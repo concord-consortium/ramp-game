@@ -16,10 +16,10 @@ export function calcStartDistanceUpRamp (initialCarX, rampAngle) {
   return Math.sqrt(x * x + y * y)
 }
 
-export function calcRampAcceleration (gravity, rampFriction, rampAngle) {
+export function calcRampAcceleration (gravity, surfaceFriction, rampAngle) {
   let parallelAcceleration = gravity * (Math.sin(rampAngle))
   let normalAcceleration = gravity * (Math.cos(rampAngle))
-  let rampAcceleration = parallelAcceleration - normalAcceleration * rampFriction
+  let rampAcceleration = parallelAcceleration - normalAcceleration * surfaceFriction
   if (rampAcceleration < 0) {
     return 0
   }
@@ -35,8 +35,8 @@ export function calcTimeToGround (startDistanceUpRamp, rampAcceleration) {
   return Math.sqrt(2 * startDistanceUpRamp / rampAcceleration)
 }
 
-export function calcGroundAcceleration (gravity, groundFriction) {
-  return -1 * gravity * groundFriction
+export function calcGroundAcceleration (gravity, surfaceFriction) {
+  return -1 * gravity * surfaceFriction
 }
 
 export function calcGroundDisplacement (velocityAtBottomOfRamp, groundAcceleration, elapsedTime) {
@@ -55,13 +55,13 @@ export function calcCarY (carX, rampAngle) {
   }
 }
 
-export function calcOutputs ({ initialCarX, gravity, rampFriction, groundFriction, rampTopX, rampTopY, elapsedTime }) {
+export function calcOutputs ({ initialCarX, gravity, surfaceFriction, rampTopX, rampTopY, elapsedTime }) {
   const rampAngle = calcRampAngle(rampTopX, rampTopY)
   const startDistanceUpRamp = calcStartDistanceUpRamp(initialCarX, rampAngle)
-  const rampAcceleration = calcRampAcceleration(gravity, rampFriction, rampAngle)
+  const rampAcceleration = calcRampAcceleration(gravity, surfaceFriction, rampAngle)
   const timeToGround = calcTimeToGround(startDistanceUpRamp, rampAcceleration)
   const velocityAtBottomOfRamp = rampAcceleration * timeToGround
-  const groundAcceleration = calcGroundAcceleration(gravity, groundFriction)
+  const groundAcceleration = calcGroundAcceleration(gravity, surfaceFriction)
   const timeOnGround = calcTimeOnGround(velocityAtBottomOfRamp, groundAcceleration)
   const totalTime = timeToGround + timeOnGround
   let carX

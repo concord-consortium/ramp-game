@@ -19,8 +19,7 @@ const MAX_Y = 3
 const DEFAULT_OPTIONS = {
   gravity: 9.81,
   mass: 0.05,
-  rampFriction: 0.3,
-  groundFriction: 0.3,
+  surfaceFriction: 0.3,
   rampTopX: -1,
   rampTopY: 1,
   initialCarX: -0.5
@@ -45,8 +44,7 @@ export default class SimulationBase extends PureComponent {
       isRunning: false,
       gravity: DEFAULT_OPTIONS.gravity,
       mass: DEFAULT_OPTIONS.mass,
-      rampFriction: DEFAULT_OPTIONS.rampFriction,
-      groundFriction: DEFAULT_OPTIONS.groundFriction,
+      surfaceFriction: DEFAULT_OPTIONS.surfaceFriction,
       rampTopX: DEFAULT_OPTIONS.rampTopX,
       rampTopY: DEFAULT_OPTIONS.rampTopY,
       initialCarX: DEFAULT_OPTIONS.initialCarX,

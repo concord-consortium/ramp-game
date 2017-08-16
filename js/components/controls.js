@@ -12,8 +12,7 @@ export default class Controls extends PureComponent {
     this.startStop = this.toggleOption.bind(this, 'isRunning')
     this.setGravity = this.setOption.bind(this, 'gravity')
     this.setMass = this.setOption.bind(this, 'mass')
-    this.setRampFriction = this.setOption.bind(this, 'rampFriction')
-    this.setGroundFriction = this.setOption.bind(this, 'groundFriction')
+    this.setSurfaceFriction = this.setOption.bind(this, 'surfaceFriction')
   }
 
   get simStarted () {
@@ -49,7 +48,7 @@ export default class Controls extends PureComponent {
 
   render () {
     const { simFinished, saveData, carRampDist, finalDist } = this.props
-    const { gravity, mass, rampFriction, groundFriction } = this.props.options
+    const { gravity, mass, surfaceFriction } = this.props.options
     return (
       <div className='controls'>
         <div className='buttons'>
@@ -73,15 +72,9 @@ export default class Controls extends PureComponent {
           </div>
         </div>
         <div className='slider-container'>
-          <div className='label'>Ramp friction</div>
+          <div className='label'>Surface friction</div>
           <div className='slider'>
-            <Slider min={0.01} max={1} editable value={rampFriction} onChange={this.setRampFriction} disabled={this.simStarted} />
-          </div>
-        </div>
-        <div className='slider-container'>
-          <div className='label'>Ground friction</div>
-          <div className='slider'>
-            <Slider min={0.01} max={1} editable value={groundFriction} onChange={this.setGroundFriction} disabled={this.simStarted} />
+            <Slider min={0.01} max={1} editable value={surfaceFriction} onChange={this.setSurfaceFriction} disabled={this.simStarted} />
           </div>
         </div>
         <div className='output-container'>
