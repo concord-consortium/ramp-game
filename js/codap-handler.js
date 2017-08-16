@@ -29,7 +29,7 @@ const DATA_SET_TEMPLATE = {
         {name: 'Run number', type: 'categorical'},
         {name: 'Ramp angle', unit: '°', type: 'numeric', precision: 2},
         {name: 'Start height above ground', unit: 'm', type: 'numeric', precision: 2},
-        {name: 'Start distance up ramp', unit: 'm', type: 'numeric', precision: 2},
+        {name: 'Start car ramp distance', unit: 'm', type: 'numeric', precision: 2},
         {name: 'Mass', unit: 'kg', type: 'numeric', precision: 2},
         {name: 'Gravity', unit: 'm/s²', type: 'numeric', precision: 2},
         {name: 'Surface friction', type: 'numeric', precision: 2},
@@ -92,7 +92,7 @@ function generateData (runNumber, options) {
       'Surface friction': options.surfaceFriction,
 
       'Ramp angle': outputs.rampAngle * 180 / Math.PI,
-      'Start distance up ramp': outputs.startDistanceUpRamp,
+      'Start car ramp distance': outputs.startDistanceUpRamp,
       'Start height above ground': outputs.startHeightAboveGround,
       'Velocity at bottom of ramp': outputs.velocityAtBottomOfRamp,
       'Time to ground': outputs.timeToGround,
