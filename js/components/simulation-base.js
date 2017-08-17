@@ -255,17 +255,16 @@ export default class SimulationBase extends PureComponent {
 
   render () {
     const { rampTopX, rampTopY, scaleX, scaleY, codapPresent, dataSaved, discardDataDialogActive, discardDataWarningEnabled } = this.state
-    const { simulationFinished, startDistanceUpRamp, distanceFromEndOfRamp, carX, carY, rampAngle, carAngle } = this.outputs
+    const { simulationFinished, carX, carY, rampAngle, carAngle } = this.outputs
     return (
       <div>
         <Controls
           options={this.state} setOptions={this.handleOptionsChange}
+          outputs={this.outputs}
           setupNewRun={this.setupNewRunIfDataSaved}
           saveData={codapPresent ? this.sendDataToCodap : false}
           dataSaved={dataSaved}
           simFinished={simulationFinished}
-          startDistanceUpRamp={startDistanceUpRamp}
-          distanceFromEndOfRamp={distanceFromEndOfRamp}
         />
         <Stage width={this.simWidth} height={this.simHeight}>
           <Layer>

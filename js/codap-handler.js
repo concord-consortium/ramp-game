@@ -1,5 +1,6 @@
 /* global codapInterface */
 import { calcOutputs } from './physics'
+import config from './config'
 
 const TIMESTEP = 0.05
 
@@ -26,17 +27,8 @@ const DATA_SET_TEMPLATE = {
         setOfCasesWithArticle: 'a run'
       },
       attrs: [
-        {name: 'Run number', type: 'categorical'},
-        {name: 'Ramp angle', unit: '°', type: 'numeric', precision: 2},
-        {name: 'Start height above ground', unit: 'm', type: 'numeric', precision: 2},
-        {name: 'Start car ramp distance', unit: 'm', type: 'numeric', precision: 2},
-        {name: 'Mass', unit: 'kg', type: 'numeric', precision: 2},
-        {name: 'Gravity', unit: 'm/s²', type: 'numeric', precision: 2},
-        {name: 'Surface friction', type: 'numeric', precision: 2},
-        {name: 'Time to ground', unit: 's', type: 'numeric', precision: 2},
-        {name: 'Total time', unit: 's', type: 'numeric', precision: 2},
-        {name: 'Velocity at bottom of ramp', unit: 'm/s', type: 'numeric', precision: 2},
-        {name: 'Final distance', unit: 'm', type: 'numeric', precision: 2}
+        {name: 'Run number', type: 'categorical'}
+        // will be extended by outputs defined in config
       ]
     },
     {
@@ -48,14 +40,27 @@ const DATA_SET_TEMPLATE = {
         setOfCasesWithArticle: 'a run'
       },
       attrs: [
-        {name: 'Time', unit: 's', type: 'numeric', precision: 2},
-        {name: 'Velocity', unit: 'm/s', type: 'numeric', precision: 2},
-        {name: 'X', unit: 'm', type: 'numeric', precision: 2},
-        {name: 'Y', unit: 'm', type: 'numeric', precision: 2}
+        {name: 'Time', unit: 's', type: 'numeric', precision: 2}
+        // will be extended by outputs defined in config
       ]
     }
   ]
 }
+
+// Extend template using configuration.
+Object.values(config.inputs).forEach(input => {
+  if (input.showInCodap) {
+    DATA_SET_TEMPLATE.collections[0].attrs.push(input.codapDef)
+  }
+})
+
+Object.values(config.outputs).forEach(output => {
+  if (output.showInCodap && output.codapType === 'summary') {
+    DATA_SET_TEMPLATE.collections[0].attrs.push(output.codapDef)
+  } else if (output.showInCodap && output.codapType === 'detail') {
+    DATA_SET_TEMPLATE.collections[1].attrs.push(output.codapDef)
+  }
+})
 
 function requestDataContext (name) {
   return codapInterface.sendRequest({
@@ -84,27 +89,24 @@ function generateData (runNumber, options) {
     optionsCopy.elapsedTime = Math.min(time, totalTime)
     const outputs = calcOutputs(optionsCopy)
 
-    data.push({
+    const values = {
       'Run number': runNumber,
-
-      'Mass': options.mass,
-      'Gravity': options.gravity,
-      'Surface friction': options.surfaceFriction,
-
-      'Ramp angle': outputs.rampAngle * 180 / Math.PI,
-      'Start car ramp distance': outputs.startDistanceUpRamp,
-      'Start height above ground': outputs.startHeightAboveGround,
-      'Velocity at bottom of ramp': outputs.velocityAtBottomOfRamp,
-      'Time to ground': outputs.timeToGround,
-      'Total time': outputs.totalTime,
-      'Final distance': outputs.finalDistance,
-
-      'Time': time,
-      'X': outputs.carX,
-      'Y': outputs.carY,
-      'Velocity': outputs.carVelocity
+      'Time': time
+    }
+    Object.keys(config.inputs).forEach(inputName => {
+      const input = config.inputs[inputName]
+      if (input.showInCodap) {
+        values[input.codapDef.name] = options[inputName]
+      }
+    })
+    Object.keys(config.outputs).forEach(outputName => {
+      const output = config.outputs[outputName]
+      if (output.showInCodap) {
+        values[output.codapDef.name] = outputs[outputName]
+      }
     })
 
+    data.push(values)
     time += TIMESTEP
   }
   return data

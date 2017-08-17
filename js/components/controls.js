@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react'
 import { Button } from 'react-toolbox/lib/button'
 import Slider from 'react-toolbox/lib/slider'
 import Input from 'react-toolbox/lib/input'
+import config from '../config'
 
 import '../../css/controls.less'
 
@@ -9,9 +10,6 @@ export default class Controls extends PureComponent {
   constructor (props) {
     super(props)
     this.startStop = this.toggleOption.bind(this, 'isRunning')
-    this.setGravity = this.setOption.bind(this, 'gravity')
-    this.setMass = this.setOption.bind(this, 'mass')
-    this.setSurfaceFriction = this.setOption.bind(this, 'surfaceFriction')
   }
 
   get simStarted () {
@@ -37,9 +35,44 @@ export default class Controls extends PureComponent {
     setOptions({ [name]: !options[name] })
   }
 
+  renderInputs () {
+    const { options } = this.props
+    const sliders = []
+    Object.keys(config.inputs).forEach(inputName => {
+      const input = config.inputs[inputName]
+      if (input.showInMainView) {
+        sliders.push(
+          <div key={inputName} className='slider-container'>
+            <div className='label'>{ input.codapDef.name }</div>
+            <div className='slider'>
+              <Slider min={input.range[0]} max={input.range[1]} editable value={options[inputName]} onChange={this.setOption.bind(this, inputName)} disabled={this.simStarted} />
+            </div>
+          </div>
+        )
+      }
+    })
+    return sliders
+  }
+
+  renderOutputs () {
+    const { outputs } = this.props
+    const components = []
+    Object.keys(config.outputs).forEach(outputName => {
+      const output = config.outputs[outputName]
+      if (output.showInMainView) {
+        components.push(
+          <div key={outputName} className='output-container'>
+            <div className='label'>{ output.codapDef.name }</div>
+            <Input className='output' type='text' value={outputs[outputName].toFixed(2)} disabled />
+          </div>
+        )
+      }
+    })
+    return components
+  }
+
   render () {
-    const { simFinished, saveData, startDistanceUpRamp, distanceFromEndOfRamp, setupNewRun, dataSaved } = this.props
-    const { gravity, mass, surfaceFriction } = this.props.options
+    const { simFinished, saveData, setupNewRun, dataSaved } = this.props
     return (
       <div className='controls'>
         <div className='buttons'>
@@ -50,32 +83,8 @@ export default class Controls extends PureComponent {
           }
           <Button label='New run' onClick={setupNewRun} disabled={!this.simStarted} raised primary />
         </div>
-        <div className='slider-container'>
-          <div className='label'>Gravity</div>
-          <div className='slider'>
-            <Slider min={0.01} max={20} editable value={gravity} onChange={this.setGravity} disabled={this.simStarted} />
-          </div>
-        </div>
-        <div className='slider-container'>
-          <div className='label'>Mass</div>
-          <div className='slider'>
-            <Slider min={0.01} max={0.3} editable value={mass} onChange={this.setMass} disabled={this.simStarted} />
-          </div>
-        </div>
-        <div className='slider-container'>
-          <div className='label'>Surface friction</div>
-          <div className='slider'>
-            <Slider min={0.01} max={1} editable value={surfaceFriction} onChange={this.setSurfaceFriction} disabled={this.simStarted} />
-          </div>
-        </div>
-        <div className='output-container'>
-          <div className='label'>Start car ramp distance</div>
-          <Input className='output' type='text' value={startDistanceUpRamp.toFixed(2)} disabled />
-        </div>
-        <div className='output-container'>
-          <div className='label'>Distance from end of ramp</div>
-          <Input className='output' type='text' value={distanceFromEndOfRamp.toFixed(2)} disabled />
-        </div>
+        { this.renderInputs() }
+        { this.renderOutputs() }
       </div>
     )
   }
