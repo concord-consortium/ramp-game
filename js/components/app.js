@@ -2,8 +2,6 @@ import React, { PureComponent } from 'react'
 import SimulationBase from './simulation-base'
 import { getURLParam } from '../utils'
 
-import '../../css/app.less'
-
 export default class App extends PureComponent {
   constructor (props) {
     super(props)

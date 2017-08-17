@@ -8,6 +8,7 @@ import c from '../sim-constants'
 import VehicleImage from './vehicle-image'
 import { calcOutputs, calcRampLength, calcRampAngle } from '../physics'
 import CodapHandler from '../codap-handler'
+import config from '../config'
 
 import { Layer, Stage } from 'react-konva'
 
@@ -16,15 +17,6 @@ const MIN_X = -2.3
 const MIN_Y = -0.5
 const MAX_X = 5.05
 const MAX_Y = 3
-
-const DEFAULT_OPTIONS = {
-  gravity: 9.81,
-  mass: 0.05,
-  surfaceFriction: 0.3,
-  rampTopX: -1,
-  rampTopY: 1,
-  initialCarX: -0.5
-}
 
 function getScaleX (pixelMeterRatio) {
   return function scaleX (worldX) {
@@ -43,12 +35,12 @@ export default class SimulationBase extends PureComponent {
     super(props)
     this.state = {
       isRunning: false,
-      gravity: DEFAULT_OPTIONS.gravity,
-      mass: DEFAULT_OPTIONS.mass,
-      surfaceFriction: DEFAULT_OPTIONS.surfaceFriction,
-      rampTopX: DEFAULT_OPTIONS.rampTopX,
-      rampTopY: DEFAULT_OPTIONS.rampTopY,
-      initialCarX: DEFAULT_OPTIONS.initialCarX,
+      gravity: config.inputs.gravity.defaultValue,
+      mass: config.inputs.mass.defaultValue,
+      surfaceFriction: config.inputs.surfaceFriction.defaultValue,
+      rampTopX: -1,
+      rampTopY: 1,
+      initialCarX: -0.5,
       elapsedTime: 0,
       scaleX: getScaleX(this.pixelMeterRatio),
       scaleY: getScaleY(this.pixelMeterRatio),

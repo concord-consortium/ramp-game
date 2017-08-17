@@ -1,21 +1,26 @@
+import { getURLParam } from './utils'
+
 const config = {
   inputs: {
     mass: {
       codapDef: {name: 'Mass', unit: 'kg', type: 'numeric', precision: 2},
       showInCodap: true,
       showInMainView: true,
+      defaultValue: 0.05,
       range: [0.01, 0.3]
     },
     gravity: {
       codapDef: {name: 'Gravity', unit: 'm/s²', type: 'numeric', precision: 2},
       showInCodap: true,
       showInMainView: true,
+      defaultValue: 9.81,
       range: [0.01, 20]
     },
     surfaceFriction: {
       codapDef: {name: 'Surface friction', type: 'numeric', precision: 2},
       showInCodap: true,
       showInMainView: true,
+      defaultValue: 0.3,
       range: [0.01, 1]
     }
   },
@@ -88,5 +93,29 @@ const config = {
     }
   }
 }
+
+function processUrl (type) {
+  Object.keys(config[type]).forEach((name) => {
+    const item = config[type][name]
+    Object.keys(item).forEach(prop => {
+      let urlValue = getURLParam(`${name}-${prop}`)
+      if (urlValue === 'true') {
+        urlValue = true
+      } else if (urlValue === 'false') {
+        urlValue = false
+      } else if (urlValue !== null && !isNaN(urlValue)) {
+        // !isNaN(string) means isNumber(string).
+        urlValue = parseFloat(urlValue)
+      }
+
+      if (urlValue !== null) {
+        config[type][name][prop] = urlValue
+      }
+    })
+  })
+}
+
+processUrl('inputs')
+processUrl('outputs')
 
 export default config
