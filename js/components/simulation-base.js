@@ -3,6 +3,7 @@ import Ramp from './ramp'
 import Ground from './ground'
 import InclineControl from './incline-control'
 import Controls from './controls'
+import ConfirmationDialog from './confirmation-dialog'
 import c from '../sim-constants'
 import VehicleImage from './vehicle-image'
 import { calcOutputs, calcRampLength, calcRampAngle } from '../physics'
@@ -24,9 +25,6 @@ const DEFAULT_OPTIONS = {
   rampTopY: 1,
   initialCarX: -0.5
 }
-
-const DISCARD_DATA_MSG = 'Pressing "New run" without pressing "Save data" will discard the current data. ' +
-  'Set up a new run without saving the data first?'
 
 function getScaleX (pixelMeterRatio) {
   return function scaleX (worldX) {
@@ -55,7 +53,9 @@ export default class SimulationBase extends PureComponent {
       scaleX: getScaleX(this.pixelMeterRatio),
       scaleY: getScaleY(this.pixelMeterRatio),
       codapPresent: false,
-      dataSaved: false
+      dataSaved: false,
+      discardDataDialogActive: false,
+      discardDataWarningEnabled: true
     }
 
     this.outputs = calcOutputs(this.state)
@@ -63,6 +63,9 @@ export default class SimulationBase extends PureComponent {
     this.codapHandler = new CodapHandler()
 
     this.setupNewRun = this.setupNewRun.bind(this)
+    this.setupNewRunIfDataSaved = this.setupNewRunIfDataSaved.bind(this)
+    this.hideDiscardDataDialog = this.hideDiscardDataDialog.bind(this)
+    this.toggleDiscardDataWarning = this.toggleDiscardDataWarning.bind(this)
     this.handleOptionsChange = this.handleOptionsChange.bind(this)
     this.handleInclineChange = this.handleInclineChange.bind(this)
     this.handleCarPosChange = this.handleCarPosChange.bind(this)
@@ -133,14 +136,36 @@ export default class SimulationBase extends PureComponent {
   }
 
   setupNewRun () {
-    const { codapPresent, dataSaved } = this.state
-    if (!codapPresent || (codapPresent && dataSaved) || (codapPresent && !dataSaved && window.confirm(DISCARD_DATA_MSG))) {
+    this.setState({
+      isRunning: false,
+      elapsedTime: 0,
+      dataSaved: false,
+      discardDataDialogActive: false
+    })
+  }
+
+  setupNewRunIfDataSaved () {
+    const { codapPresent, dataSaved, discardDataWarningEnabled } = this.state
+    if (!codapPresent || (codapPresent && dataSaved) || !discardDataWarningEnabled) {
+      this.setupNewRun()
+    } else {
       this.setState({
-        isRunning: false,
-        elapsedTime: 0,
-        dataSaved: false
+        discardDataDialogActive: true
       })
     }
+  }
+
+  hideDiscardDataDialog () {
+    this.setState({
+      discardDataDialogActive: false
+    })
+  }
+
+  toggleDiscardDataWarning () {
+    const { discardDataWarningEnabled } = this.state
+    this.setState({
+      discardDataWarningEnabled: !discardDataWarningEnabled
+    })
   }
 
   handleOptionsChange (newOptions) {
@@ -229,13 +254,13 @@ export default class SimulationBase extends PureComponent {
   }
 
   render () {
-    const { rampTopX, rampTopY, scaleX, scaleY, codapPresent, dataSaved } = this.state
+    const { rampTopX, rampTopY, scaleX, scaleY, codapPresent, dataSaved, discardDataDialogActive, discardDataWarningEnabled } = this.state
     const { simulationFinished, startDistanceUpRamp, distanceFromEndOfRamp, carX, carY, rampAngle, carAngle } = this.outputs
     return (
       <div>
         <Controls
           options={this.state} setOptions={this.handleOptionsChange}
-          setupNewRun={this.setupNewRun}
+          setupNewRun={this.setupNewRunIfDataSaved}
           saveData={codapPresent ? this.sendDataToCodap : false}
           dataSaved={dataSaved}
           simFinished={simulationFinished}
@@ -252,6 +277,17 @@ export default class SimulationBase extends PureComponent {
               draggable={this.draggingActive} onDrag={this.handleCarPosChange} />
           </Layer>
         </Stage>
+        <ConfirmationDialog
+          title='Discard data?'
+          active={discardDataDialogActive}
+          dontShowAgain={!discardDataWarningEnabled}
+          onHide={this.hideDiscardDataDialog}
+          onConfirm={this.setupNewRun}
+          onDontShowAgainToggle={this.toggleDiscardDataWarning}
+        >
+          Pressing "New run" without pressing "Save data" will discard the current data.
+          Set up a new run without saving the data first?
+        </ConfirmationDialog>
       </div>
     )
   }
