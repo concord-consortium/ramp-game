@@ -4,7 +4,13 @@ This repository reproduces the Inquiry Space project, previously designed in Net
 
 ## Testing
 
-Latest published builds for the IS2 demo are deployed to https://concord-consortium.github.io/inquiry-space-2/
+Latest published builds for the IS2 demo:
+
+https://concord-consortium.github.io/inquiry-space-2/
+
+Authoring page:
+
+https://concord-consortium.github.io/inquiry-space-2/?authoring
 
 ## Development
 
