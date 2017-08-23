@@ -77,23 +77,6 @@ export const challenges = [
     steps: 3,
     minScore: 67,
     prevStepScore: 25,
-    mass: 0.1,
-    surfaceFriction: 0.3,
-    carDragging: true,
-    disabledInputs: ['mass', 'gravity', 'surfaceFriction'],
-    message: `Make this heavier car stop in the center of the red area.
-              This car is twice the mass of the last car, but the friction is back to what it was before.`,
-    targetX (step) {
-      return Math.random() * 3 + 1
-    },
-    targetWidth (step) {
-      return 0.9 - step * 0.12
-    }
-  },
-  {
-    steps: 3,
-    minScore: 67,
-    prevStepScore: 25,
     mass: 0.05,
     surfaceFriction: 0.3,
     carDragging: false,
