@@ -7,7 +7,7 @@ const TIMESTEP = 0.05
 const DATA_SET_NAME = 'CarRampSimulation'
 
 const CONFIG = {
-  title: 'Ramp simulation',
+  title: 'Ramp simulation' + (config.game ? ' game' : ''),
   name: DATA_SET_NAME,
   dimensions: {
     width: 650,
@@ -47,18 +47,36 @@ const DATA_SET_TEMPLATE = {
   ]
 }
 
+if (config.game) {
+  DATA_SET_TEMPLATE.collections.unshift({
+    name: 'GameSummary',
+    title: 'Game Summary',
+    labels: {
+      pluralCase: 'Game',
+      setOfCasesWithArticle: 'a challenge'
+    },
+    attrs: [
+      {name: 'Challenge number', type: 'categorical'}
+    ]
+  })
+  DATA_SET_TEMPLATE.collections[1].parent = 'GameSummary'
+}
+
 // Extend template using configuration.
 Object.values(config.inputs).forEach(input => {
+  const summary = DATA_SET_TEMPLATE.collections.find(col => col.name === 'RunSummary')
   if (input.showInCodap) {
-    DATA_SET_TEMPLATE.collections[0].attrs.push(input.codapDef)
+    summary.attrs.push(input.codapDef)
   }
 })
 
 Object.values(config.outputs).forEach(output => {
+  const summary = DATA_SET_TEMPLATE.collections.find(col => col.name === 'RunSummary')
+  const details = DATA_SET_TEMPLATE.collections.find(col => col.name === 'RunDetails')
   if (output.showInCodap && output.codapType === 'summary') {
-    DATA_SET_TEMPLATE.collections[0].attrs.push(output.codapDef)
+    summary.attrs.push(output.codapDef)
   } else if (output.showInCodap && output.codapType === 'detail') {
-    DATA_SET_TEMPLATE.collections[1].attrs.push(output.codapDef)
+    details.attrs.push(output.codapDef)
   }
 })
 
@@ -81,6 +99,7 @@ function requestCreateDataSet (name, template) {
 
 function generateData (runNumber, options) {
   const data = []
+  const challengeNumber = options.challengeIdx + 1
   const optionsCopy = Object.assign({}, options)
   const totalTime = calcOutputs(options).totalTime
   let time = 0
@@ -92,6 +111,9 @@ function generateData (runNumber, options) {
     const values = {
       'Run number': runNumber,
       'Time': time
+    }
+    if (config.game) {
+      values['Challenge number'] = challengeNumber
     }
     Object.keys(config.inputs).forEach(inputName => {
       const input = config.inputs[inputName]
