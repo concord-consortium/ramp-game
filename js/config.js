@@ -82,7 +82,7 @@ const config = {
       codapType: 'summary',
       showInCodap: true,
       showInCodapInGameMode: true,
-      showInMainView: false,
+      showInMainView: false
     },
     carVelocity: {
       codapDef: {name: 'Velocity', unit: 'm/s', type: 'numeric', precision: 2},

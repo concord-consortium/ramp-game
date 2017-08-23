@@ -15,7 +15,8 @@ function getInputsData () {
       displayName: input.codapDef.name,
       defaultValue: input.defaultValue,
       showInCodap: input.showInCodap,
-      showInMainView: input.showInMainView
+      showInMainView: input.showInMainView,
+      showInCodapInGameMode: input.showInCodapInGameMode
     })
   })
   return data
@@ -29,7 +30,8 @@ function getOutputsData () {
       name: outputName,
       displayName: output.codapDef.name,
       showInCodap: output.showInCodap,
-      showInMainView: output.showInMainView
+      showInMainView: output.showInMainView,
+      showInCodapInGameMode: output.showInCodapInGameMode
     })
   })
   return data
@@ -39,6 +41,7 @@ export default class Authoring extends PureComponent {
   constructor (props) {
     super(props)
     this.state = {
+      game: config.game,
       inputs: getInputsData(),
       outputs: getOutputsData(),
       iframeSrc: ''
@@ -46,10 +49,13 @@ export default class Authoring extends PureComponent {
   }
 
   get finalUrl () {
-    const { inputs, outputs } = this.state
+    const { inputs, outputs, game } = this.state
     let url = window.location.href.slice()
     url = url.replace('?authoring', '')
-    const props = ['defaultValue', 'showInCodap', 'showInMainView']
+    if (game) {
+      url += '&game'
+    }
+    const props = ['defaultValue', 'showInCodap', 'showInCodapInGameMode', 'showInMainView']
     inputs.forEach(item => {
       props.forEach(prop => {
         if (item[prop] !== config.inputs[item.name][prop]) {
@@ -84,7 +90,13 @@ export default class Authoring extends PureComponent {
     }, 750)
   }
 
-  toggleValue (type, idx, name) {
+  toggleValue (name) {
+    this.setState({
+      [name]: !this.state[name]
+    })
+  }
+
+  toggleNestedValue (type, idx, name) {
     const newData = this.state[type].slice()
     newData[idx] = Object.assign({}, newData[idx], {[name]: !newData[idx][name]})
     this.setState({
@@ -101,12 +113,12 @@ export default class Authoring extends PureComponent {
   }
 
   render () {
-    const { inputs, outputs, iframeSrc } = this.state
+    const { game, inputs, outputs, iframeSrc } = this.state
     const finalUrl = this.finalUrl
     return (
       <div className='authoring' >
-        <h1>Customize simulation inputs and outputs</h1>
-
+        <h1>Customize simulation configuration, inputs and outputs</h1>
+        <Checkbox className='inline' checked={game} onChange={this.toggleValue.bind(this, 'game')} /> Game mode
         <h3>Inputs</h3>
         <Table selectable={false}>
           <TableHead>
@@ -114,6 +126,7 @@ export default class Authoring extends PureComponent {
             <TableCell>Default value</TableCell>
             <TableCell>Show slider</TableCell>
             <TableCell>Show in CODAP</TableCell>
+            <TableCell>Show in CODAP in game mode</TableCell>
           </TableHead>
           {inputs.map((item, idx) => (
             <TableRow key={idx}>
@@ -122,10 +135,13 @@ export default class Authoring extends PureComponent {
                 <Input type='text' className='small-input' value={item.defaultValue} onChange={this.setInputDefValue.bind(this, idx)} />
               </TableCell>
               <TableCell>
-                <Checkbox checked={item.showInMainView} onChange={this.toggleValue.bind(this, 'inputs', idx, 'showInMainView')} />
+                <Checkbox checked={item.showInMainView} onChange={this.toggleNestedValue.bind(this, 'inputs', idx, 'showInMainView')} />
               </TableCell>
               <TableCell>
-                <Checkbox checked={item.showInCodap} onChange={this.toggleValue.bind(this, 'inputs', idx, 'showInCodap')} />
+                <Checkbox checked={item.showInCodap} onChange={this.toggleNestedValue.bind(this, 'inputs', idx, 'showInCodap')} />
+              </TableCell>
+              <TableCell>
+                <Checkbox checked={item.showInCodapInGameMode} onChange={this.toggleNestedValue.bind(this, 'inputs', idx, 'showInCodapInGameMode')} />
               </TableCell>
             </TableRow>
           ))}
@@ -137,15 +153,19 @@ export default class Authoring extends PureComponent {
             <TableCell>Name</TableCell>
             <TableCell>Show in main view</TableCell>
             <TableCell>Show in CODAP</TableCell>
+            <TableCell>Show in CODAP in game mode</TableCell>
           </TableHead>
           {outputs.map((item, idx) => (
             <TableRow key={idx}>
               <TableCell>{item.displayName}</TableCell>
               <TableCell>
-                <Checkbox checked={item.showInMainView} onChange={this.toggleValue.bind(this, 'outputs', idx, 'showInMainView')} />
+                <Checkbox checked={item.showInMainView} onChange={this.toggleNestedValue.bind(this, 'outputs', idx, 'showInMainView')} />
               </TableCell>
               <TableCell>
-                <Checkbox checked={item.showInCodap} onChange={this.toggleValue.bind(this, 'outputs', idx, 'showInCodap')} />
+                <Checkbox checked={item.showInCodap} onChange={this.toggleNestedValue.bind(this, 'outputs', idx, 'showInCodap')} />
+              </TableCell>
+              <TableCell>
+                <Checkbox checked={item.showInCodapInGameMode} onChange={this.toggleNestedValue.bind(this, 'outputs', idx, 'showInCodapInGameMode')} />
               </TableCell>
             </TableRow>
           ))}
