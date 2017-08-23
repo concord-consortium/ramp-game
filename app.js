@@ -19687,7 +19687,7 @@ var TIMESTEP = 0.05;
 var DATA_SET_NAME = 'CarRampSimulation';
 
 var CONFIG = {
-  title: 'Ramp simulation',
+  title: 'Ramp simulation' + (_config2.default.game ? ' game' : ''),
   name: DATA_SET_NAME,
   dimensions: {
     width: 650,
@@ -19720,19 +19720,42 @@ var DATA_SET_TEMPLATE = {
       // will be extended by outputs defined in config
     }]
   }]
+};
 
-  // Extend template using configuration.
-};Object.values(_config2.default.inputs).forEach(function (input) {
+if (_config2.default.game) {
+  DATA_SET_TEMPLATE.collections.unshift({
+    name: 'GameSummary',
+    title: 'Game Summary',
+    labels: {
+      pluralCase: 'Game',
+      setOfCasesWithArticle: 'a challenge'
+    },
+    attrs: [{ name: 'Challenge number', type: 'categorical' }]
+  });
+  DATA_SET_TEMPLATE.collections[1].parent = 'GameSummary';
+}
+
+// Extend template using configuration.
+Object.values(_config2.default.inputs).forEach(function (input) {
+  var summary = DATA_SET_TEMPLATE.collections.find(function (col) {
+    return col.name === 'RunSummary';
+  });
   if (input.showInCodap) {
-    DATA_SET_TEMPLATE.collections[0].attrs.push(input.codapDef);
+    summary.attrs.push(input.codapDef);
   }
 });
 
 Object.values(_config2.default.outputs).forEach(function (output) {
+  var summary = DATA_SET_TEMPLATE.collections.find(function (col) {
+    return col.name === 'RunSummary';
+  });
+  var details = DATA_SET_TEMPLATE.collections.find(function (col) {
+    return col.name === 'RunDetails';
+  });
   if (output.showInCodap && output.codapType === 'summary') {
-    DATA_SET_TEMPLATE.collections[0].attrs.push(output.codapDef);
+    summary.attrs.push(output.codapDef);
   } else if (output.showInCodap && output.codapType === 'detail') {
-    DATA_SET_TEMPLATE.collections[1].attrs.push(output.codapDef);
+    details.attrs.push(output.codapDef);
   }
 });
 
@@ -19755,6 +19778,7 @@ function requestCreateDataSet(name, template) {
 
 function generateData(runNumber, options) {
   var data = [];
+  var challengeNumber = options.challengeIdx + 1;
   var optionsCopy = Object.assign({}, options);
   var totalTime = (0, _physics.calcOutputs)(options).totalTime;
   var time = 0;
@@ -19767,6 +19791,9 @@ function generateData(runNumber, options) {
       'Run number': runNumber,
       'Time': time
     };
+    if (_config2.default.game) {
+      values['Challenge number'] = challengeNumber;
+    }
     Object.keys(_config2.default.inputs).forEach(function (inputName) {
       var input = _config2.default.inputs[inputName];
       if (input.showInCodap) {
