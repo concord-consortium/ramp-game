@@ -6349,6 +6349,7 @@ var config = {
     mass: {
       codapDef: { name: 'Mass', unit: 'kg', type: 'numeric', precision: 2 },
       showInCodap: true,
+      showInCodapInGameMode: true,
       showInMainView: true,
       defaultValue: 0.05,
       range: [0.01, 0.3]
@@ -6356,6 +6357,7 @@ var config = {
     gravity: {
       codapDef: { name: 'Gravity', unit: 'm/s²', type: 'numeric', precision: 2 },
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: true,
       defaultValue: 9.81,
       range: [0.01, 20]
@@ -6363,6 +6365,7 @@ var config = {
     surfaceFriction: {
       codapDef: { name: 'Surface friction', type: 'numeric', precision: 2 },
       showInCodap: true,
+      showInCodapInGameMode: true,
       showInMainView: true,
       defaultValue: 0.3,
       range: [0.01, 1]
@@ -6373,30 +6376,35 @@ var config = {
       codapDef: { name: 'Ramp angle', unit: '°', type: 'numeric', precision: 2 },
       codapType: 'summary',
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: false
     },
     startHeightAboveGround: {
       codapDef: { name: 'Start height above ground', unit: 'm', type: 'numeric', precision: 2 },
       codapType: 'summary',
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: false
     },
     startDistanceUpRamp: {
       codapDef: { name: 'Start car ramp distance', unit: 'm', type: 'numeric', precision: 2 },
       codapType: 'summary',
       showInCodap: true,
+      showInCodapInGameMode: true,
       showInMainView: true
     },
     distanceFromEndOfRamp: {
       codapDef: { name: 'Distance from end of ramp', unit: 'm', type: 'numeric', precision: 2 },
       codapType: 'summary',
       showInCodap: false,
+      showInCodapInGameMode: false,
       showInMainView: true
     },
     timeToGround: {
       codapDef: { name: 'Time to ground', unit: 's', type: 'numeric', precision: 2 },
       codapType: 'summary',
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: false
     },
     totalTime: {
@@ -6409,30 +6417,35 @@ var config = {
       codapDef: { name: 'Velocity at bottom of ramp', unit: 'm/s', type: 'numeric', precision: 2 },
       codapType: 'summary',
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: false
     },
     finalDistance: {
       codapDef: { name: 'Final distance', unit: 'm', type: 'numeric', precision: 2 },
       codapType: 'summary',
       showInCodap: true,
+      showInCodapInGameMode: true,
       showInMainView: false
     },
     carVelocity: {
       codapDef: { name: 'Velocity', unit: 'm/s', type: 'numeric', precision: 2 },
       codapType: 'detail',
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: false
     },
     carX: {
       codapDef: { name: 'X', unit: 'm', type: 'numeric', precision: 2 },
       codapType: 'detail',
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: false
     },
     carY: {
       codapDef: { name: 'Y', unit: 'm', type: 'numeric', precision: 2 },
       codapType: 'detail',
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: false
     }
   }
@@ -19346,7 +19359,8 @@ function getInputsData() {
       displayName: input.codapDef.name,
       defaultValue: input.defaultValue,
       showInCodap: input.showInCodap,
-      showInMainView: input.showInMainView
+      showInMainView: input.showInMainView,
+      showInCodapInGameMode: input.showInCodapInGameMode
     });
   });
   return data;
@@ -19360,7 +19374,8 @@ function getOutputsData() {
       name: outputName,
       displayName: output.codapDef.name,
       showInCodap: output.showInCodap,
-      showInMainView: output.showInMainView
+      showInMainView: output.showInMainView,
+      showInCodapInGameMode: output.showInCodapInGameMode
     });
   });
   return data;
@@ -19375,6 +19390,7 @@ var Authoring = function (_PureComponent) {
     var _this = _possibleConstructorReturn(this, (Authoring.__proto__ || Object.getPrototypeOf(Authoring)).call(this, props));
 
     _this.state = {
+      game: _config2.default.game,
       inputs: getInputsData(),
       outputs: getOutputsData(),
       iframeSrc: ''
@@ -19403,7 +19419,12 @@ var Authoring = function (_PureComponent) {
     }
   }, {
     key: 'toggleValue',
-    value: function toggleValue(type, idx, name) {
+    value: function toggleValue(name) {
+      this.setState(_defineProperty({}, name, !this.state[name]));
+    }
+  }, {
+    key: 'toggleNestedValue',
+    value: function toggleNestedValue(type, idx, name) {
       var newData = this.state[type].slice();
       newData[idx] = Object.assign({}, newData[idx], _defineProperty({}, name, !newData[idx][name]));
       this.setState(_defineProperty({}, type, newData));
@@ -19423,6 +19444,7 @@ var Authoring = function (_PureComponent) {
       var _this3 = this;
 
       var _state = this.state,
+          game = _state.game,
           inputs = _state.inputs,
           outputs = _state.outputs,
           iframeSrc = _state.iframeSrc;
@@ -19434,8 +19456,10 @@ var Authoring = function (_PureComponent) {
         _react2.default.createElement(
           'h1',
           null,
-          'Customize simulation inputs and outputs'
+          'Customize simulation configuration, inputs and outputs'
         ),
+        _react2.default.createElement(_checkbox2.default, { className: 'inline', checked: game, onChange: this.toggleValue.bind(this, 'game') }),
+        ' Game mode',
         _react2.default.createElement(
           'h3',
           null,
@@ -19466,6 +19490,11 @@ var Authoring = function (_PureComponent) {
               _table.TableCell,
               null,
               'Show in CODAP'
+            ),
+            _react2.default.createElement(
+              _table.TableCell,
+              null,
+              'Show in CODAP in game mode'
             )
           ),
           inputs.map(function (item, idx) {
@@ -19485,12 +19514,17 @@ var Authoring = function (_PureComponent) {
               _react2.default.createElement(
                 _table.TableCell,
                 null,
-                _react2.default.createElement(_checkbox2.default, { checked: item.showInMainView, onChange: _this3.toggleValue.bind(_this3, 'inputs', idx, 'showInMainView') })
+                _react2.default.createElement(_checkbox2.default, { checked: item.showInMainView, onChange: _this3.toggleNestedValue.bind(_this3, 'inputs', idx, 'showInMainView') })
               ),
               _react2.default.createElement(
                 _table.TableCell,
                 null,
-                _react2.default.createElement(_checkbox2.default, { checked: item.showInCodap, onChange: _this3.toggleValue.bind(_this3, 'inputs', idx, 'showInCodap') })
+                _react2.default.createElement(_checkbox2.default, { checked: item.showInCodap, onChange: _this3.toggleNestedValue.bind(_this3, 'inputs', idx, 'showInCodap') })
+              ),
+              _react2.default.createElement(
+                _table.TableCell,
+                null,
+                _react2.default.createElement(_checkbox2.default, { checked: item.showInCodapInGameMode, onChange: _this3.toggleNestedValue.bind(_this3, 'inputs', idx, 'showInCodapInGameMode') })
               )
             );
           })
@@ -19520,6 +19554,11 @@ var Authoring = function (_PureComponent) {
               _table.TableCell,
               null,
               'Show in CODAP'
+            ),
+            _react2.default.createElement(
+              _table.TableCell,
+              null,
+              'Show in CODAP in game mode'
             )
           ),
           outputs.map(function (item, idx) {
@@ -19534,12 +19573,17 @@ var Authoring = function (_PureComponent) {
               _react2.default.createElement(
                 _table.TableCell,
                 null,
-                _react2.default.createElement(_checkbox2.default, { checked: item.showInMainView, onChange: _this3.toggleValue.bind(_this3, 'outputs', idx, 'showInMainView') })
+                _react2.default.createElement(_checkbox2.default, { checked: item.showInMainView, onChange: _this3.toggleNestedValue.bind(_this3, 'outputs', idx, 'showInMainView') })
               ),
               _react2.default.createElement(
                 _table.TableCell,
                 null,
-                _react2.default.createElement(_checkbox2.default, { checked: item.showInCodap, onChange: _this3.toggleValue.bind(_this3, 'outputs', idx, 'showInCodap') })
+                _react2.default.createElement(_checkbox2.default, { checked: item.showInCodap, onChange: _this3.toggleNestedValue.bind(_this3, 'outputs', idx, 'showInCodap') })
+              ),
+              _react2.default.createElement(
+                _table.TableCell,
+                null,
+                _react2.default.createElement(_checkbox2.default, { checked: item.showInCodapInGameMode, onChange: _this3.toggleNestedValue.bind(_this3, 'outputs', idx, 'showInCodapInGameMode') })
               )
             );
           })
@@ -19567,11 +19611,15 @@ var Authoring = function (_PureComponent) {
     get: function get() {
       var _state2 = this.state,
           inputs = _state2.inputs,
-          outputs = _state2.outputs;
+          outputs = _state2.outputs,
+          game = _state2.game;
 
       var url = window.location.href.slice();
       url = url.replace('?authoring', '');
-      var props = ['defaultValue', 'showInCodap', 'showInMainView'];
+      if (game) {
+        url += '&game';
+      }
+      var props = ['defaultValue', 'showInCodap', 'showInCodapInGameMode', 'showInMainView'];
       inputs.forEach(function (item) {
         props.forEach(function (prop) {
           if (item[prop] !== _config2.default.inputs[item.name][prop]) {
@@ -19740,7 +19788,8 @@ Object.values(_config2.default.inputs).forEach(function (input) {
   var summary = DATA_SET_TEMPLATE.collections.find(function (col) {
     return col.name === 'RunSummary';
   });
-  if (input.showInCodap) {
+  var showInCodap = !_config2.default.game && input.showInCodap || _config2.default.game && input.showInCodapInGameMode;
+  if (showInCodap) {
     summary.attrs.push(input.codapDef);
   }
 });
@@ -19752,12 +19801,22 @@ Object.values(_config2.default.outputs).forEach(function (output) {
   var details = DATA_SET_TEMPLATE.collections.find(function (col) {
     return col.name === 'RunDetails';
   });
-  if (output.showInCodap && output.codapType === 'summary') {
+  var showInCodap = !_config2.default.game && output.showInCodap || _config2.default.game && output.showInCodapInGameMode;
+  if (showInCodap && output.codapType === 'summary') {
     summary.attrs.push(output.codapDef);
-  } else if (output.showInCodap && output.codapType === 'detail') {
+  } else if (showInCodap && output.codapType === 'detail') {
     details.attrs.push(output.codapDef);
   }
 });
+
+var DETAILS_PRESENT = true;
+if (DATA_SET_TEMPLATE.collections.find(function (col) {
+  return col.name === 'RunDetails';
+}).attrs.length === 1) {
+  // If no time series data is added to the template, remove this table completely.
+  DATA_SET_TEMPLATE.collections.pop();
+  DETAILS_PRESENT = false;
+}
 
 function requestDataContext(name) {
   return codapInterface.sendRequest({
@@ -19781,7 +19840,7 @@ function generateData(runNumber, options) {
   var challengeNumber = options.challengeIdx + 1;
   var optionsCopy = Object.assign({}, options);
   var totalTime = (0, _physics.calcOutputs)(options).totalTime;
-  var time = 0;
+  var time = DETAILS_PRESENT ? 0 : totalTime;
 
   var _loop = function _loop() {
     optionsCopy.elapsedTime = Math.min(time, totalTime);
@@ -25963,7 +26022,7 @@ exports = module.exports = __webpack_require__(23)();
 
 
 // module
-exports.push([module.i, ".authoring {\n  padding: 20px;\n  font-size: 16px;\n}\n.authoring .final-url {\n  width: 750px;\n  border: 1px solid rgba(0, 0, 0, 0.2);\n  padding: 6px;\n  border-radius: 5px;\n  font-size: 16px;\n  margin-bottom: 15px;\n}\n.authoring .small-input {\n  width: 50px;\n}\n.authoring h1 {\n  margin-bottom: 15px;\n}\n.authoring h3 {\n  margin-top: 20px;\n}\n.authoring td {\n  padding-top: 0 !important;\n  padding-bottom: 0 !important;\n}\n.authoring td label {\n  margin-bottom: 0;\n}\n.authoring iframe {\n  border: 1px solid rgba(0, 0, 0, 0.2);\n}\n", ""]);
+exports.push([module.i, ".authoring {\n  padding: 20px;\n  font-size: 16px;\n}\n.authoring .final-url {\n  width: 750px;\n  border: 1px solid rgba(0, 0, 0, 0.2);\n  padding: 6px;\n  border-radius: 5px;\n  font-size: 16px;\n  margin-bottom: 15px;\n}\n.authoring .inline {\n  display: inline-block;\n  margin-right: 10px;\n}\n.authoring .small-input {\n  width: 50px;\n}\n.authoring h1 {\n  margin-bottom: 15px;\n}\n.authoring h3 {\n  margin-top: 20px;\n}\n.authoring td {\n  padding-top: 0 !important;\n  padding-bottom: 0 !important;\n}\n.authoring td label {\n  margin-bottom: 0;\n}\n.authoring iframe {\n  border: 1px solid rgba(0, 0, 0, 0.2);\n}\n", ""]);
 
 // exports
 
