@@ -11,7 +11,7 @@ const CONFIG = {
   name: DATA_SET_NAME,
   dimensions: {
     width: 650,
-    height: 350
+    height: config.game ? 450 : 350
   },
   version: '0.1'
 }

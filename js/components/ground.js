@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react'
 import c from '../sim-constants'
 import { Group, Text, Rect, Line } from 'react-konva'
 
-const GROUND_HEIGHT = 35 // px
+export const GROUND_HEIGHT = 35 // px
 const MARKS_COUNT = 10
 
 export default class Ground extends PureComponent {

@@ -36,16 +36,17 @@ export default class Controls extends PureComponent {
   }
 
   renderInputs () {
-    const { options } = this.props
+    const { options, disabledInputs } = this.props
     const sliders = []
     Object.keys(config.inputs).forEach(inputName => {
       const input = config.inputs[inputName]
       if (input.showInMainView) {
+        const disabled = this.simStarted || disabledInputs.indexOf(inputName) !== -1
         sliders.push(
           <div key={inputName} className='slider-container'>
             <div className='label'>{ input.codapDef.name }</div>
             <div className='slider'>
-              <Slider min={input.range[0]} max={input.range[1]} editable value={options[inputName]} onChange={this.setOption.bind(this, inputName)} disabled={this.simStarted} />
+              <Slider min={input.range[0]} max={input.range[1]} editable value={options[inputName]} onChange={this.setOption.bind(this, inputName)} disabled={disabled} />
             </div>
           </div>
         )
@@ -72,7 +73,7 @@ export default class Controls extends PureComponent {
   }
 
   render () {
-    const { simFinished, saveData, setupNewRun, dataSaved } = this.props
+    const { simFinished, saveData, setupNewRun, dataSaved, challengeActive } = this.props
     return (
       <div className='controls'>
         <div className='buttons'>
@@ -81,7 +82,7 @@ export default class Controls extends PureComponent {
             saveData &&
             <Button label='Save data' onClick={saveData} disabled={!simFinished || dataSaved} raised primary />
           }
-          <Button label='New run' onClick={setupNewRun} disabled={!this.simStarted} raised primary />
+          <Button label='New run' onClick={setupNewRun} disabled={!this.simStarted || (challengeActive && !dataSaved)} raised primary />
         </div>
         { this.renderInputs() }
         { this.renderOutputs() }

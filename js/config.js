@@ -1,6 +1,7 @@
 import { getURLParam } from './utils'
 
 const config = {
+  game: false,
   inputs: {
     mass: {
       codapDef: {name: 'Mass', unit: 'kg', type: 'numeric', precision: 2},
@@ -95,26 +96,38 @@ const config = {
 }
 
 function processUrl (type) {
-  Object.keys(config[type]).forEach((name) => {
-    const item = config[type][name]
-    Object.keys(item).forEach(prop => {
-      let urlValue = getURLParam(`${name}-${prop}`)
-      if (urlValue === 'true') {
-        urlValue = true
-      } else if (urlValue === 'false') {
-        urlValue = false
-      } else if (urlValue !== null && !isNaN(urlValue)) {
-        // !isNaN(string) means isNumber(string).
-        urlValue = parseFloat(urlValue)
-      }
+  const parseUrlVal = urlValue => {
+    if (urlValue === true || urlValue === 'true') {
+      return true
+    } else if (urlValue === 'false') {
+      return false
+    } else if (urlValue !== null && !isNaN(urlValue)) {
+      // !isNaN(string) means isNumber(string).
+      return parseFloat(urlValue)
+    }
+    return null
+  }
 
+  const configPart = type ? config[type] : config
+  Object.keys(configPart).forEach((name) => {
+    const item = configPart[name]
+    if (typeof item === 'object') {
+      Object.keys(item).forEach(prop => {
+        const urlValue = parseUrlVal(getURLParam(`${name}-${prop}`))
+        if (urlValue !== null) {
+          configPart[name][prop] = urlValue
+        }
+      })
+    } else {
+      const urlValue = parseUrlVal(getURLParam(name))
       if (urlValue !== null) {
-        config[type][name][prop] = urlValue
+        configPart[name] = urlValue
       }
-    })
+    }
   })
 }
 
+processUrl()
 processUrl('inputs')
 processUrl('outputs')
 

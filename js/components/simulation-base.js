@@ -1,12 +1,15 @@
 import React, { PureComponent } from 'react'
 import Ramp from './ramp'
-import Ground from './ground'
+import Ground, { GROUND_HEIGHT } from './ground'
 import InclineControl from './incline-control'
 import Controls from './controls'
 import ConfirmationDialog from './confirmation-dialog'
+import ChallengeStatus from './challenge-status'
 import c from '../sim-constants'
 import VehicleImage from './vehicle-image'
+import GameTarget from './game-target'
 import { calcOutputs, calcRampLength, calcRampAngle } from '../physics'
+import { calcGameScore, getScoreMessage, challenges } from '../game'
 import CodapHandler from '../codap-handler'
 import config from '../config'
 
@@ -14,9 +17,11 @@ import { Layer, Stage } from 'react-konva'
 
 // MKS units are used everywhere: meters, kilograms and seconds.
 const MIN_X = -2.3
-const MIN_Y = -0.5
+const MIN_Y = 0
 const MAX_X = 5.05
 const MAX_Y = 3
+
+const CHALLENGE_STATUS_HEIGHT = 100 // px
 
 function getScaleX (pixelMeterRatio) {
   return function scaleX (worldX) {
@@ -34,16 +39,30 @@ export default class SimulationBase extends PureComponent {
   constructor (props) {
     super(props)
     this.state = {
+      scaleX: getScaleX(this.pixelMeterRatio),
+      scaleY: getScaleY(this.pixelMeterRatio),
+
       isRunning: false,
+      carDragging: true,
+      inclineControl: true,
+      disabledInputs: [],
+
       gravity: config.inputs.gravity.defaultValue,
       mass: config.inputs.mass.defaultValue,
       surfaceFriction: config.inputs.surfaceFriction.defaultValue,
-      rampTopX: -1,
-      rampTopY: 1,
-      initialCarX: -0.5,
+      rampTopX: -2,
+      rampTopY: 2,
+      initialCarX: -1,
       elapsedTime: 0,
-      scaleX: getScaleX(this.pixelMeterRatio),
-      scaleY: getScaleY(this.pixelMeterRatio),
+
+      challengeIdx: config.game ? 0 : null,
+      stepIdx: config.game ? 0 : null,
+      targetX: 1,
+      targetWidth: 1,
+      lastScore: null,
+      challengeMessage: '',
+      gameCompleted: false,
+
       codapPresent: false,
       dataSaved: false,
       discardDataDialogActive: false,
@@ -61,7 +80,7 @@ export default class SimulationBase extends PureComponent {
     this.handleOptionsChange = this.handleOptionsChange.bind(this)
     this.handleInclineChange = this.handleInclineChange.bind(this)
     this.handleCarPosChange = this.handleCarPosChange.bind(this)
-    this.sendDataToCodap = this.sendDataToCodap.bind(this)
+    this.saveDataAndCheckGameScore = this.saveDataAndCheckGameScore.bind(this)
     this.rafHandler = this.rafHandler.bind(this)
   }
 
@@ -73,6 +92,10 @@ export default class SimulationBase extends PureComponent {
       .catch(msg => {
         console.log('CODAP not available')
       })
+
+    if (this.challengeActive) {
+      this.setupChallenge()
+    }
   }
 
   componentWillUpdate (nextProps, nextState) {
@@ -80,7 +103,7 @@ export default class SimulationBase extends PureComponent {
   }
 
   componentDidUpdate (prevProps, prevState) {
-    const { isRunning } = this.state
+    const { isRunning, challengeIdx, stepIdx } = this.state
     const { width, height } = this.props
     if (isRunning && !prevState.isRunning) {
       if (isNaN(this.outputs.totalTime)) {
@@ -98,6 +121,9 @@ export default class SimulationBase extends PureComponent {
         scaleY: getScaleY(this.pixelMeterRatio)
       })
     }
+    if (challengeIdx !== prevState.challengeIdx || stepIdx !== prevState.stepIdx) {
+      this.setupChallenge()
+    }
   }
 
   get draggingActive () {
@@ -110,13 +136,22 @@ export default class SimulationBase extends PureComponent {
   }
 
   get simHeight () {
-    return this.props.height
+    return this.props.height - (config.game ? CHALLENGE_STATUS_HEIGHT : 0)
+  }
+
+  get simRealHeight () {
+    return this.pixelMeterRatio * (MAX_Y - MIN_Y) + GROUND_HEIGHT + 10
   }
 
   get pixelMeterRatio () {
     const xScale = this.simWidth / (MAX_X - MIN_X)
-    const yScale = this.simHeight / (MAX_Y - MIN_Y)
+    const yScale = (this.simHeight - GROUND_HEIGHT) / (MAX_Y - MIN_Y)
     return Math.min(xScale, yScale)
+  }
+
+  get challengeActive () {
+    const { challengeIdx, gameCompleted } = this.state
+    return challengeIdx !== null && !gameCompleted
   }
 
   invScaleX (screenX) {
@@ -134,6 +169,9 @@ export default class SimulationBase extends PureComponent {
       dataSaved: false,
       discardDataDialogActive: false
     })
+    if (this.challengeActive) {
+      this.updateChallenge()
+    }
   }
 
   setupNewRunIfDataSaved () {
@@ -240,13 +278,77 @@ export default class SimulationBase extends PureComponent {
     })
   }
 
-  sendDataToCodap () {
-    this.codapHandler.generateAndSendData(this.state)
+  saveDataAndCheckGameScore () {
+    const { codapPresent } = this.state
+    if (codapPresent) {
+      this.codapHandler.generateAndSendData(this.state)
+    }
+    if (this.challengeActive) {
+      const { targetX, targetWidth, challengeIdx, stepIdx } = this.state
+      const { carX } = this.outputs
+      const score = calcGameScore(carX, targetX, targetWidth)
+      this.setState({
+        lastScore: score,
+        challengeMessage: getScoreMessage(score, challengeIdx, stepIdx)
+      })
+    }
     this.setState({ dataSaved: true })
   }
 
+  setupChallenge () {
+    const { challengeIdx, stepIdx, initialCarX } = this.state
+    const challenge = challenges[challengeIdx]
+    this.setState({
+      targetX: challenge.targetX(stepIdx),
+      targetWidth: challenge.targetWidth(stepIdx),
+      mass: challenge.mass,
+      surfaceFriction: challenge.surfaceFriction,
+      carDragging: challenge.carDragging,
+      inclineControl: challenge.inclineControl,
+      disabledInputs: challenge.disabledInputs,
+      challengeMessage: challenge.message,
+      initialCarX: challenge.initialCarX !== undefined ? challenge.initialCarX : initialCarX
+    })
+  }
+
+  updateChallenge () {
+    const { challengeIdx, stepIdx, lastScore } = this.state
+    const challenge = challenges[challengeIdx]
+    let newStepIdx = stepIdx
+    let newChallengeIdx = challengeIdx
+    if (lastScore >= challenge.minScore && stepIdx + 1 < challenge.steps) {
+      newStepIdx = stepIdx + 1
+    } else if (lastScore >= challenge.minScore && challenges[challengeIdx + 1]) {
+      newChallengeIdx = challengeIdx + 1
+      newStepIdx = 0
+    } else if (lastScore >= challenge.minScore && !challenges[challengeIdx + 1]) {
+      this.gameCompleted()
+      return
+    } else if (lastScore < challenge.prevStepScore && stepIdx > 0) {
+      newStepIdx = stepIdx - 1
+    }
+    this.setState({
+      challengeIdx: newChallengeIdx,
+      stepIdx: newStepIdx,
+      challengeMessage: challenges[newChallengeIdx].message
+    })
+  }
+
+  gameCompleted () {
+    this.setState({
+      inclineControl: true,
+      disabledInputs: [],
+      gravity: config.inputs.gravity.defaultValue,
+      mass: config.inputs.mass.defaultValue,
+      surfaceFriction: config.inputs.surfaceFriction.defaultValue,
+      gameCompleted: true
+    })
+  }
+
   render () {
-    const { rampTopX, rampTopY, scaleX, scaleY, codapPresent, dataSaved, discardDataDialogActive, discardDataWarningEnabled } = this.state
+    const { rampTopX, rampTopY, scaleX, scaleY, codapPresent, dataSaved, discardDataDialogActive, challengeMessage,
+      discardDataWarningEnabled, targetX, targetWidth, carDragging, inclineControl, challengeIdx, stepIdx, lastScore,
+      disabledInputs } = this.state
     const { simulationFinished, carX, carY, rampAngle, carAngle } = this.outputs
     return (
       <div>
@@ -254,20 +356,37 @@ export default class SimulationBase extends PureComponent {
           options={this.state} setOptions={this.handleOptionsChange}
           outputs={this.outputs}
           setupNewRun={this.setupNewRunIfDataSaved}
-          saveData={codapPresent ? this.sendDataToCodap : false}
+          saveData={codapPresent || this.challengeActive ? this.saveDataAndCheckGameScore : false}
           dataSaved={dataSaved}
           simFinished={simulationFinished}
+          disabledInputs={disabledInputs}
+          challengeActive={this.challengeActive}
         />
         <Stage width={this.simWidth} height={this.simHeight}>
           <Layer>
             <Ramp sx={scaleX} sy={scaleY} pointX={rampTopX} pointY={rampTopY} angle={rampAngle} />
             <Ground sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} />
-            <InclineControl x={scaleX(rampTopX)} y={scaleY(rampTopY)}
-              draggable={this.draggingActive} onDrag={this.handleInclineChange} />
+            {
+              inclineControl &&
+              <InclineControl x={scaleX(rampTopX)} y={scaleY(rampTopY)}
+                draggable={this.draggingActive} onDrag={this.handleInclineChange} />
+            }
+            {
+              this.challengeActive &&
+              <GameTarget sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} x={targetX} width={targetWidth} />
+            }
             <VehicleImage sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle}
-              draggable={this.draggingActive} onDrag={this.handleCarPosChange} />
+              draggable={this.draggingActive && carDragging} onDrag={this.handleCarPosChange} />
           </Layer>
         </Stage>
+        {
+          config.game &&
+          <ChallengeStatus
+            top={this.simRealHeight} width={this.simWidth}
+            challengeIdx={challengeIdx} stepIdx={stepIdx} lastScore={lastScore}
+            message={challengeMessage}
+          />
+        }
         <ConfirmationDialog
           title='Discard data?'
           active={discardDataDialogActive}
