@@ -65,7 +65,8 @@ if (config.game) {
 // Extend template using configuration.
 Object.values(config.inputs).forEach(input => {
   const summary = DATA_SET_TEMPLATE.collections.find(col => col.name === 'RunSummary')
-  if (input.showInCodap) {
+  const showInCodap = (!config.game && input.showInCodap) || (config.game && input.showInCodapInGameMode)
+  if (showInCodap) {
     summary.attrs.push(input.codapDef)
   }
 })
@@ -73,12 +74,20 @@ Object.values(config.inputs).forEach(input => {
 Object.values(config.outputs).forEach(output => {
   const summary = DATA_SET_TEMPLATE.collections.find(col => col.name === 'RunSummary')
   const details = DATA_SET_TEMPLATE.collections.find(col => col.name === 'RunDetails')
-  if (output.showInCodap && output.codapType === 'summary') {
+  const showInCodap = (!config.game && output.showInCodap) || (config.game && output.showInCodapInGameMode)
+  if (showInCodap && output.codapType === 'summary') {
     summary.attrs.push(output.codapDef)
-  } else if (output.showInCodap && output.codapType === 'detail') {
+  } else if (showInCodap && output.codapType === 'detail') {
     details.attrs.push(output.codapDef)
   }
 })
+
+let DETAILS_PRESENT = true
+if (DATA_SET_TEMPLATE.collections.find(col => col.name === 'RunDetails').attrs.length === 1) {
+  // If no time series data is added to the template, remove this table completely.
+  DATA_SET_TEMPLATE.collections.pop()
+  DETAILS_PRESENT = false
+}
 
 function requestDataContext (name) {
   return codapInterface.sendRequest({
@@ -102,7 +111,7 @@ function generateData (runNumber, options) {
   const challengeNumber = options.challengeIdx + 1
   const optionsCopy = Object.assign({}, options)
   const totalTime = calcOutputs(options).totalTime
-  let time = 0
+  let time = DETAILS_PRESENT ? 0 : totalTime
 
   while (time <= totalTime) {
     optionsCopy.elapsedTime = Math.min(time, totalTime)

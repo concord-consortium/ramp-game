@@ -6,6 +6,7 @@ const config = {
     mass: {
       codapDef: {name: 'Mass', unit: 'kg', type: 'numeric', precision: 2},
       showInCodap: true,
+      showInCodapInGameMode: true,
       showInMainView: true,
       defaultValue: 0.05,
       range: [0.01, 0.3]
@@ -13,6 +14,7 @@ const config = {
     gravity: {
       codapDef: {name: 'Gravity', unit: 'm/s²', type: 'numeric', precision: 2},
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: true,
       defaultValue: 9.81,
       range: [0.01, 20]
@@ -20,6 +22,7 @@ const config = {
     surfaceFriction: {
       codapDef: {name: 'Surface friction', type: 'numeric', precision: 2},
       showInCodap: true,
+      showInCodapInGameMode: true,
       showInMainView: true,
       defaultValue: 0.3,
       range: [0.01, 1]
@@ -30,30 +33,35 @@ const config = {
       codapDef: {name: 'Ramp angle', unit: '°', type: 'numeric', precision: 2},
       codapType: 'summary',
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: false
     },
     startHeightAboveGround: {
       codapDef: {name: 'Start height above ground', unit: 'm', type: 'numeric', precision: 2},
       codapType: 'summary',
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: false
     },
     startDistanceUpRamp: {
       codapDef: {name: 'Start car ramp distance', unit: 'm', type: 'numeric', precision: 2},
       codapType: 'summary',
       showInCodap: true,
+      showInCodapInGameMode: true,
       showInMainView: true
     },
     distanceFromEndOfRamp: {
       codapDef: {name: 'Distance from end of ramp', unit: 'm', type: 'numeric', precision: 2},
       codapType: 'summary',
       showInCodap: false,
+      showInCodapInGameMode: false,
       showInMainView: true
     },
     timeToGround: {
       codapDef: {name: 'Time to ground', unit: 's', type: 'numeric', precision: 2},
       codapType: 'summary',
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: false
     },
     totalTime: {
@@ -66,30 +74,35 @@ const config = {
       codapDef: {name: 'Velocity at bottom of ramp', unit: 'm/s', type: 'numeric', precision: 2},
       codapType: 'summary',
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: false
     },
     finalDistance: {
       codapDef: {name: 'Final distance', unit: 'm', type: 'numeric', precision: 2},
       codapType: 'summary',
       showInCodap: true,
-      showInMainView: false
+      showInCodapInGameMode: true,
+      showInMainView: false,
     },
     carVelocity: {
       codapDef: {name: 'Velocity', unit: 'm/s', type: 'numeric', precision: 2},
       codapType: 'detail',
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: false
     },
     carX: {
       codapDef: {name: 'X', unit: 'm', type: 'numeric', precision: 2},
       codapType: 'detail',
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: false
     },
     carY: {
       codapDef: {name: 'Y', unit: 'm', type: 'numeric', precision: 2},
       codapType: 'detail',
       showInCodap: true,
+      showInCodapInGameMode: false,
       showInMainView: false
     }
   }
