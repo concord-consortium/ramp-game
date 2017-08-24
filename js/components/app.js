@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react'
 import SimulationBase from './simulation-base'
 import { getURLParam } from '../utils'
+import appStyles from '../../css/app.less'
 
 export default class App extends PureComponent {
   constructor (props) {
@@ -30,7 +31,7 @@ export default class App extends PureComponent {
   render () {
     const { width, height } = this.state
     return (
-      <div className='app' >
+      <div className={appStyles.app} >
         <SimulationBase width={width} height={height} />
       </div>
     )

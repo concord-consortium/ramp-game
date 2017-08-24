@@ -3,8 +3,8 @@ import { Button } from 'react-toolbox/lib/button'
 import Slider from 'react-toolbox/lib/slider'
 import Input from 'react-toolbox/lib/input'
 import config from '../config'
-
-import '../../css/controls.less'
+import controlsStyles from '../../css/controls.less'
+import sliderTheme from '../../css/slider-theme.less'
 
 export default class Controls extends PureComponent {
   constructor (props) {
@@ -43,10 +43,10 @@ export default class Controls extends PureComponent {
       if (input.showInMainView) {
         const disabled = this.simStarted || disabledInputs.indexOf(inputName) !== -1
         sliders.push(
-          <div key={inputName} className='slider-container'>
-            <div className='label'>{ input.codapDef.name }</div>
-            <div className='slider'>
-              <Slider min={input.range[0]} max={input.range[1]} editable value={options[inputName]} onChange={this.setOption.bind(this, inputName)} disabled={disabled} />
+          <div key={inputName} className={controlsStyles.sliderContainer}>
+            <div className={controlsStyles.label}>{ input.codapDef.name }</div>
+            <div className={controlsStyles.slider}>
+              <Slider min={input.range[0]} theme={sliderTheme} max={input.range[1]} editable value={options[inputName]} onChange={this.setOption.bind(this, inputName)} disabled={disabled} />
             </div>
           </div>
         )
@@ -62,9 +62,9 @@ export default class Controls extends PureComponent {
       const output = config.outputs[outputName]
       if (output.showInMainView) {
         components.push(
-          <div key={outputName} className='output-container'>
-            <div className='label'>{ output.codapDef.name }</div>
-            <Input className='output' type='text' value={outputs[outputName].toFixed(2)} disabled />
+          <div key={outputName} className={controlsStyles.outputContainer}>
+            <div className={controlsStyles.label}>{ output.codapDef.name }</div>
+            <Input className={controlsStyles.output} type='text' value={outputs[outputName].toFixed(2)} disabled />
           </div>
         )
       }
@@ -75,8 +75,8 @@ export default class Controls extends PureComponent {
   render () {
     const { simFinished, saveData, setupNewRun, dataSaved, challengeActive } = this.props
     return (
-      <div className='controls'>
-        <div className='buttons'>
+      <div className={controlsStyles.controls}>
+        <div className={controlsStyles.buttons}>
           <Button label={this.startStopLabel} onClick={this.startStop} disabled={simFinished} raised primary />
           {
             saveData &&

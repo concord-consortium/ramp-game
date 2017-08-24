@@ -1,0 +1,20 @@
+.slider {
+  input {
+    width: 45px;
+  }
+
+  // The lowest level of the slider should stay yellow.
+  &.ring {
+    & .innerknob {
+      background-color: #F8C84E;
+      border: 1px solid #F8C84E;
+    }
+  }
+
+  &[disabled] {
+    & .innerknob {
+      background-color: rgba(177, 177, 177, 1);
+      border-color: rgba(177, 177, 177, 1);
+    }
+  }
+}

@@ -40,7 +40,19 @@ module.exports = {
       {
         // Local .less files.
         test: /\.less$/,
-        loader: 'style-loader!css-loader!less-loader!autoprefixer-loader'
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true,
+              sourceMap: true,
+              importLoaders: 1,
+              localIdentName: '[name]--[local]--[hash:base64:8]'
+            }
+          },
+          'less-loader'
+        ]
       },
       {
         test: /\.json$/,

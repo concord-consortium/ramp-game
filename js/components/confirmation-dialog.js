@@ -1,8 +1,7 @@
 import React, { PureComponent } from 'react'
 import Dialog from 'react-toolbox/lib/dialog'
 import Checkbox from 'react-toolbox/lib/checkbox'
-
-import '../../css/confirmation-dialog.less'
+import styles from '../../css/confirmation-dialog.less'
 
 export default class ConfirmationDialog extends PureComponent {
   get actions () {
@@ -18,7 +17,7 @@ export default class ConfirmationDialog extends PureComponent {
     return (
       <div>
         <Dialog
-          className='confirmation-dialog'
+          className={styles.confirmationDialog}
           actions={this.actions}
           active={active}
           onEscKeyDown={onHide}
@@ -27,7 +26,7 @@ export default class ConfirmationDialog extends PureComponent {
         >
           { children }
           <Checkbox
-            className='dont-show-again'
+            className={styles.dontShowAgain}
             checked={dontShowAgain}
             label="Don't show this message again"
             onChange={onDontShowAgainToggle}
