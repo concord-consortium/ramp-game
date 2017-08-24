@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react'
-import { challenges } from '../game'
+import { challenges, getStarsSymbols } from '../game'
 import styles from '../../css/challenge-status.less'
 
 export default class ChallengeStatus extends PureComponent {
@@ -12,7 +12,7 @@ export default class ChallengeStatus extends PureComponent {
           <div className={styles.headers}>
             <h3>Challenge { challengeIdx + 1 } of { challenges.length }</h3>
             <h4>Step { stepIdx + 1 } of { challenge.steps }</h4>
-            <h4 style={{visibility: lastScore === null ? 'hidden' : ''}}>Last score: <span className={styles.score}>{ lastScore }</span></h4>
+            <h4 style={{visibility: lastScore === null ? 'hidden' : ''}}>Last score: { getStarsSymbols(lastScore) }</h4>
           </div>
           <div className={styles.message}>
             { message }

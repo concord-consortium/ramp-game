@@ -350,6 +350,7 @@ export default class SimulationBase extends PureComponent {
     this.setState({
       challengeIdx: newChallengeIdx,
       stepIdx: newStepIdx,
+      targetX: challenge.targetX(newStepIdx),
       challengeMessage: challenges[newChallengeIdx].message
     })
   }

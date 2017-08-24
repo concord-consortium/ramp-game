@@ -16,12 +16,21 @@ export function calcStarsCount (score) {
   return 0
 }
 
-export function getScoreMessage (score, challengeIdx, stepIdx) {
-  const challenge = challenges[challengeIdx]
+export function getStarsSymbols (score) {
   let stars = ''
-  for (let i = 0, len = calcStarsCount(score); i < len; i++) {
+  const starsCount = calcStarsCount(score)
+  if (starsCount === 0) {
+    return '☆'
+  }
+  for (let i = 0; i < starsCount; i++) {
     stars += '★'
   }
+  return stars
+}
+
+export function getScoreMessage (score, challengeIdx, stepIdx) {
+  const challenge = challenges[challengeIdx]
+  const stars = getStarsSymbols(score)
   if (score >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 < challenge.steps) {
     return `Congratulations! You earned ${stars}! You advance a step and the target gets smaller.`
   } else if (score >= MIN_SCORE_TO_ADVANCE && challenges[challengeIdx + 1]) {
@@ -46,7 +55,7 @@ export const challenges = [
       return 2.91
     },
     targetWidth (step) {
-      return 0.9 - step * 0.12
+      return 0.9 - step * 0.14
     }
   },
   {
@@ -55,14 +64,13 @@ export const challenges = [
     surfaceFriction: 0.3,
     carDragging: true,
     disabledInputs: ['mass', 'gravity', 'surfaceFriction'],
-    message: `Make the car stop in the center of the
-              red area by changing the car's starting
-              position. Watch out! The red band now moves each trial.`,
+    message: `Welcome to Challenge 2. The target will now move each time, 
+              so trial and error may not be a successful strategy here.`,
     targetX (step) {
       return Math.random() * 3 + 1
     },
     targetWidth (step) {
-      return 0.9 - step * 0.12
+      return 0.9 - step * 0.14
     }
   },
   {
@@ -71,13 +79,12 @@ export const challenges = [
     surfaceFriction: 0.2,
     carDragging: true,
     disabledInputs: ['mass', 'gravity', 'surfaceFriction'],
-    message: `Make a new car stop in the red area.
-              This car has less friction.`,
+    message: `Welcome Challenge 3. The surface has been changed to have less friction. Can you still hit the target?`,
     targetX (step) {
       return Math.random() * 3 + 1
     },
     targetWidth (step) {
-      return 0.9 - step * 0.12
+      return 0.9 - step * 0.14
     }
   },
   {
@@ -87,12 +94,12 @@ export const challenges = [
     carDragging: false,
     initialCarX: -1,
     disabledInputs: ['mass', 'gravity'],
-    message: `Now make the car stop in the center of the red area by changing the friction slider.`,
+    message: `Welcome to Challenge 4. Now you control the friction rather than the starting height.`,
     targetX (step) {
       return Math.random() * 3 + 1
     },
     targetWidth (step) {
-      return 0.9 - step * 0.12
+      return 0.9 - step * 0.14
     }
   }
 ]
