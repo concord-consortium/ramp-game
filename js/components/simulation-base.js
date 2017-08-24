@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react'
+import Dialog from 'react-toolbox/lib/dialog'
 import Ramp from './ramp'
 import Ground, { GROUND_HEIGHT } from './ground'
 import InclineControl from './incline-control'
@@ -13,6 +14,7 @@ import { calcOutputs, calcRampLength, calcRampAngle } from '../physics'
 import { calcGameScore, getScoreMessage, challenges, MIN_SCORE_TO_ADVANCE } from '../game'
 import CodapHandler from '../codap-handler'
 import config from '../config'
+import dialogTheme from '../../css/dialog-theme.less'
 
 import { Layer, Stage } from 'react-konva'
 
@@ -67,7 +69,10 @@ export default class SimulationBase extends PureComponent {
       codapPresent: false,
       dataSaved: false,
       discardDataDialogActive: false,
-      discardDataWarningEnabled: true
+      discardDataWarningEnabled: true,
+
+      genericDialogActive: false,
+      genericDialogMessage: ''
     }
 
     this.outputs = calcOutputs(this.state)
@@ -76,6 +81,7 @@ export default class SimulationBase extends PureComponent {
 
     this.setupNewRun = this.setupNewRun.bind(this)
     this.setupNewRunIfDataSaved = this.setupNewRunIfDataSaved.bind(this)
+    this.hideGenericDialog = this.hideGenericDialog.bind(this)
     this.hideDiscardDataDialog = this.hideDiscardDataDialog.bind(this)
     this.toggleDiscardDataWarning = this.toggleDiscardDataWarning.bind(this)
     this.handleOptionsChange = this.handleOptionsChange.bind(this)
@@ -184,6 +190,19 @@ export default class SimulationBase extends PureComponent {
         discardDataDialogActive: true
       })
     }
+  }
+
+  showDialogWithMessage (msg) {
+    this.setState({
+      genericDialogActive: true,
+      genericDialogMessage: msg
+    })
+  }
+
+  hideGenericDialog () {
+    this.setState({
+      genericDialogActive: false
+    })
   }
 
   hideDiscardDataDialog () {
@@ -322,6 +341,8 @@ export default class SimulationBase extends PureComponent {
     } else if (lastScore >= MIN_SCORE_TO_ADVANCE && challenges[challengeIdx + 1]) {
       newChallengeIdx = challengeIdx + 1
       newStepIdx = 0
+      this.showDialogWithMessage(`Congratulations! You have completed Challenge ${challengeIdx + 1}. Click the 
+        "Return to activity" link and answer the questions there.`)
     } else if (lastScore >= MIN_SCORE_TO_ADVANCE && !challenges[challengeIdx + 1]) {
       this.gameCompleted()
       return
@@ -347,7 +368,7 @@ export default class SimulationBase extends PureComponent {
   render () {
     const { rampTopX, rampTopY, scaleX, scaleY, codapPresent, dataSaved, discardDataDialogActive, challengeMessage,
       discardDataWarningEnabled, targetX, targetWidth, carDragging, inclineControl, challengeIdx, stepIdx, lastScore,
-      disabledInputs } = this.state
+      disabledInputs, genericDialogActive, genericDialogMessage } = this.state
     const { simulationFinished, carX, carY, rampAngle, carAngle } = this.outputs
     return (
       <div>
@@ -401,6 +422,15 @@ export default class SimulationBase extends PureComponent {
           Pressing "New run" without pressing "Save data" will discard the current data.
           Set up a new run without saving the data first?
         </ConfirmationDialog>
+        <Dialog
+          theme={dialogTheme}
+          active={genericDialogActive}
+          actions={[ { label: 'OK', onClick: this.hideGenericDialog } ]}
+          onEscKeyDown={this.hideGenericDialog}
+          onOverlayClick={this.hideGenericDialog}
+        >
+          { genericDialogMessage }
+        </Dialog>
       </div>
     )
   }
