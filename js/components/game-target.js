@@ -4,7 +4,7 @@ import { Group, Text, Rect } from 'react-konva'
 const HEIGHT = 0.1
 const COLOR = '#d7170e'
 const MARKER_WIDTH = 0.05
-const MARKER_H_MULT = 2.2
+const MARKER_H_MULT = 2.7
 
 export default class GameTarget extends PureComponent {
   render () {

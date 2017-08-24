@@ -1,29 +1,40 @@
+export const MIN_SCORE_TO_ADVANCE = 33
+
 export function calcGameScore (carX, targetX, targetWidth) {
   const dist = Math.min(targetWidth * 0.5, Math.abs(targetX - carX))
   return Math.round(100 * (1 - dist / (targetWidth * 0.5)))
 }
 
+export function calcStarsCount (score) {
+  if (score >= 95) {
+    return 3
+  } else if (score >= 75) {
+    return 2
+  } else if (score >= MIN_SCORE_TO_ADVANCE) {
+    return 1
+  }
+  return 0
+}
+
 export function getScoreMessage (score, challengeIdx, stepIdx) {
   const challenge = challenges[challengeIdx]
-  if (score >= challenge.minScore && stepIdx + 1 < challenge.steps) {
-    return `Congratulations! You earned ${score} points! You advance a step and the target gets smaller.`
-  } else if (score >= challenge.minScore && challenges[challengeIdx + 1]) {
-    return `Congratulations! You earned ${score} points! You advance to a new challenge!`
-  } else if (score >= challenge.minScore && !challenges[challengeIdx + 1]) {
-    return `Congratulations! You have completed all the challenges!`
-  } else if (score >= challenge.prevStepScore) {
-    return `OK! You earned ${score} points. Try again. You have to get ${challenge.minScore} points to advance.`
-  } else if (stepIdx > 0) {
-    return `Not so good. You score ${score} points. Since your score was less than 25 you now get a larger target.`
+  let stars = ''
+  for (let i = 0, len = calcStarsCount(score); i < len; i++) {
+    stars += '★'
   }
-  return `Not so good. You score ${score} points. Try again. You have to get ${challenge.minScore} points to advance.`
+  if (score >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 < challenge.steps) {
+    return `Congratulations! You earned ${stars}! You advance a step and the target gets smaller.`
+  } else if (score >= MIN_SCORE_TO_ADVANCE && challenges[challengeIdx + 1]) {
+    return `Congratulations! You earned ${stars}! You advance to a new challenge!`
+  } else if (score >= MIN_SCORE_TO_ADVANCE && !challenges[challengeIdx + 1]) {
+    return `Congratulations! You have completed all the challenges!`
+  }
+  return `Not so good. Try again. You have to get ★ to advance.`
 }
 
 export const challenges = [
   {
     steps: 3,
-    minScore: 67,
-    prevStepScore: 25,
     mass: 0.05,
     surfaceFriction: 0.3,
     carDragging: true,
@@ -40,8 +51,6 @@ export const challenges = [
   },
   {
     steps: 4,
-    minScore: 67,
-    prevStepScore: 25,
     mass: 0.05,
     surfaceFriction: 0.3,
     carDragging: true,
@@ -58,8 +67,6 @@ export const challenges = [
   },
   {
     steps: 4,
-    minScore: 67,
-    prevStepScore: 25,
     mass: 0.05,
     surfaceFriction: 0.2,
     carDragging: true,
@@ -75,8 +82,6 @@ export const challenges = [
   },
   {
     steps: 3,
-    minScore: 67,
-    prevStepScore: 25,
     mass: 0.05,
     surfaceFriction: 0.3,
     carDragging: false,

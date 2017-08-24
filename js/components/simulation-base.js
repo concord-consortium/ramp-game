@@ -7,9 +7,10 @@ import ConfirmationDialog from './confirmation-dialog'
 import ChallengeStatus from './challenge-status'
 import c from '../sim-constants'
 import VehicleImage from './vehicle-image'
+import StarRating from './star-rating'
 import GameTarget from './game-target'
 import { calcOutputs, calcRampLength, calcRampAngle } from '../physics'
-import { calcGameScore, getScoreMessage, challenges } from '../game'
+import { calcGameScore, getScoreMessage, challenges, MIN_SCORE_TO_ADVANCE } from '../game'
 import CodapHandler from '../codap-handler'
 import config from '../config'
 
@@ -316,16 +317,14 @@ export default class SimulationBase extends PureComponent {
     const challenge = challenges[challengeIdx]
     let newStepIdx = stepIdx
     let newChallengeIdx = challengeIdx
-    if (lastScore >= challenge.minScore && stepIdx + 1 < challenge.steps) {
+    if (lastScore >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 < challenge.steps) {
       newStepIdx = stepIdx + 1
-    } else if (lastScore >= challenge.minScore && challenges[challengeIdx + 1]) {
+    } else if (lastScore >= MIN_SCORE_TO_ADVANCE && challenges[challengeIdx + 1]) {
       newChallengeIdx = challengeIdx + 1
       newStepIdx = 0
-    } else if (lastScore >= challenge.minScore && !challenges[challengeIdx + 1]) {
+    } else if (lastScore >= MIN_SCORE_TO_ADVANCE && !challenges[challengeIdx + 1]) {
       this.gameCompleted()
       return
-    } else if (lastScore < challenge.prevStepScore && stepIdx > 0) {
-      newStepIdx = stepIdx - 1
     }
     this.setState({
       challengeIdx: newChallengeIdx,
@@ -379,6 +378,10 @@ export default class SimulationBase extends PureComponent {
               draggable={this.draggingActive && carDragging} onDrag={this.handleCarPosChange} />
           </Layer>
         </Stage>
+        {
+          this.challengeActive && dataSaved &&
+          <StarRating left={scaleX(carX)} top={scaleY(0) - 45} score={lastScore} />
+        }
         {
           config.game &&
           <ChallengeStatus
