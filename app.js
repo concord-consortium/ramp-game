@@ -8124,6 +8124,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.calcGameScore = calcGameScore;
 exports.calcStarsCount = calcStarsCount;
+exports.getStarsSymbols = getStarsSymbols;
 exports.getScoreMessage = getScoreMessage;
 var MIN_SCORE_TO_ADVANCE = exports.MIN_SCORE_TO_ADVANCE = 33;
 
@@ -8143,12 +8144,21 @@ function calcStarsCount(score) {
   return 0;
 }
 
-function getScoreMessage(score, challengeIdx, stepIdx) {
-  var challenge = challenges[challengeIdx];
+function getStarsSymbols(score) {
   var stars = '';
-  for (var i = 0, len = calcStarsCount(score); i < len; i++) {
+  var starsCount = calcStarsCount(score);
+  if (starsCount === 0) {
+    return '☆';
+  }
+  for (var i = 0; i < starsCount; i++) {
     stars += '★';
   }
+  return stars;
+}
+
+function getScoreMessage(score, challengeIdx, stepIdx) {
+  var challenge = challenges[challengeIdx];
+  var stars = getStarsSymbols(score);
   if (score >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 < challenge.steps) {
     return 'Congratulations! You earned ' + stars + '! You advance a step and the target gets smaller.';
   } else if (score >= MIN_SCORE_TO_ADVANCE && challenges[challengeIdx + 1]) {
@@ -8170,7 +8180,7 @@ var challenges = exports.challenges = [{
     return 2.91;
   },
   targetWidth: function targetWidth(step) {
-    return 0.9 - step * 0.12;
+    return 0.9 - step * 0.14;
   }
 }, {
   steps: 4,
@@ -8178,12 +8188,12 @@ var challenges = exports.challenges = [{
   surfaceFriction: 0.3,
   carDragging: true,
   disabledInputs: ['mass', 'gravity', 'surfaceFriction'],
-  message: 'Make the car stop in the center of the\n              red area by changing the car\'s starting\n              position. Watch out! The red band now moves each trial.',
+  message: 'Welcome to Challenge 2. The target will now move each time, \n              so trial and error may not be a successful strategy here.',
   targetX: function targetX(step) {
     return Math.random() * 3 + 1;
   },
   targetWidth: function targetWidth(step) {
-    return 0.9 - step * 0.12;
+    return 0.9 - step * 0.14;
   }
 }, {
   steps: 4,
@@ -8191,12 +8201,12 @@ var challenges = exports.challenges = [{
   surfaceFriction: 0.2,
   carDragging: true,
   disabledInputs: ['mass', 'gravity', 'surfaceFriction'],
-  message: 'Make a new car stop in the red area.\n              This car has less friction.',
+  message: 'Welcome Challenge 3. The surface has been changed to have less friction. Can you still hit the target?',
   targetX: function targetX(step) {
     return Math.random() * 3 + 1;
   },
   targetWidth: function targetWidth(step) {
-    return 0.9 - step * 0.12;
+    return 0.9 - step * 0.14;
   }
 }, {
   steps: 3,
@@ -8205,12 +8215,12 @@ var challenges = exports.challenges = [{
   carDragging: false,
   initialCarX: -1,
   disabledInputs: ['mass', 'gravity'],
-  message: 'Now make the car stop in the center of the red area by changing the friction slider.',
+  message: 'Welcome to Challenge 4. Now you control the friction rather than the starting height.',
   targetX: function targetX(step) {
     return Math.random() * 3 + 1;
   },
   targetWidth: function targetWidth(step) {
-    return 0.9 - step * 0.12;
+    return 0.9 - step * 0.14;
   }
 }];
 
@@ -20055,11 +20065,7 @@ var ChallengeStatus = function (_PureComponent) {
               'h4',
               { style: { visibility: lastScore === null ? 'hidden' : '' } },
               'Last score: ',
-              _react2.default.createElement(
-                'span',
-                { className: _challengeStatus2.default.score },
-                lastScore
-              )
+              (0, _game.getStarsSymbols)(lastScore)
             )
           ),
           _react2.default.createElement(
@@ -21144,6 +21150,7 @@ var SimulationBase = function (_PureComponent) {
       this.setState({
         challengeIdx: newChallengeIdx,
         stepIdx: newStepIdx,
+        targetX: challenge.targetX(newStepIdx),
         challengeMessage: _game.challenges[newChallengeIdx].message
       });
     }
@@ -26212,7 +26219,7 @@ exports = module.exports = __webpack_require__(23)();
 
 
 // module
-exports.push([module.i, ".challenge-status--challengeStatus--wBNBJtq1 {\n  position: absolute;\n}\n.challenge-status--challengeStatus--wBNBJtq1 .challenge-status--content--15_KwP24 {\n  font-size: 16px;\n  border: 1px solid #999;\n  box-shadow: 1px 1px 10px #aaa;\n  margin: 0 10px 0 10px;\n  padding: 10px;\n}\n.challenge-status--challengeStatus--wBNBJtq1 .challenge-status--headers--3QlaW9pD {\n  display: inline-block;\n  vertical-align: top;\n  margin-right: 35px;\n  width: 150px;\n}\n.challenge-status--challengeStatus--wBNBJtq1 .challenge-status--message--39q7owop {\n  display: inline-block;\n  width: calc(100% - 200px);\n}\n.challenge-status--challengeStatus--wBNBJtq1 .challenge-status--score--11Z-DhYP {\n  color: #af3627;\n}\n.challenge-status--challengeStatus--wBNBJtq1 h3 {\n  color: #333;\n  font-weight: 600;\n  font-size: 16px;\n}\n.challenge-status--challengeStatus--wBNBJtq1 h4 {\n  color: #777;\n  font-weight: 500;\n  font-size: 15px;\n}\n", "", {"version":3,"sources":["/Users/piotr/Concord/inquiry-space-2/css/challenge-status.less"],"names":[],"mappings":"AAAA;EACE,mBAAmB;CACpB;AACD;EACE,gBAAgB;EAChB,uBAAuB;EACvB,8BAA8B;EAC9B,sBAAsB;EACtB,cAAc;CACf;AACD;EACE,sBAAsB;EACtB,oBAAoB;EACpB,mBAAmB;EACnB,aAAa;CACd;AACD;EACE,sBAAsB;EACtB,0BAA0B;CAC3B;AACD;EACE,eAAe;CAChB;AACD;EACE,YAAY;EACZ,iBAAiB;EACjB,gBAAgB;CACjB;AACD;EACE,YAAY;EACZ,iBAAiB;EACjB,gBAAgB;CACjB","file":"challenge-status.less","sourcesContent":[".challengeStatus {\n  position: absolute;\n}\n.challengeStatus .content {\n  font-size: 16px;\n  border: 1px solid #999;\n  box-shadow: 1px 1px 10px #aaa;\n  margin: 0 10px 0 10px;\n  padding: 10px;\n}\n.challengeStatus .headers {\n  display: inline-block;\n  vertical-align: top;\n  margin-right: 35px;\n  width: 150px;\n}\n.challengeStatus .message {\n  display: inline-block;\n  width: calc(100% - 200px);\n}\n.challengeStatus .score {\n  color: #af3627;\n}\n.challengeStatus h3 {\n  color: #333;\n  font-weight: 600;\n  font-size: 16px;\n}\n.challengeStatus h4 {\n  color: #777;\n  font-weight: 500;\n  font-size: 15px;\n}\n"],"sourceRoot":""}]);
+exports.push([module.i, ".challenge-status--challengeStatus--wBNBJtq1 {\n  position: absolute;\n}\n.challenge-status--challengeStatus--wBNBJtq1 .challenge-status--content--15_KwP24 {\n  font-size: 16px;\n  border: 1px solid #999;\n  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);\n  margin: 0 10px 0 10px;\n  padding: 10px;\n}\n.challenge-status--challengeStatus--wBNBJtq1 .challenge-status--headers--3QlaW9pD {\n  display: inline-block;\n  vertical-align: top;\n  margin-right: 35px;\n  width: 150px;\n}\n.challenge-status--challengeStatus--wBNBJtq1 .challenge-status--message--39q7owop {\n  display: inline-block;\n  width: calc(100% - 200px);\n}\n.challenge-status--challengeStatus--wBNBJtq1 .challenge-status--score--11Z-DhYP {\n  color: #af3627;\n}\n.challenge-status--challengeStatus--wBNBJtq1 h3 {\n  color: #333;\n  font-weight: 600;\n  font-size: 16px;\n}\n.challenge-status--challengeStatus--wBNBJtq1 h4 {\n  color: #777;\n  font-weight: 500;\n  font-size: 15px;\n}\n", "", {"version":3,"sources":["/Users/piotr/Concord/inquiry-space-2/css/challenge-status.less"],"names":[],"mappings":"AAAA;EACE,mBAAmB;CACpB;AACD;EACE,gBAAgB;EAChB,uBAAuB;EACvB,2CAA2C;EAC3C,sBAAsB;EACtB,cAAc;CACf;AACD;EACE,sBAAsB;EACtB,oBAAoB;EACpB,mBAAmB;EACnB,aAAa;CACd;AACD;EACE,sBAAsB;EACtB,0BAA0B;CAC3B;AACD;EACE,eAAe;CAChB;AACD;EACE,YAAY;EACZ,iBAAiB;EACjB,gBAAgB;CACjB;AACD;EACE,YAAY;EACZ,iBAAiB;EACjB,gBAAgB;CACjB","file":"challenge-status.less","sourcesContent":[".challengeStatus {\n  position: absolute;\n}\n.challengeStatus .content {\n  font-size: 16px;\n  border: 1px solid #999;\n  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);\n  margin: 0 10px 0 10px;\n  padding: 10px;\n}\n.challengeStatus .headers {\n  display: inline-block;\n  vertical-align: top;\n  margin-right: 35px;\n  width: 150px;\n}\n.challengeStatus .message {\n  display: inline-block;\n  width: calc(100% - 200px);\n}\n.challengeStatus .score {\n  color: #af3627;\n}\n.challengeStatus h3 {\n  color: #333;\n  font-weight: 600;\n  font-size: 16px;\n}\n.challengeStatus h4 {\n  color: #777;\n  font-weight: 500;\n  font-size: 15px;\n}\n"],"sourceRoot":""}]);
 
 // exports
 exports.locals = {
