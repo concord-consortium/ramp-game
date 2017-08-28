@@ -6539,7 +6539,7 @@ var challenges = exports.challenges = [{
   surfaceFriction: 0.3,
   carDragging: true,
   disabledInputs: ['surfaceFriction'],
-  message: 'Welcome to Challenge 2. The target will now move each time, \n              so trial and error may not be a successful strategy here.',
+  message: 'Welcome to Challenge 2. The target will now move each time,\n              so trial and error may not be a successful strategy here.',
   targetX: function targetX(step) {
     return Math.random() * 3 + 1;
   },
@@ -6567,6 +6567,7 @@ var challenges = exports.challenges = [{
   initialCarX: -1,
   disabledInputs: [],
   message: 'Welcome to Challenge 4. Now you control the friction rather than the starting height.',
+  unallowedCarDragMsg: 'Remember you can only adjust surface friction in this challenge.',
   targetX: function targetX(step) {
     return Math.random() * 3 + 1;
   },
@@ -20893,6 +20894,7 @@ var SimulationBase = function (_PureComponent) {
     _this.handleOptionsChange = _this.handleOptionsChange.bind(_this);
     _this.handleInclineChange = _this.handleInclineChange.bind(_this);
     _this.handleCarPosChange = _this.handleCarPosChange.bind(_this);
+    _this.handleUnallowedCarDrag = _this.handleUnallowedCarDrag.bind(_this);
     _this.saveData = _this.saveData.bind(_this);
     _this.rafHandler = _this.rafHandler.bind(_this);
     return _this;
@@ -21127,6 +21129,18 @@ var SimulationBase = function (_PureComponent) {
       });
     }
   }, {
+    key: 'handleUnallowedCarDrag',
+    value: function handleUnallowedCarDrag() {
+      if (this.challengeActive) {
+        var challengeIdx = this.state.challengeIdx;
+
+        var challenge = _game.challenges[challengeIdx];
+        if (challenge.unallowedCarDragMsg) {
+          this.showDialogWithMessage(challenge.unallowedCarDragMsg);
+        }
+      }
+    }
+  }, {
     key: 'saveData',
     value: function saveData() {
       var codapPresent = this.state.codapPresent;
@@ -21255,7 +21269,7 @@ var SimulationBase = function (_PureComponent) {
             inclineControl && _react2.default.createElement(_inclineControl2.default, { x: scaleX(rampTopX), y: scaleY(rampTopY),
               draggable: this.draggingActive, onDrag: this.handleInclineChange }),
             this.challengeActive && _react2.default.createElement(_gameTarget2.default, { sx: scaleX, sy: scaleY, pixelMeterRatio: this.pixelMeterRatio, x: targetX, width: targetWidth }),
-            _react2.default.createElement(_vehicleImage2.default, { sx: scaleX, sy: scaleY, x: carX, y: carY, angle: carAngle,
+            _react2.default.createElement(_vehicleImage2.default, { sx: scaleX, sy: scaleY, x: carX, y: carY, angle: carAngle, onUnallowedDrag: this.handleUnallowedCarDrag,
               draggable: this.draggingActive && carDragging, onDrag: this.handleCarPosChange })
           )
         ),
@@ -21468,7 +21482,9 @@ var VehicleImage = function (_PureComponent) {
   }, {
     key: 'onDragStart',
     value: function onDragStart() {
-      var draggable = this.props.draggable;
+      var _props = this.props,
+          draggable = _props.draggable,
+          onUnallowedDrag = _props.onUnallowedDrag;
 
       if (draggable) {
         this.setState({ active: true });
@@ -21476,6 +21492,8 @@ var VehicleImage = function (_PureComponent) {
         document.addEventListener('mouseup', this.onDragEnd);
         document.addEventListener('touchmove', this.onDrag);
         document.addEventListener('touchend', this.onDragEnd);
+      } else {
+        onUnallowedDrag();
       }
     }
   }, {
@@ -21517,12 +21535,12 @@ var VehicleImage = function (_PureComponent) {
     key: 'render',
     value: function render() {
       var image = this.state.image;
-      var _props = this.props,
-          sx = _props.sx,
-          sy = _props.sy,
-          x = _props.x,
-          y = _props.y,
-          angle = _props.angle;
+      var _props2 = this.props,
+          sx = _props2.sx,
+          sy = _props2.sy,
+          x = _props2.x,
+          y = _props2.y,
+          angle = _props2.angle;
 
       return _react2.default.createElement(_reactKonva.Image, {
         image: image,
