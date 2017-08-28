@@ -44,11 +44,11 @@ const config = {
       showInMainView: false
     },
     startDistanceUpRamp: {
-      codapDef: {name: 'Start car ramp distance', unit: 'm', type: 'numeric', precision: 2},
+      codapDef: {name: 'Distance up ramp', unit: 'm', type: 'numeric', precision: 2},
       codapType: 'summary',
       showInCodap: true,
       showInCodapInGameMode: true,
-      showInMainView: true
+      showInMainView: false
     },
     distanceFromEndOfRamp: {
       codapDef: {name: 'Distance from end of ramp', unit: 'm', type: 'numeric', precision: 2},

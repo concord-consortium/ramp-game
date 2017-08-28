@@ -9,6 +9,7 @@ import ChallengeStatus from './challenge-status'
 import c from '../sim-constants'
 import VehicleImage from './vehicle-image'
 import StarRating from './star-rating'
+import RampDistanceLabel from './ramp-distance-label'
 import GameTarget from './game-target'
 import { calcOutputs, calcRampLength, calcRampAngle } from '../physics'
 import { calcGameScore, challenges, MIN_SCORE_TO_ADVANCE } from '../game'
@@ -364,10 +365,11 @@ export default class SimulationBase extends PureComponent {
   }
 
   render () {
-    const { rampTopX, rampTopY, scaleX, scaleY, codapPresent, dataSaved, discardDataDialogActive,
+    const { rampTopX, rampTopY, scaleX, scaleY, codapPresent, dataSaved, discardDataDialogActive, elapsedTime,
       discardDataWarningEnabled, targetX, targetWidth, carDragging, inclineControl, challengeIdx, stepIdx, lastScore,
       disabledInputs, genericDialogActive, genericDialogMessage } = this.state
-    const { simulationFinished, carX, carY, rampAngle, carAngle } = this.outputs
+    const { simulationFinished, carX, carY, rampAngle, carAngle, startDistanceUpRamp } = this.outputs
+    const simulationStarted = elapsedTime > 0
     return (
       <div>
         <Controls
@@ -397,6 +399,10 @@ export default class SimulationBase extends PureComponent {
               draggable={this.draggingActive && carDragging} onDrag={this.handleCarPosChange} />
           </Layer>
         </Stage>
+        {
+          !simulationStarted &&
+          <RampDistanceLabel x={scaleX(carX)} y={scaleY(carY)} angle={rampAngle} distance={startDistanceUpRamp} />
+        }
         {
           this.challengeActive &&
           <StarRating left={scaleX(carX)} top={scaleY(0) - 45} score={lastScore} />

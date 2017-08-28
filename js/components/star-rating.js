@@ -4,7 +4,7 @@ import styles from '../../css/star-rating.less'
 
 const STAR_WIDTH = 22
 
-export default class Authoring extends PureComponent {
+export default class StarRating extends PureComponent {
   render () {
     const { top, left, score } = this.props
     const starsCount = calcStarsCount(score)
