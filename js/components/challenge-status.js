@@ -1,23 +1,26 @@
 import React, { PureComponent } from 'react'
-import { challenges, getStarsSymbols } from '../game'
+import { challenges } from '../game'
 import styles from '../../css/challenge-status.less'
+
+function renderDots (count) {
+  let result = ''
+  for (let i = 0; i < count; i += 1) {
+    result += '• '
+  }
+  return result
+}
 
 export default class ChallengeStatus extends PureComponent {
   render () {
-    const { challengeIdx, stepIdx, lastScore, message, top, height, width } = this.props
+    const { challengeIdx, stepIdx } = this.props
     const challenge = challenges[challengeIdx]
     return (
-      <div className={styles.challengeStatus} style={{ top, height, width }}>
-        <div className={styles.content}>
-          <div className={styles.headers}>
-            <h3>Challenge { challengeIdx + 1 } of { challenges.length }</h3>
-            <h4>Step { stepIdx + 1 } of { challenge.steps }</h4>
-            <h4 style={{visibility: lastScore === null ? 'hidden' : ''}}>Last score: { getStarsSymbols(lastScore) }</h4>
-          </div>
-          <div className={styles.message}>
-            { message }
-          </div>
-        </div>
+      <div className={styles.challengeStatus}>
+        <h3>Challenge { challengeIdx + 1 }</h3>
+        <h4>
+          <span className={styles.dark}>{ renderDots(stepIdx + 1) }</span>
+          { renderDots(challenge.steps - stepIdx - 1) }
+        </h4>
       </div>
     )
   }

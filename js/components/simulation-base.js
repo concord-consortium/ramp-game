@@ -11,7 +11,7 @@ import VehicleImage from './vehicle-image'
 import StarRating from './star-rating'
 import GameTarget from './game-target'
 import { calcOutputs, calcRampLength, calcRampAngle } from '../physics'
-import { calcGameScore, getScoreMessage, challenges, MIN_SCORE_TO_ADVANCE } from '../game'
+import { calcGameScore, challenges, MIN_SCORE_TO_ADVANCE } from '../game'
 import CodapHandler from '../codap-handler'
 import config from '../config'
 import dialogTheme from '../../css/dialog-theme.less'
@@ -23,8 +23,6 @@ const MIN_X = -2.3
 const MIN_Y = 0
 const MAX_X = 5.05
 const MAX_Y = 3
-
-const CHALLENGE_STATUS_HEIGHT = 100 // px
 
 function getScaleX (pixelMeterRatio) {
   return function scaleX (worldX) {
@@ -63,7 +61,6 @@ export default class SimulationBase extends PureComponent {
       targetX: 1,
       targetWidth: 1,
       lastScore: null,
-      challengeMessage: '',
       gameCompleted: false,
 
       codapPresent: false,
@@ -101,7 +98,7 @@ export default class SimulationBase extends PureComponent {
       })
 
     if (this.challengeActive) {
-      this.setupChallenge()
+      this.setupChallenge(null)
     }
   }
 
@@ -129,7 +126,7 @@ export default class SimulationBase extends PureComponent {
       })
     }
     if (challengeIdx !== prevState.challengeIdx || stepIdx !== prevState.stepIdx) {
-      this.setupChallenge()
+      this.setupChallenge(prevState.challengeIdx)
     }
   }
 
@@ -143,11 +140,7 @@ export default class SimulationBase extends PureComponent {
   }
 
   get simHeight () {
-    return this.props.height - (config.game ? CHALLENGE_STATUS_HEIGHT : 0)
-  }
-
-  get simRealHeight () {
-    return this.pixelMeterRatio * (MAX_Y - MIN_Y) + GROUND_HEIGHT + 10
+    return this.props.height
   }
 
   get pixelMeterRatio () {
@@ -304,18 +297,17 @@ export default class SimulationBase extends PureComponent {
       this.codapHandler.generateAndSendData(this.state)
     }
     if (this.challengeActive) {
-      const { targetX, targetWidth, challengeIdx, stepIdx } = this.state
+      const { targetX, targetWidth } = this.state
       const { carX } = this.outputs
       const score = calcGameScore(carX, targetX, targetWidth)
       this.setState({
-        lastScore: score,
-        challengeMessage: getScoreMessage(score, challengeIdx, stepIdx)
+        lastScore: score
       })
     }
     this.setState({ dataSaved: true })
   }
 
-  setupChallenge () {
+  setupChallenge (prevChallengeIdx) {
     const { challengeIdx, stepIdx, initialCarX } = this.state
     const challenge = challenges[challengeIdx]
     this.setState({
@@ -326,9 +318,12 @@ export default class SimulationBase extends PureComponent {
       carDragging: challenge.carDragging,
       inclineControl: challenge.inclineControl,
       disabledInputs: challenge.disabledInputs,
-      challengeMessage: challenge.message,
       initialCarX: challenge.initialCarX !== undefined ? challenge.initialCarX : initialCarX
     })
+
+    if (challengeIdx !== prevChallengeIdx) {
+      this.showDialogWithMessage(challenge.message)
+    }
   }
 
   updateChallenge () {
@@ -341,17 +336,13 @@ export default class SimulationBase extends PureComponent {
     } else if (lastScore >= MIN_SCORE_TO_ADVANCE && challenges[challengeIdx + 1]) {
       newChallengeIdx = challengeIdx + 1
       newStepIdx = 0
-      this.showDialogWithMessage(`Congratulations! You have completed Challenge ${challengeIdx + 1}. Click the 
-        "Return to activity" link and answer the questions there.`)
     } else if (lastScore >= MIN_SCORE_TO_ADVANCE && !challenges[challengeIdx + 1]) {
       this.gameCompleted()
       return
     }
     this.setState({
       challengeIdx: newChallengeIdx,
-      stepIdx: newStepIdx,
-      targetX: challenge.targetX(newStepIdx),
-      challengeMessage: challenges[newChallengeIdx].message
+      stepIdx: newStepIdx
     })
   }
 
@@ -364,10 +355,11 @@ export default class SimulationBase extends PureComponent {
       surfaceFriction: config.inputs.surfaceFriction.defaultValue,
       gameCompleted: true
     })
+    this.showDialogWithMessage('Congratulations. You’ve won! Click "Return to activity" and answer the questions there.')
   }
 
   render () {
-    const { rampTopX, rampTopY, scaleX, scaleY, codapPresent, dataSaved, discardDataDialogActive, challengeMessage,
+    const { rampTopX, rampTopY, scaleX, scaleY, codapPresent, dataSaved, discardDataDialogActive,
       discardDataWarningEnabled, targetX, targetWidth, carDragging, inclineControl, challengeIdx, stepIdx, lastScore,
       disabledInputs, genericDialogActive, genericDialogMessage } = this.state
     const { simulationFinished, carX, carY, rampAngle, carAngle } = this.outputs
@@ -406,11 +398,7 @@ export default class SimulationBase extends PureComponent {
         }
         {
           config.game &&
-          <ChallengeStatus
-            top={this.simRealHeight} width={this.simWidth}
-            challengeIdx={challengeIdx} stepIdx={stepIdx} lastScore={lastScore}
-            message={challengeMessage}
-          />
+          <ChallengeStatus challengeIdx={challengeIdx} stepIdx={stepIdx} lastScore={lastScore} />
         }
         <ConfirmationDialog
           title='Discard data?'

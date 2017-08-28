@@ -16,31 +16,6 @@ export function calcStarsCount (score) {
   return 0
 }
 
-export function getStarsSymbols (score) {
-  let stars = ''
-  const starsCount = calcStarsCount(score)
-  if (starsCount === 0) {
-    return '☆'
-  }
-  for (let i = 0; i < starsCount; i++) {
-    stars += '★'
-  }
-  return stars
-}
-
-export function getScoreMessage (score, challengeIdx, stepIdx) {
-  const challenge = challenges[challengeIdx]
-  const stars = getStarsSymbols(score)
-  if (score >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 < challenge.steps) {
-    return `Congratulations! You earned ${stars}! You advance a step and the target gets smaller.`
-  } else if (score >= MIN_SCORE_TO_ADVANCE && challenges[challengeIdx + 1]) {
-    return `Congratulations! You earned ${stars}! You advance to a new challenge!`
-  } else if (score >= MIN_SCORE_TO_ADVANCE && !challenges[challengeIdx + 1]) {
-    return `Congratulations! You have completed all the challenges!`
-  }
-  return `Not so good. Try again. You have to get ★ to advance.`
-}
-
 export const challenges = [
   {
     steps: 3,
