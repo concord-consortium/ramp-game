@@ -6393,8 +6393,8 @@ var config = {
       showInCodapInGameMode: true,
       showInMainView: false
     },
-    distanceFromEndOfRamp: {
-      codapDef: { name: 'Distance from end of ramp', unit: 'm', type: 'numeric', precision: 2 },
+    currentEndDistance: {
+      codapDef: { name: 'End distance', unit: 'm', type: 'numeric', precision: 2 },
       codapType: 'summary',
       showInCodap: false,
       showInCodapInGameMode: false,
@@ -6420,8 +6420,8 @@ var config = {
       showInCodapInGameMode: false,
       showInMainView: false
     },
-    finalDistance: {
-      codapDef: { name: 'Final distance', unit: 'm', type: 'numeric', precision: 2 },
+    endDistance: {
+      codapDef: { name: 'End distance', unit: 'm', type: 'numeric', precision: 2 },
       codapType: 'summary',
       showInCodap: true,
       showInCodapInGameMode: true,
@@ -11622,21 +11622,21 @@ function calcOutputs(_ref) {
   var totalTime = timeToGround + timeOnGround;
   var carX = void 0;
   var carVelocity = void 0;
-  var distanceFromEndOfRamp = void 0;
+  var currentEndDistance = void 0;
   if (elapsedTime < timeToGround) {
     carX = initialCarX + calcRampDisplacement(rampAcceleration, elapsedTime) * Math.cos(rampAngle);
     carVelocity = rampAcceleration * elapsedTime;
-    distanceFromEndOfRamp = -1 * calcDistanceUpRamp(carX, rampAngle);
+    currentEndDistance = -1 * calcDistanceUpRamp(carX, rampAngle);
   } else {
     var groundElapsedTime = Math.min(elapsedTime - timeToGround, timeOnGround);
-    distanceFromEndOfRamp = calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, groundElapsedTime);
-    carX = _simConstants2.default.rampEndX + distanceFromEndOfRamp;
+    currentEndDistance = _simConstants2.default.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, groundElapsedTime);
+    carX = currentEndDistance;
     carVelocity = velocityAtBottomOfRamp + groundAcceleration * groundElapsedTime;
   }
   return {
     rampAngle: rampAngle,
     startDistanceUpRamp: startDistanceUpRamp,
-    distanceFromEndOfRamp: distanceFromEndOfRamp,
+    currentEndDistance: currentEndDistance,
     velocityAtBottomOfRamp: velocityAtBottomOfRamp,
     timeToGround: timeToGround,
     carX: carX,
@@ -11646,7 +11646,7 @@ function calcOutputs(_ref) {
     rampLength: calcRampLength(rampTopX, rampTopY),
     startHeightAboveGround: calcCarY(initialCarX, rampAngle),
     totalTime: timeToGround + timeOnGround,
-    finalDistance: _simConstants2.default.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, timeOnGround),
+    endDistance: _simConstants2.default.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, timeOnGround),
     simulationFinished: elapsedTime === totalTime
   };
 }
@@ -19750,7 +19750,7 @@ var TIMESTEP = 0.05;
 var DATA_SET_NAME = 'CarRampSimulation';
 
 var CONFIG = {
-  title: 'Ramp simulation' + (_config2.default.game ? ' game' : ''),
+  title: _config2.default.game ? 'Ramp game' : 'Ramp simulation',
   name: DATA_SET_NAME,
   dimensions: {
     width: 650,
