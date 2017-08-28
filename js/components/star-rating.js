@@ -1,20 +1,20 @@
 import React, { PureComponent } from 'react'
-import FontIcon from 'react-toolbox/lib/font_icon'
 import { calcStarsCount } from '../game'
+import styles from '../../css/star-rating.less'
 
-const STAR_WIDTH = 24
+const STAR_WIDTH = 22
 
 export default class Authoring extends PureComponent {
   render () {
     const { top, left, score } = this.props
     const starsCount = calcStarsCount(score)
     const leftWithOffset = left - starsCount * STAR_WIDTH * 0.5
-    const stars = []
+    let stars = ''
     for (let i = 0; i < starsCount; i++) {
-      stars.push(<FontIcon key={i} value='star' />)
+      stars += '★'
     }
     return (
-      <div className='rating' style={{ top, left: leftWithOffset, position: 'absolute' }}>{ stars }</div>
+      <div className={styles.starRating} style={{ top, left: leftWithOffset }}>{ stars }</div>
     )
   }
 }

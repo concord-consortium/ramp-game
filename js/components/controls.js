@@ -5,6 +5,7 @@ import Input from 'react-toolbox/lib/input'
 import config from '../config'
 import controlsStyles from '../../css/controls.less'
 import sliderTheme from '../../css/slider-theme.less'
+import { GAME_INPUTS } from '../game'
 
 export default class Controls extends PureComponent {
   constructor (props) {
@@ -40,7 +41,8 @@ export default class Controls extends PureComponent {
     const sliders = []
     Object.keys(config.inputs).forEach(inputName => {
       const input = config.inputs[inputName]
-      if (input.showInMainView) {
+      const hiddenInGame = config.game && GAME_INPUTS.indexOf(inputName) === -1
+      if (input.showInMainView && !hiddenInGame) {
         const disabled = this.simStarted || disabledInputs.indexOf(inputName) !== -1
         sliders.push(
           <div key={inputName} className={controlsStyles.sliderContainer}>
@@ -82,7 +84,7 @@ export default class Controls extends PureComponent {
             saveData &&
             <Button label='Save data' onClick={saveData} disabled={!simFinished || dataSaved} raised primary />
           }
-          <Button label='New run' onClick={setupNewRun} disabled={!this.simStarted || (challengeActive && !dataSaved)} raised primary />
+          <Button label='New run' onClick={setupNewRun} disabled={!this.simStarted || (challengeActive && !simFinished)} raised primary />
         </div>
         { this.renderInputs() }
         { this.renderOutputs() }

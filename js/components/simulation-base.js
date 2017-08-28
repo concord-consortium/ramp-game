@@ -84,7 +84,7 @@ export default class SimulationBase extends PureComponent {
     this.handleOptionsChange = this.handleOptionsChange.bind(this)
     this.handleInclineChange = this.handleInclineChange.bind(this)
     this.handleCarPosChange = this.handleCarPosChange.bind(this)
-    this.saveDataAndCheckGameScore = this.saveDataAndCheckGameScore.bind(this)
+    this.saveData = this.saveData.bind(this)
     this.rafHandler = this.rafHandler.bind(this)
   }
 
@@ -107,7 +107,7 @@ export default class SimulationBase extends PureComponent {
   }
 
   componentDidUpdate (prevProps, prevState) {
-    const { isRunning, challengeIdx, stepIdx } = this.state
+    const { isRunning, challengeIdx, stepIdx, elapsedTime } = this.state
     const { width, height } = this.props
     if (isRunning && !prevState.isRunning) {
       if (isNaN(this.outputs.totalTime)) {
@@ -127,6 +127,9 @@ export default class SimulationBase extends PureComponent {
     }
     if (challengeIdx !== prevState.challengeIdx || stepIdx !== prevState.stepIdx) {
       this.setupChallenge(prevState.challengeIdx)
+    }
+    if (this.challengeActive && elapsedTime === this.outputs.totalTime) {
+      this.calculateGameScore()
     }
   }
 
@@ -236,6 +239,15 @@ export default class SimulationBase extends PureComponent {
     })
   }
 
+  calculateGameScore () {
+    const { targetX, targetWidth } = this.state
+    const { carX } = this.outputs
+    const score = calcGameScore(carX, targetX, targetWidth)
+    this.setState({
+      lastScore: score
+    })
+  }
+
   handleInclineChange (newXScreen, newYScreen) {
     if (!this.draggingActive) {
       return
@@ -291,18 +303,10 @@ export default class SimulationBase extends PureComponent {
     })
   }
 
-  saveDataAndCheckGameScore () {
+  saveData () {
     const { codapPresent } = this.state
     if (codapPresent) {
       this.codapHandler.generateAndSendData(this.state)
-    }
-    if (this.challengeActive) {
-      const { targetX, targetWidth } = this.state
-      const { carX } = this.outputs
-      const score = calcGameScore(carX, targetX, targetWidth)
-      this.setState({
-        lastScore: score
-      })
     }
     this.setState({ dataSaved: true })
   }
@@ -318,7 +322,8 @@ export default class SimulationBase extends PureComponent {
       carDragging: challenge.carDragging,
       inclineControl: challenge.inclineControl,
       disabledInputs: challenge.disabledInputs,
-      initialCarX: challenge.initialCarX !== undefined ? challenge.initialCarX : initialCarX
+      initialCarX: challenge.initialCarX !== undefined ? challenge.initialCarX : initialCarX,
+      lastScore: null
     })
 
     if (challengeIdx !== prevChallengeIdx) {
@@ -369,7 +374,7 @@ export default class SimulationBase extends PureComponent {
           options={this.state} setOptions={this.handleOptionsChange}
           outputs={this.outputs}
           setupNewRun={this.setupNewRunIfDataSaved}
-          saveData={codapPresent || this.challengeActive ? this.saveDataAndCheckGameScore : false}
+          saveData={codapPresent ? this.saveData : false}
           dataSaved={dataSaved}
           simFinished={simulationFinished}
           disabledInputs={disabledInputs}
@@ -393,12 +398,12 @@ export default class SimulationBase extends PureComponent {
           </Layer>
         </Stage>
         {
-          this.challengeActive && dataSaved &&
+          this.challengeActive &&
           <StarRating left={scaleX(carX)} top={scaleY(0) - 45} score={lastScore} />
         }
         {
           config.game &&
-          <ChallengeStatus challengeIdx={challengeIdx} stepIdx={stepIdx} lastScore={lastScore} />
+          <ChallengeStatus challengeIdx={challengeIdx} stepIdx={stepIdx} />
         }
         <ConfirmationDialog
           title='Discard data?'
