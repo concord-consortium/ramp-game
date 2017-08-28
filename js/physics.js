@@ -66,21 +66,21 @@ export function calcOutputs ({ initialCarX, gravity, surfaceFriction, rampTopX, 
   const totalTime = timeToGround + timeOnGround
   let carX
   let carVelocity
-  let distanceFromEndOfRamp
+  let currentEndDistance
   if (elapsedTime < timeToGround) {
     carX = initialCarX + calcRampDisplacement(rampAcceleration, elapsedTime) * Math.cos(rampAngle)
     carVelocity = rampAcceleration * elapsedTime
-    distanceFromEndOfRamp = -1 * calcDistanceUpRamp(carX, rampAngle)
+    currentEndDistance = -1 * calcDistanceUpRamp(carX, rampAngle)
   } else {
     const groundElapsedTime = Math.min(elapsedTime - timeToGround, timeOnGround)
-    distanceFromEndOfRamp = calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, groundElapsedTime)
-    carX = c.rampEndX + distanceFromEndOfRamp
+    currentEndDistance = c.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, groundElapsedTime)
+    carX = currentEndDistance
     carVelocity = velocityAtBottomOfRamp + groundAcceleration * groundElapsedTime
   }
   return {
     rampAngle,
     startDistanceUpRamp,
-    distanceFromEndOfRamp,
+    currentEndDistance,
     velocityAtBottomOfRamp,
     timeToGround,
     carX,
@@ -90,7 +90,7 @@ export function calcOutputs ({ initialCarX, gravity, surfaceFriction, rampTopX, 
     rampLength: calcRampLength(rampTopX, rampTopY),
     startHeightAboveGround: calcCarY(initialCarX, rampAngle),
     totalTime: timeToGround + timeOnGround,
-    finalDistance: c.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, timeOnGround),
+    endDistance: c.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, timeOnGround),
     simulationFinished: elapsedTime === totalTime
   }
 }

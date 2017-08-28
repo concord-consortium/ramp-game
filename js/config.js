@@ -50,8 +50,8 @@ const config = {
       showInCodapInGameMode: true,
       showInMainView: false
     },
-    distanceFromEndOfRamp: {
-      codapDef: {name: 'Distance from end of ramp', unit: 'm', type: 'numeric', precision: 2},
+    currentEndDistance: {
+      codapDef: {name: 'End distance', unit: 'm', type: 'numeric', precision: 2},
       codapType: 'summary',
       showInCodap: false,
       showInCodapInGameMode: false,
@@ -77,8 +77,8 @@ const config = {
       showInCodapInGameMode: false,
       showInMainView: false
     },
-    finalDistance: {
-      codapDef: {name: 'Final distance', unit: 'm', type: 'numeric', precision: 2},
+    endDistance: {
+      codapDef: {name: 'End distance', unit: 'm', type: 'numeric', precision: 2},
       codapType: 'summary',
       showInCodap: true,
       showInCodapInGameMode: true,

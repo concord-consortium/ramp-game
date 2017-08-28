@@ -7,7 +7,7 @@ const TIMESTEP = 0.05
 const DATA_SET_NAME = 'CarRampSimulation'
 
 const CONFIG = {
-  title: 'Ramp simulation' + (config.game ? ' game' : ''),
+  title: config.game ? 'Ramp game' : 'Ramp simulation',
   name: DATA_SET_NAME,
   dimensions: {
     width: 650,
