@@ -40,7 +40,7 @@ export const challenges = [
     surfaceFriction: 0.3,
     carDragging: true,
     disabledInputs: ['surfaceFriction'],
-    message: `Welcome to Challenge 2. The target will now move each time, 
+    message: `Welcome to Challenge 2. The target will now move each time,
               so trial and error may not be a successful strategy here.`,
     targetX (step) {
       return Math.random() * 3 + 1
@@ -71,6 +71,7 @@ export const challenges = [
     initialCarX: -1,
     disabledInputs: [],
     message: `Welcome to Challenge 4. Now you control the friction rather than the starting height.`,
+    unallowedCarDragMsg: 'Remember you can only adjust surface friction in this challenge.',
     targetX (step) {
       return Math.random() * 3 + 1
     },

@@ -34,13 +34,15 @@ export default class VehicleImage extends PureComponent {
   }
 
   onDragStart () {
-    const { draggable } = this.props
+    const { draggable, onUnallowedDrag } = this.props
     if (draggable) {
       this.setState({active: true})
       document.addEventListener('mousemove', this.onDrag)
       document.addEventListener('mouseup', this.onDragEnd)
       document.addEventListener('touchmove', this.onDrag)
       document.addEventListener('touchend', this.onDragEnd)
+    } else {
+      onUnallowedDrag()
     }
   }
 

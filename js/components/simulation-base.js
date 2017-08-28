@@ -85,6 +85,7 @@ export default class SimulationBase extends PureComponent {
     this.handleOptionsChange = this.handleOptionsChange.bind(this)
     this.handleInclineChange = this.handleInclineChange.bind(this)
     this.handleCarPosChange = this.handleCarPosChange.bind(this)
+    this.handleUnallowedCarDrag = this.handleUnallowedCarDrag.bind(this)
     this.saveData = this.saveData.bind(this)
     this.rafHandler = this.rafHandler.bind(this)
   }
@@ -304,6 +305,16 @@ export default class SimulationBase extends PureComponent {
     })
   }
 
+  handleUnallowedCarDrag () {
+    if (this.challengeActive) {
+      const { challengeIdx } = this.state
+      const challenge = challenges[challengeIdx]
+      if (challenge.unallowedCarDragMsg) {
+        this.showDialogWithMessage(challenge.unallowedCarDragMsg)
+      }
+    }
+  }
+
   saveData () {
     const { codapPresent } = this.state
     if (codapPresent) {
@@ -395,7 +406,7 @@ export default class SimulationBase extends PureComponent {
               this.challengeActive &&
               <GameTarget sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} x={targetX} width={targetWidth} />
             }
-            <VehicleImage sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle}
+            <VehicleImage sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle} onUnallowedDrag={this.handleUnallowedCarDrag}
               draggable={this.draggingActive && carDragging} onDrag={this.handleCarPosChange} />
           </Layer>
         </Stage>
