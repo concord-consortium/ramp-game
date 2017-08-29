@@ -66,7 +66,6 @@ export const challenges = [
   {
     steps: 3,
     mass: 0.05,
-    surfaceFriction: 0.3,
     carDragging: false,
     initialCarX: -1,
     disabledInputs: [],

@@ -168,6 +168,10 @@ export default class CodapHandler {
       })
   }
 
+  setCodapState (state) {
+    Object.assign(this.state, state)
+  }
+
   generateAndSendData (options) {
     if (this.state.runNumber === undefined) {
       this.state.runNumber = 0

@@ -62,7 +62,6 @@ export default class SimulationBase extends PureComponent {
       targetX: 1,
       targetWidth: 1,
       lastScore: null,
-      gameCompleted: false,
 
       codapPresent: false,
       dataSaved: false,
@@ -94,6 +93,9 @@ export default class SimulationBase extends PureComponent {
     this.codapHandler.init()
       .then(_ => {
         this.setState({ codapPresent: true })
+        if (this.codapHandler.state.game) {
+          this.loadGameState(this.codapHandler.state)
+        }
       })
       .catch(msg => {
         console.log('CODAP not available')
@@ -129,6 +131,7 @@ export default class SimulationBase extends PureComponent {
     }
     if (challengeIdx !== prevState.challengeIdx || stepIdx !== prevState.stepIdx) {
       this.setupChallenge(prevState.challengeIdx)
+      this.saveGameStateToCodap()
     }
     if (this.challengeActive && elapsedTime === this.outputs.totalTime) {
       this.calculateGameScore()
@@ -155,8 +158,9 @@ export default class SimulationBase extends PureComponent {
   }
 
   get challengeActive () {
-    const { challengeIdx, gameCompleted } = this.state
-    return challengeIdx !== null && !gameCompleted
+    const { challengeIdx } = this.state
+    // When game is finished, challengeIdx === challenges.length, so challenges[challengeIdx] === undefined
+    return challengeIdx !== null && challenges[challengeIdx]
   }
 
   invScaleX (screenX) {
@@ -165,6 +169,20 @@ export default class SimulationBase extends PureComponent {
 
   invScaleY (screenY) {
     return MAX_Y - screenY / this.pixelMeterRatio
+  }
+
+  saveGameStateToCodap () {
+    const { codapPresent, challengeIdx, stepIdx } = this.state
+    if (codapPresent) {
+      this.codapHandler.setCodapState({ game: true, challengeIdx, stepIdx })
+    }
+  }
+
+  loadGameState (codapState) {
+    this.setState({
+      challengeIdx: codapState.challengeIdx,
+      stepIdx: codapState.stepIdx
+    })
   }
 
   setupNewRun () {
@@ -324,16 +342,20 @@ export default class SimulationBase extends PureComponent {
   }
 
   setupChallenge (prevChallengeIdx) {
-    const { challengeIdx, stepIdx, initialCarX } = this.state
+    const { challengeIdx, stepIdx, initialCarX, surfaceFriction } = this.state
     const challenge = challenges[challengeIdx]
+    if (!challenge) {
+      this.gameCompleted()
+      return
+    }
     this.setState({
       targetX: challenge.targetX(stepIdx),
       targetWidth: challenge.targetWidth(stepIdx),
       mass: challenge.mass,
-      surfaceFriction: challenge.surfaceFriction,
       carDragging: challenge.carDragging,
       inclineControl: challenge.inclineControl,
       disabledInputs: challenge.disabledInputs,
+      surfaceFriction: challenge.surfaceFriction !== undefined ? challenge.surfaceFriction: surfaceFriction,
       initialCarX: challenge.initialCarX !== undefined ? challenge.initialCarX : initialCarX,
       lastScore: null
     })
@@ -350,12 +372,9 @@ export default class SimulationBase extends PureComponent {
     let newChallengeIdx = challengeIdx
     if (lastScore >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 < challenge.steps) {
       newStepIdx = stepIdx + 1
-    } else if (lastScore >= MIN_SCORE_TO_ADVANCE && challenges[challengeIdx + 1]) {
+    } else if (lastScore >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 === challenge.steps) {
       newChallengeIdx = challengeIdx + 1
       newStepIdx = 0
-    } else if (lastScore >= MIN_SCORE_TO_ADVANCE && !challenges[challengeIdx + 1]) {
-      this.gameCompleted()
-      return
     }
     this.setState({
       challengeIdx: newChallengeIdx,
@@ -366,11 +385,8 @@ export default class SimulationBase extends PureComponent {
   gameCompleted () {
     this.setState({
       inclineControl: true,
-      disabledInputs: [],
-      gravity: config.inputs.gravity.defaultValue,
-      mass: config.inputs.mass.defaultValue,
-      surfaceFriction: config.inputs.surfaceFriction.defaultValue,
-      gameCompleted: true
+      carDragging: true,
+      disabledInputs: []
     })
     this.showDialogWithMessage('Congratulations. You’ve won! Click "Return to activity" and answer the questions there.')
   }
@@ -419,7 +435,7 @@ export default class SimulationBase extends PureComponent {
           <StarRating left={scaleX(carX)} top={scaleY(0) - 45} score={lastScore} />
         }
         {
-          config.game &&
+          this.challengeActive &&
           <ChallengeStatus challengeIdx={challengeIdx} stepIdx={stepIdx} />
         }
         <ConfirmationDialog
