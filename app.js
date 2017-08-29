@@ -6562,7 +6562,6 @@ var challenges = exports.challenges = [{
 }, {
   steps: 3,
   mass: 0.05,
-  surfaceFriction: 0.3,
   carDragging: false,
   initialCarX: -1,
   disabledInputs: [],
@@ -19921,6 +19920,11 @@ var CodapHandler = function () {
       });
     }
   }, {
+    key: 'setCodapState',
+    value: function setCodapState(state) {
+      Object.assign(this.state, state);
+    }
+  }, {
     key: 'generateAndSendData',
     value: function generateAndSendData(options) {
       if (this.state.runNumber === undefined) {
@@ -20871,7 +20875,6 @@ var SimulationBase = function (_PureComponent) {
       targetX: 1,
       targetWidth: 1,
       lastScore: null,
-      gameCompleted: false,
 
       codapPresent: false,
       dataSaved: false,
@@ -20907,6 +20910,9 @@ var SimulationBase = function (_PureComponent) {
 
       this.codapHandler.init().then(function (_) {
         _this2.setState({ codapPresent: true });
+        if (_this2.codapHandler.state.game) {
+          _this2.loadGameState(_this2.codapHandler.state);
+        }
       }).catch(function (msg) {
         console.log('CODAP not available');
       });
@@ -20950,6 +20956,7 @@ var SimulationBase = function (_PureComponent) {
       }
       if (challengeIdx !== prevState.challengeIdx || stepIdx !== prevState.stepIdx) {
         this.setupChallenge(prevState.challengeIdx);
+        this.saveGameStateToCodap();
       }
       if (this.challengeActive && elapsedTime === this.outputs.totalTime) {
         this.calculateGameScore();
@@ -20964,6 +20971,26 @@ var SimulationBase = function (_PureComponent) {
     key: 'invScaleY',
     value: function invScaleY(screenY) {
       return MAX_Y - screenY / this.pixelMeterRatio;
+    }
+  }, {
+    key: 'saveGameStateToCodap',
+    value: function saveGameStateToCodap() {
+      var _state2 = this.state,
+          codapPresent = _state2.codapPresent,
+          challengeIdx = _state2.challengeIdx,
+          stepIdx = _state2.stepIdx;
+
+      if (codapPresent) {
+        this.codapHandler.setCodapState({ game: true, challengeIdx: challengeIdx, stepIdx: stepIdx });
+      }
+    }
+  }, {
+    key: 'loadGameState',
+    value: function loadGameState(codapState) {
+      this.setState({
+        challengeIdx: codapState.challengeIdx,
+        stepIdx: codapState.stepIdx
+      });
     }
   }, {
     key: 'setupNewRun',
@@ -20981,10 +21008,10 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'setupNewRunIfDataSaved',
     value: function setupNewRunIfDataSaved() {
-      var _state2 = this.state,
-          codapPresent = _state2.codapPresent,
-          dataSaved = _state2.dataSaved,
-          discardDataWarningEnabled = _state2.discardDataWarningEnabled;
+      var _state3 = this.state,
+          codapPresent = _state3.codapPresent,
+          dataSaved = _state3.dataSaved,
+          discardDataWarningEnabled = _state3.discardDataWarningEnabled;
 
       if (!codapPresent || codapPresent && dataSaved || !discardDataWarningEnabled) {
         this.setupNewRun();
@@ -21033,9 +21060,9 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'rafHandler',
     value: function rafHandler(timestamp) {
-      var _state3 = this.state,
-          elapsedTime = _state3.elapsedTime,
-          isRunning = _state3.isRunning;
+      var _state4 = this.state,
+          elapsedTime = _state4.elapsedTime,
+          isRunning = _state4.isRunning;
 
       if (isRunning) {
         window.requestAnimationFrame(this.rafHandler);
@@ -21058,9 +21085,9 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'calculateGameScore',
     value: function calculateGameScore() {
-      var _state4 = this.state,
-          targetX = _state4.targetX,
-          targetWidth = _state4.targetWidth;
+      var _state5 = this.state,
+          targetX = _state5.targetX,
+          targetWidth = _state5.targetWidth;
       var carX = this.outputs.carX;
 
       var score = (0, _game.calcGameScore)(carX, targetX, targetWidth);
@@ -21098,9 +21125,9 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'handleCarPosChange',
     value: function handleCarPosChange(newXScreen, newYScreen) {
-      var _state5 = this.state,
-          rampTopX = _state5.rampTopX,
-          rampTopY = _state5.rampTopY;
+      var _state6 = this.state,
+          rampTopX = _state6.rampTopX,
+          rampTopY = _state6.rampTopY;
 
       if (!this.draggingActive) {
         return;
@@ -21153,20 +21180,25 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'setupChallenge',
     value: function setupChallenge(prevChallengeIdx) {
-      var _state6 = this.state,
-          challengeIdx = _state6.challengeIdx,
-          stepIdx = _state6.stepIdx,
-          initialCarX = _state6.initialCarX;
+      var _state7 = this.state,
+          challengeIdx = _state7.challengeIdx,
+          stepIdx = _state7.stepIdx,
+          initialCarX = _state7.initialCarX,
+          surfaceFriction = _state7.surfaceFriction;
 
       var challenge = _game.challenges[challengeIdx];
+      if (!challenge) {
+        this.gameCompleted();
+        return;
+      }
       this.setState({
         targetX: challenge.targetX(stepIdx),
         targetWidth: challenge.targetWidth(stepIdx),
         mass: challenge.mass,
-        surfaceFriction: challenge.surfaceFriction,
         carDragging: challenge.carDragging,
         inclineControl: challenge.inclineControl,
         disabledInputs: challenge.disabledInputs,
+        surfaceFriction: challenge.surfaceFriction !== undefined ? challenge.surfaceFriction : surfaceFriction,
         initialCarX: challenge.initialCarX !== undefined ? challenge.initialCarX : initialCarX,
         lastScore: null
       });
@@ -21178,22 +21210,19 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'updateChallenge',
     value: function updateChallenge() {
-      var _state7 = this.state,
-          challengeIdx = _state7.challengeIdx,
-          stepIdx = _state7.stepIdx,
-          lastScore = _state7.lastScore;
+      var _state8 = this.state,
+          challengeIdx = _state8.challengeIdx,
+          stepIdx = _state8.stepIdx,
+          lastScore = _state8.lastScore;
 
       var challenge = _game.challenges[challengeIdx];
       var newStepIdx = stepIdx;
       var newChallengeIdx = challengeIdx;
       if (lastScore >= _game.MIN_SCORE_TO_ADVANCE && stepIdx + 1 < challenge.steps) {
         newStepIdx = stepIdx + 1;
-      } else if (lastScore >= _game.MIN_SCORE_TO_ADVANCE && _game.challenges[challengeIdx + 1]) {
+      } else if (lastScore >= _game.MIN_SCORE_TO_ADVANCE && stepIdx + 1 === challenge.steps) {
         newChallengeIdx = challengeIdx + 1;
         newStepIdx = 0;
-      } else if (lastScore >= _game.MIN_SCORE_TO_ADVANCE && !_game.challenges[challengeIdx + 1]) {
-        this.gameCompleted();
-        return;
       }
       this.setState({
         challengeIdx: newChallengeIdx,
@@ -21205,37 +21234,34 @@ var SimulationBase = function (_PureComponent) {
     value: function gameCompleted() {
       this.setState({
         inclineControl: true,
-        disabledInputs: [],
-        gravity: _config2.default.inputs.gravity.defaultValue,
-        mass: _config2.default.inputs.mass.defaultValue,
-        surfaceFriction: _config2.default.inputs.surfaceFriction.defaultValue,
-        gameCompleted: true
+        carDragging: true,
+        disabledInputs: []
       });
       this.showDialogWithMessage('Congratulations. You’ve won! Click "Return to activity" and answer the questions there.');
     }
   }, {
     key: 'render',
     value: function render() {
-      var _state8 = this.state,
-          rampTopX = _state8.rampTopX,
-          rampTopY = _state8.rampTopY,
-          scaleX = _state8.scaleX,
-          scaleY = _state8.scaleY,
-          codapPresent = _state8.codapPresent,
-          dataSaved = _state8.dataSaved,
-          discardDataDialogActive = _state8.discardDataDialogActive,
-          elapsedTime = _state8.elapsedTime,
-          discardDataWarningEnabled = _state8.discardDataWarningEnabled,
-          targetX = _state8.targetX,
-          targetWidth = _state8.targetWidth,
-          carDragging = _state8.carDragging,
-          inclineControl = _state8.inclineControl,
-          challengeIdx = _state8.challengeIdx,
-          stepIdx = _state8.stepIdx,
-          lastScore = _state8.lastScore,
-          disabledInputs = _state8.disabledInputs,
-          genericDialogActive = _state8.genericDialogActive,
-          genericDialogMessage = _state8.genericDialogMessage;
+      var _state9 = this.state,
+          rampTopX = _state9.rampTopX,
+          rampTopY = _state9.rampTopY,
+          scaleX = _state9.scaleX,
+          scaleY = _state9.scaleY,
+          codapPresent = _state9.codapPresent,
+          dataSaved = _state9.dataSaved,
+          discardDataDialogActive = _state9.discardDataDialogActive,
+          elapsedTime = _state9.elapsedTime,
+          discardDataWarningEnabled = _state9.discardDataWarningEnabled,
+          targetX = _state9.targetX,
+          targetWidth = _state9.targetWidth,
+          carDragging = _state9.carDragging,
+          inclineControl = _state9.inclineControl,
+          challengeIdx = _state9.challengeIdx,
+          stepIdx = _state9.stepIdx,
+          lastScore = _state9.lastScore,
+          disabledInputs = _state9.disabledInputs,
+          genericDialogActive = _state9.genericDialogActive,
+          genericDialogMessage = _state9.genericDialogMessage;
       var _outputs = this.outputs,
           simulationFinished = _outputs.simulationFinished,
           carX = _outputs.carX,
@@ -21275,7 +21301,7 @@ var SimulationBase = function (_PureComponent) {
         ),
         !simulationStarted && _react2.default.createElement(_rampDistanceLabel2.default, { x: scaleX(carX), y: scaleY(carY), angle: rampAngle, distance: startDistanceUpRamp }),
         this.challengeActive && _react2.default.createElement(_starRating2.default, { left: scaleX(carX), top: scaleY(0) - 45, score: lastScore }),
-        _config2.default.game && _react2.default.createElement(_challengeStatus2.default, { challengeIdx: challengeIdx, stepIdx: stepIdx }),
+        this.challengeActive && _react2.default.createElement(_challengeStatus2.default, { challengeIdx: challengeIdx, stepIdx: stepIdx }),
         _react2.default.createElement(
           _confirmationDialog2.default,
           {
@@ -21328,11 +21354,10 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'challengeActive',
     get: function get() {
-      var _state9 = this.state,
-          challengeIdx = _state9.challengeIdx,
-          gameCompleted = _state9.gameCompleted;
+      var challengeIdx = this.state.challengeIdx;
+      // When game is finished, challengeIdx === challenges.length, so challenges[challengeIdx] === undefined
 
-      return challengeIdx !== null && !gameCompleted;
+      return challengeIdx !== null && _game.challenges[challengeIdx];
     }
   }]);
 
