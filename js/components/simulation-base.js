@@ -1,3 +1,4 @@
+/* global iframePhone */
 import React, { PureComponent } from 'react'
 import Dialog from 'react-toolbox/lib/dialog'
 import Ramp from './ramp'
@@ -13,7 +14,7 @@ import RampDistanceLabel from './ramp-distance-label'
 import GameTarget from './game-target'
 import { calcOutputs, calcRampLength, calcRampAngle } from '../physics'
 import { calcGameScore, challenges, MIN_SCORE_TO_ADVANCE } from '../game'
-import CodapHandler from '../codap-handler'
+import CodapHandler, { generateCodapData } from '../codap-handler'
 import config from '../config'
 import dialogTheme from '../../css/dialog-theme.less'
 
@@ -49,6 +50,7 @@ export default class SimulationBase extends PureComponent {
       inclineControl: true,
       disabledInputs: [],
 
+      runNumber: 1,
       gravity: config.inputs.gravity.defaultValue,
       mass: config.inputs.mass.defaultValue,
       surfaceFriction: config.inputs.surfaceFriction.defaultValue,
@@ -69,7 +71,9 @@ export default class SimulationBase extends PureComponent {
       discardDataWarningEnabled: true,
 
       genericDialogActive: false,
-      genericDialogMessage: ''
+      genericDialogMessage: '',
+
+      laraPresent: false
     }
 
     this.outputs = calcOutputs(this.state)
@@ -85,13 +89,17 @@ export default class SimulationBase extends PureComponent {
     this.handleInclineChange = this.handleInclineChange.bind(this)
     this.handleCarPosChange = this.handleCarPosChange.bind(this)
     this.handleUnallowedCarDrag = this.handleUnallowedCarDrag.bind(this)
+    this.handleMouseEnter = this.handleMouseEnter.bind(this)
+    this.handleMouseLeave = this.handleMouseLeave.bind(this)
     this.saveData = this.saveData.bind(this)
     this.rafHandler = this.rafHandler.bind(this)
   }
 
   componentDidMount () {
+    // Handle CODAP as a parent window.
     this.codapHandler.init()
       .then(_ => {
+        console.log('CODAP detected')
         this.setState({ codapPresent: true })
         if (this.codapHandler.state.game) {
           this.loadGameState(this.codapHandler.state)
@@ -100,6 +108,33 @@ export default class SimulationBase extends PureComponent {
       .catch(msg => {
         console.log('CODAP not available')
       })
+
+    // Handle LARA as a parent window.
+    this.laraPhone = iframePhone.getIFrameEndpoint()
+    this.laraPhone.addListener('initInteractive', (data) => {
+      console.log('LARA detected')
+      this.setState({ laraPresent: true })
+      if (config.game) {
+        const gameState = typeof data.interactiveState === 'string' ? JSON.parse(data.interactiveState) : data.interactiveState
+        this.loadGameState(gameState)
+      }
+    })
+    this.laraPhone.addListener('initInteractive', (data) => {
+      this.setState({ laraPresent: true })
+      if (config.game) {
+        const gameState = typeof data.interactiveState === 'string' ? JSON.parse(data.interactiveState) : data.interactiveState
+        this.loadGameState(gameState)
+      }
+      this.laraPhone.post('supportedFeatures', {
+        apiVersion: 1,
+        features: {
+          interactiveState: true
+        }
+      })
+    })
+    this.laraPhone.addListener('getInteractiveState', () => {
+      this.laraPhone.post('interactiveState', this.gameState)
+    })
 
     if (this.challengeActive) {
       this.setupChallenge(null)
@@ -120,6 +155,7 @@ export default class SimulationBase extends PureComponent {
           isRunning: false
         })
       } else {
+        this.log('SimulationStarted', true)
         window.requestAnimationFrame(this.rafHandler)
       }
     }
@@ -136,6 +172,11 @@ export default class SimulationBase extends PureComponent {
     if (this.challengeActive && elapsedTime === this.outputs.totalTime) {
       this.calculateGameScore()
     }
+  }
+
+  get gameState () {
+    const { challengeIdx, stepIdx } = this.state
+    return { game: true, challengeIdx, stepIdx }
   }
 
   get draggingActive () {
@@ -172,9 +213,9 @@ export default class SimulationBase extends PureComponent {
   }
 
   saveGameStateToCodap () {
-    const { codapPresent, challengeIdx, stepIdx } = this.state
+    const { codapPresent } = this.state
     if (codapPresent) {
-      this.codapHandler.setCodapState({ game: true, challengeIdx, stepIdx })
+      this.codapHandler.setCodapState(this.gameState)
     }
   }
 
@@ -186,15 +227,18 @@ export default class SimulationBase extends PureComponent {
   }
 
   setupNewRun () {
+    const { runNumber } = this.state
     this.setState({
       isRunning: false,
       elapsedTime: 0,
       dataSaved: false,
-      discardDataDialogActive: false
+      discardDataDialogActive: false,
+      runNumber: runNumber + 1
     })
     if (this.challengeActive) {
       this.updateChallenge()
     }
+    this.log('NewRunClicked')
   }
 
   setupNewRunIfDataSaved () {
@@ -333,10 +377,19 @@ export default class SimulationBase extends PureComponent {
     }
   }
 
+  handleMouseEnter () {
+    this.log('MouseEntered')
+  }
+
+  handleMouseLeave () {
+    this.log('MouseLeft')
+  }
+
   saveData () {
     const { codapPresent } = this.state
     if (codapPresent) {
       this.codapHandler.generateAndSendData(this.state)
+      this.log('DataSaved', true)
     }
     this.setState({ dataSaved: true })
   }
@@ -391,6 +444,16 @@ export default class SimulationBase extends PureComponent {
     this.showDialogWithMessage('Congratulations. You’ve won! Click "Return to activity" and answer the questions there.')
   }
 
+  log (action, includeCodapAttributes = false) {
+    const { codapPresent, laraPresent } = this.state
+    const attrs = includeCodapAttributes ? generateCodapData(this.state) : {}
+    if (codapPresent) {
+      this.codapHandler.log(action, attrs)
+    } else if (laraPresent) {
+      this.laraPhone.post('log', { action, data: attrs })
+    }
+  }
+
   render () {
     const { rampTopX, rampTopY, scaleX, scaleY, codapPresent, dataSaved, discardDataDialogActive, elapsedTime,
       discardDataWarningEnabled, targetX, targetWidth, carDragging, inclineControl, challengeIdx, stepIdx, lastScore,
@@ -398,7 +461,7 @@ export default class SimulationBase extends PureComponent {
     const { simulationFinished, carX, carY, rampAngle, carAngle, startDistanceUpRamp } = this.outputs
     const simulationStarted = elapsedTime > 0
     return (
-      <div>
+      <div onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave}>
         <Controls
           options={this.state} setOptions={this.handleOptionsChange}
           outputs={this.outputs}

@@ -106,38 +106,39 @@ function requestCreateDataSet (name, template) {
   })
 }
 
-function generateData (runNumber, options) {
+export function generateCodapData (options) {
+  const outputs = calcOutputs(options)
+  const values = {
+    'Run number': options.runNumber,
+    'Time': options.elapsedTime
+  }
+  if (config.game) {
+    values['Challenge number'] = options.challengeIdx + 1
+  }
+  Object.keys(config.inputs).forEach(inputName => {
+    const input = config.inputs[inputName]
+    if (input.showInCodap) {
+      values[input.codapDef.name] = options[inputName]
+    }
+  })
+  Object.keys(config.outputs).forEach(outputName => {
+    const output = config.outputs[outputName]
+    if (output.showInCodap) {
+      values[output.codapDef.name] = outputs[outputName]
+    }
+  })
+  return values
+}
+
+function generateCompleteData (options) {
   const data = []
-  const challengeNumber = options.challengeIdx + 1
   const optionsCopy = Object.assign({}, options)
   const totalTime = calcOutputs(options).totalTime
   let time = DETAILS_PRESENT ? 0 : totalTime
 
   while (time <= totalTime) {
-    optionsCopy.elapsedTime = Math.min(time, totalTime)
-    const outputs = calcOutputs(optionsCopy)
-
-    const values = {
-      'Run number': runNumber,
-      'Time': time
-    }
-    if (config.game) {
-      values['Challenge number'] = challengeNumber
-    }
-    Object.keys(config.inputs).forEach(inputName => {
-      const input = config.inputs[inputName]
-      if (input.showInCodap) {
-        values[input.codapDef.name] = options[inputName]
-      }
-    })
-    Object.keys(config.outputs).forEach(outputName => {
-      const output = config.outputs[outputName]
-      if (output.showInCodap) {
-        values[output.codapDef.name] = outputs[outputName]
-      }
-    })
-
-    data.push(values)
+    optionsCopy.elapsedTime = time
+    data.push(generateCodapData(optionsCopy))
     time += TIMESTEP
   }
   return data
@@ -173,15 +174,20 @@ export default class CodapHandler {
   }
 
   generateAndSendData (options) {
-    if (this.state.runNumber === undefined) {
-      this.state.runNumber = 0
-    }
-    this.state.runNumber += 1
-
     return codapInterface.sendRequest({
       action: 'create',
       resource: 'dataContext[' + DATA_SET_NAME + '].item',
-      values: generateData(this.state.runNumber, options)
+      values: generateCompleteData(options)
+    })
+  }
+
+  log (action, params = {}) {
+    codapInterface.sendRequest({
+      'action': 'notify',
+      'resource': 'logMessage',
+      'values': {
+        'formatStr': `${action}:${JSON.stringify(params)}`
+      }
     })
   }
 }
