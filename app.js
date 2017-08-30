@@ -6521,7 +6521,7 @@ function calcStarsCount(score) {
 }
 
 var challenges = exports.challenges = [{
-  steps: 3,
+  steps: 4,
   mass: 0.05,
   surfaceFriction: 0.3,
   carDragging: true,
@@ -6560,7 +6560,7 @@ var challenges = exports.challenges = [{
     return 0.9 - step * 0.14;
   }
 }, {
-  steps: 3,
+  steps: 4,
   mass: 0.05,
   carDragging: false,
   initialCarX: -1,
