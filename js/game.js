@@ -19,7 +19,7 @@ export function calcStarsCount (score) {
 
 export const challenges = [
   {
-    steps: 3,
+    steps: 4,
     mass: 0.05,
     surfaceFriction: 0.3,
     carDragging: true,
@@ -64,7 +64,7 @@ export const challenges = [
     }
   },
   {
-    steps: 3,
+    steps: 4,
     mass: 0.05,
     carDragging: false,
     initialCarX: -1,
