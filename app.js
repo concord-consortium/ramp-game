@@ -19735,6 +19735,8 @@ Object.defineProperty(exports, "__esModule", {
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /* global codapInterface */
 
 
+exports.generateCodapData = generateCodapData;
+
 var _physics = __webpack_require__(165);
 
 var _config = __webpack_require__(86);
@@ -19850,43 +19852,40 @@ function requestCreateDataSet(name, template) {
   });
 }
 
-function generateData(runNumber, options) {
+function generateCodapData(options) {
+  var outputs = (0, _physics.calcOutputs)(options);
+  var values = {
+    'Run number': options.runNumber,
+    'Time': options.elapsedTime
+  };
+  if (_config2.default.game) {
+    values['Challenge number'] = options.challengeIdx + 1;
+  }
+  Object.keys(_config2.default.inputs).forEach(function (inputName) {
+    var input = _config2.default.inputs[inputName];
+    if (input.showInCodap) {
+      values[input.codapDef.name] = options[inputName];
+    }
+  });
+  Object.keys(_config2.default.outputs).forEach(function (outputName) {
+    var output = _config2.default.outputs[outputName];
+    if (output.showInCodap) {
+      values[output.codapDef.name] = outputs[outputName];
+    }
+  });
+  return values;
+}
+
+function generateCompleteData(options) {
   var data = [];
-  var challengeNumber = options.challengeIdx + 1;
   var optionsCopy = Object.assign({}, options);
   var totalTime = (0, _physics.calcOutputs)(options).totalTime;
   var time = DETAILS_PRESENT ? 0 : totalTime;
 
-  var _loop = function _loop() {
-    optionsCopy.elapsedTime = Math.min(time, totalTime);
-    var outputs = (0, _physics.calcOutputs)(optionsCopy);
-
-    var values = {
-      'Run number': runNumber,
-      'Time': time
-    };
-    if (_config2.default.game) {
-      values['Challenge number'] = challengeNumber;
-    }
-    Object.keys(_config2.default.inputs).forEach(function (inputName) {
-      var input = _config2.default.inputs[inputName];
-      if (input.showInCodap) {
-        values[input.codapDef.name] = options[inputName];
-      }
-    });
-    Object.keys(_config2.default.outputs).forEach(function (outputName) {
-      var output = _config2.default.outputs[outputName];
-      if (output.showInCodap) {
-        values[output.codapDef.name] = outputs[outputName];
-      }
-    });
-
-    data.push(values);
-    time += TIMESTEP;
-  };
-
   while (time <= totalTime) {
-    _loop();
+    optionsCopy.elapsedTime = time;
+    data.push(generateCodapData(optionsCopy));
+    time += TIMESTEP;
   }
   return data;
 }
@@ -19927,15 +19926,23 @@ var CodapHandler = function () {
   }, {
     key: 'generateAndSendData',
     value: function generateAndSendData(options) {
-      if (this.state.runNumber === undefined) {
-        this.state.runNumber = 0;
-      }
-      this.state.runNumber += 1;
-
       return codapInterface.sendRequest({
         action: 'create',
         resource: 'dataContext[' + DATA_SET_NAME + '].item',
-        values: generateData(this.state.runNumber, options)
+        values: generateCompleteData(options)
+      });
+    }
+  }, {
+    key: 'log',
+    value: function log(action) {
+      var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      codapInterface.sendRequest({
+        'action': 'notify',
+        'resource': 'logMessage',
+        'values': {
+          'formatStr': action + ':' + JSON.stringify(params)
+        }
       });
     }
   }]);
@@ -20825,7 +20832,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /* global iframePhone */
+
 
 // MKS units are used everywhere: meters, kilograms and seconds.
 var MIN_X = -2.3;
@@ -20862,6 +20870,7 @@ var SimulationBase = function (_PureComponent) {
       inclineControl: true,
       disabledInputs: [],
 
+      runNumber: 1,
       gravity: _config2.default.inputs.gravity.defaultValue,
       mass: _config2.default.inputs.mass.defaultValue,
       surfaceFriction: _config2.default.inputs.surfaceFriction.defaultValue,
@@ -20882,7 +20891,9 @@ var SimulationBase = function (_PureComponent) {
       discardDataWarningEnabled: true,
 
       genericDialogActive: false,
-      genericDialogMessage: ''
+      genericDialogMessage: '',
+
+      laraPresent: false
     };
 
     _this.outputs = (0, _physics.calcOutputs)(_this.state);
@@ -20898,6 +20909,8 @@ var SimulationBase = function (_PureComponent) {
     _this.handleInclineChange = _this.handleInclineChange.bind(_this);
     _this.handleCarPosChange = _this.handleCarPosChange.bind(_this);
     _this.handleUnallowedCarDrag = _this.handleUnallowedCarDrag.bind(_this);
+    _this.handleMouseEnter = _this.handleMouseEnter.bind(_this);
+    _this.handleMouseLeave = _this.handleMouseLeave.bind(_this);
     _this.saveData = _this.saveData.bind(_this);
     _this.rafHandler = _this.rafHandler.bind(_this);
     return _this;
@@ -20908,13 +20921,42 @@ var SimulationBase = function (_PureComponent) {
     value: function componentDidMount() {
       var _this2 = this;
 
+      // Handle CODAP as a parent window.
       this.codapHandler.init().then(function (_) {
+        console.log('CODAP detected');
         _this2.setState({ codapPresent: true });
         if (_this2.codapHandler.state.game) {
           _this2.loadGameState(_this2.codapHandler.state);
         }
       }).catch(function (msg) {
         console.log('CODAP not available');
+      });
+
+      // Handle LARA as a parent window.
+      this.laraPhone = iframePhone.getIFrameEndpoint();
+      this.laraPhone.addListener('initInteractive', function (data) {
+        console.log('LARA detected');
+        _this2.setState({ laraPresent: true });
+        if (_config2.default.game) {
+          var gameState = typeof data.interactiveState === 'string' ? JSON.parse(data.interactiveState) : data.interactiveState;
+          _this2.loadGameState(gameState);
+        }
+      });
+      this.laraPhone.addListener('initInteractive', function (data) {
+        _this2.setState({ laraPresent: true });
+        if (_config2.default.game) {
+          var gameState = typeof data.interactiveState === 'string' ? JSON.parse(data.interactiveState) : data.interactiveState;
+          _this2.loadGameState(gameState);
+        }
+        _this2.laraPhone.post('supportedFeatures', {
+          apiVersion: 1,
+          features: {
+            interactiveState: true
+          }
+        });
+      });
+      this.laraPhone.addListener('getInteractiveState', function () {
+        _this2.laraPhone.post('interactiveState', _this2.gameState);
       });
 
       if (this.challengeActive) {
@@ -20945,6 +20987,7 @@ var SimulationBase = function (_PureComponent) {
             isRunning: false
           });
         } else {
+          this.log('SimulationStarted', true);
           window.requestAnimationFrame(this.rafHandler);
         }
       }
@@ -20975,13 +21018,10 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'saveGameStateToCodap',
     value: function saveGameStateToCodap() {
-      var _state2 = this.state,
-          codapPresent = _state2.codapPresent,
-          challengeIdx = _state2.challengeIdx,
-          stepIdx = _state2.stepIdx;
+      var codapPresent = this.state.codapPresent;
 
       if (codapPresent) {
-        this.codapHandler.setCodapState({ game: true, challengeIdx: challengeIdx, stepIdx: stepIdx });
+        this.codapHandler.setCodapState(this.gameState);
       }
     }
   }, {
@@ -20995,23 +21035,27 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'setupNewRun',
     value: function setupNewRun() {
+      var runNumber = this.state.runNumber;
+
       this.setState({
         isRunning: false,
         elapsedTime: 0,
         dataSaved: false,
-        discardDataDialogActive: false
+        discardDataDialogActive: false,
+        runNumber: runNumber + 1
       });
       if (this.challengeActive) {
         this.updateChallenge();
       }
+      this.log('NewRunClicked');
     }
   }, {
     key: 'setupNewRunIfDataSaved',
     value: function setupNewRunIfDataSaved() {
-      var _state3 = this.state,
-          codapPresent = _state3.codapPresent,
-          dataSaved = _state3.dataSaved,
-          discardDataWarningEnabled = _state3.discardDataWarningEnabled;
+      var _state2 = this.state,
+          codapPresent = _state2.codapPresent,
+          dataSaved = _state2.dataSaved,
+          discardDataWarningEnabled = _state2.discardDataWarningEnabled;
 
       if (!codapPresent || codapPresent && dataSaved || !discardDataWarningEnabled) {
         this.setupNewRun();
@@ -21060,9 +21104,9 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'rafHandler',
     value: function rafHandler(timestamp) {
-      var _state4 = this.state,
-          elapsedTime = _state4.elapsedTime,
-          isRunning = _state4.isRunning;
+      var _state3 = this.state,
+          elapsedTime = _state3.elapsedTime,
+          isRunning = _state3.isRunning;
 
       if (isRunning) {
         window.requestAnimationFrame(this.rafHandler);
@@ -21085,9 +21129,9 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'calculateGameScore',
     value: function calculateGameScore() {
-      var _state5 = this.state,
-          targetX = _state5.targetX,
-          targetWidth = _state5.targetWidth;
+      var _state4 = this.state,
+          targetX = _state4.targetX,
+          targetWidth = _state4.targetWidth;
       var carX = this.outputs.carX;
 
       var score = (0, _game.calcGameScore)(carX, targetX, targetWidth);
@@ -21125,9 +21169,9 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'handleCarPosChange',
     value: function handleCarPosChange(newXScreen, newYScreen) {
-      var _state6 = this.state,
-          rampTopX = _state6.rampTopX,
-          rampTopY = _state6.rampTopY;
+      var _state5 = this.state,
+          rampTopX = _state5.rampTopX,
+          rampTopY = _state5.rampTopY;
 
       if (!this.draggingActive) {
         return;
@@ -21168,23 +21212,34 @@ var SimulationBase = function (_PureComponent) {
       }
     }
   }, {
+    key: 'handleMouseEnter',
+    value: function handleMouseEnter() {
+      this.log('MouseEntered');
+    }
+  }, {
+    key: 'handleMouseLeave',
+    value: function handleMouseLeave() {
+      this.log('MouseLeft');
+    }
+  }, {
     key: 'saveData',
     value: function saveData() {
       var codapPresent = this.state.codapPresent;
 
       if (codapPresent) {
         this.codapHandler.generateAndSendData(this.state);
+        this.log('DataSaved', true);
       }
       this.setState({ dataSaved: true });
     }
   }, {
     key: 'setupChallenge',
     value: function setupChallenge(prevChallengeIdx) {
-      var _state7 = this.state,
-          challengeIdx = _state7.challengeIdx,
-          stepIdx = _state7.stepIdx,
-          initialCarX = _state7.initialCarX,
-          surfaceFriction = _state7.surfaceFriction;
+      var _state6 = this.state,
+          challengeIdx = _state6.challengeIdx,
+          stepIdx = _state6.stepIdx,
+          initialCarX = _state6.initialCarX,
+          surfaceFriction = _state6.surfaceFriction;
 
       var challenge = _game.challenges[challengeIdx];
       if (!challenge) {
@@ -21210,10 +21265,10 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'updateChallenge',
     value: function updateChallenge() {
-      var _state8 = this.state,
-          challengeIdx = _state8.challengeIdx,
-          stepIdx = _state8.stepIdx,
-          lastScore = _state8.lastScore;
+      var _state7 = this.state,
+          challengeIdx = _state7.challengeIdx,
+          stepIdx = _state7.stepIdx,
+          lastScore = _state7.lastScore;
 
       var challenge = _game.challenges[challengeIdx];
       var newStepIdx = stepIdx;
@@ -21238,6 +21293,21 @@ var SimulationBase = function (_PureComponent) {
         disabledInputs: []
       });
       this.showDialogWithMessage('Congratulations. You’ve won! Click "Return to activity" and answer the questions there.');
+    }
+  }, {
+    key: 'log',
+    value: function log(action) {
+      var includeCodapAttributes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      var _state8 = this.state,
+          codapPresent = _state8.codapPresent,
+          laraPresent = _state8.laraPresent;
+
+      var attrs = includeCodapAttributes ? (0, _codapHandler.generateCodapData)(this.state) : {};
+      if (codapPresent) {
+        this.codapHandler.log(action, attrs);
+      } else if (laraPresent) {
+        this.laraPhone.post('log', { action: action, data: attrs });
+      }
     }
   }, {
     key: 'render',
@@ -21273,7 +21343,7 @@ var SimulationBase = function (_PureComponent) {
       var simulationStarted = elapsedTime > 0;
       return _react2.default.createElement(
         'div',
-        null,
+        { onMouseEnter: this.handleMouseEnter, onMouseLeave: this.handleMouseLeave },
         _react2.default.createElement(_controls2.default, {
           options: this.state, setOptions: this.handleOptionsChange,
           outputs: this.outputs,
@@ -21326,6 +21396,15 @@ var SimulationBase = function (_PureComponent) {
           genericDialogMessage
         )
       );
+    }
+  }, {
+    key: 'gameState',
+    get: function get() {
+      var _state10 = this.state,
+          challengeIdx = _state10.challengeIdx,
+          stepIdx = _state10.stepIdx;
+
+      return { game: true, challengeIdx: challengeIdx, stepIdx: stepIdx };
     }
   }, {
     key: 'draggingActive',
