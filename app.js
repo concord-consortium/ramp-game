@@ -21435,7 +21435,7 @@ var SimulationBase = function (_PureComponent) {
             this.challengeActive && _react2.default.createElement(_gameTarget2.default, { sx: scaleX, sy: scaleY, pixelMeterRatio: this.pixelMeterRatio, x: targetX, width: targetWidth }),
             _react2.default.createElement(_vehicleImage2.default, { sx: scaleX, sy: scaleY, x: carX, y: carY, angle: carAngle, onUnallowedDrag: this.handleUnallowedCarDrag,
               draggable: this.draggingActive && carDragging, onDrag: this.handleCarPosChange }),
-            _react2.default.createElement(_carHeightLine2.default, { sx: scaleX, sy: scaleY, carX: carX, carY: carY })
+            !simulationStarted && _react2.default.createElement(_carHeightLine2.default, { sx: scaleX, sy: scaleY, carX: carX, carY: carY })
           )
         ),
         !simulationStarted && _react2.default.createElement(_rampDistanceLabel2.default, { x: scaleX(carX), y: scaleY(carY), angle: rampAngle, distance: startDistanceUpRamp }),
