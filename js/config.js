@@ -40,7 +40,7 @@ const config = {
       codapDef: {name: 'Start height above ground', unit: 'm', type: 'numeric', precision: 2},
       codapType: 'summary',
       showInCodap: true,
-      showInCodapInGameMode: false,
+      showInCodapInGameMode: true,
       showInMainView: false
     },
     startDistanceUpRamp: {

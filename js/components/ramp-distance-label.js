@@ -31,6 +31,3 @@ export default class RampDistanceLabel extends PureComponent {
     )
   }
 }
-
-
-

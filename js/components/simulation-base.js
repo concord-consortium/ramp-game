@@ -11,6 +11,7 @@ import c from '../sim-constants'
 import VehicleImage from './vehicle-image'
 import StarRating from './star-rating'
 import RampDistanceLabel from './ramp-distance-label'
+import CarHeightLine from './car-height-line'
 import GameTarget from './game-target'
 import { calcOutputs, calcRampLength, calcRampAngle } from '../physics'
 import { calcGameScore, challenges, MIN_SCORE_TO_ADVANCE } from '../game'
@@ -408,7 +409,7 @@ export default class SimulationBase extends PureComponent {
       carDragging: challenge.carDragging,
       inclineControl: challenge.inclineControl,
       disabledInputs: challenge.disabledInputs,
-      surfaceFriction: challenge.surfaceFriction !== undefined ? challenge.surfaceFriction: surfaceFriction,
+      surfaceFriction: challenge.surfaceFriction !== undefined ? challenge.surfaceFriction : surfaceFriction,
       initialCarX: challenge.initialCarX !== undefined ? challenge.initialCarX : initialCarX,
       lastScore: null
     })
@@ -487,6 +488,10 @@ export default class SimulationBase extends PureComponent {
             }
             <VehicleImage sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle} onUnallowedDrag={this.handleUnallowedCarDrag}
               draggable={this.draggingActive && carDragging} onDrag={this.handleCarPosChange} />
+            {
+              !simulationStarted &&
+              <CarHeightLine sx={scaleX} sy={scaleY} carX={carX} carY={carY} />
+            }
           </Layer>
         </Stage>
         {
