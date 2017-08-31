@@ -27,7 +27,7 @@ const DATA_SET_TEMPLATE = {
         setOfCasesWithArticle: 'a run'
       },
       attrs: [
-        {name: 'Run number', type: 'categorical'}
+        {name: config.game ? 'Step' : 'Run number', type: 'categorical'}
         // will be extended by outputs defined in config
       ]
     },
@@ -109,11 +109,13 @@ function requestCreateDataSet (name, template) {
 export function generateCodapData (options) {
   const outputs = calcOutputs(options)
   const values = {
-    'Run number': options.runNumber,
     'Time': options.elapsedTime
   }
   if (config.game) {
     values['Challenge number'] = options.challengeIdx + 1
+    values['Step'] = options.stepIdx + 1
+  } else {
+    values['Run number'] = options.runNumber
   }
   Object.keys(config.inputs).forEach(inputName => {
     const input = config.inputs[inputName]
