@@ -6362,6 +6362,7 @@ var _utils = __webpack_require__(112);
 
 var config = {
   game: false,
+  autosave: true, // save data to CODAP automatically
   inputs: {
     mass: {
       codapDef: { name: 'Mass', unit: 'kg', type: 'numeric', precision: 2 },
@@ -19432,6 +19433,7 @@ var Authoring = function (_PureComponent) {
 
     _this.state = {
       game: _config2.default.game,
+      autosave: _config2.default.autosave,
       inputs: getInputsData(),
       outputs: getOutputsData(),
       iframeSrc: ''
@@ -19486,6 +19488,7 @@ var Authoring = function (_PureComponent) {
 
       var _state = this.state,
           game = _state.game,
+          autosave = _state.autosave,
           inputs = _state.inputs,
           outputs = _state.outputs,
           iframeSrc = _state.iframeSrc;
@@ -19499,8 +19502,18 @@ var Authoring = function (_PureComponent) {
           null,
           'Customize simulation configuration, inputs and outputs'
         ),
-        _react2.default.createElement(_checkbox2.default, { className: _authoring2.default.inline, checked: game, onChange: this.toggleValue.bind(this, 'game') }),
-        ' Game mode',
+        _react2.default.createElement(
+          'p',
+          null,
+          _react2.default.createElement(_checkbox2.default, { className: _authoring2.default.inline, checked: game, onChange: this.toggleValue.bind(this, 'game') }),
+          ' Game mode'
+        ),
+        _react2.default.createElement(
+          'p',
+          null,
+          _react2.default.createElement(_checkbox2.default, { className: _authoring2.default.inline, checked: autosave, onChange: this.toggleValue.bind(this, 'autosave') }),
+          ' Autosave'
+        ),
         _react2.default.createElement(
           'h3',
           null,
@@ -19653,12 +19666,16 @@ var Authoring = function (_PureComponent) {
       var _state2 = this.state,
           inputs = _state2.inputs,
           outputs = _state2.outputs,
-          game = _state2.game;
+          game = _state2.game,
+          autosave = _state2.autosave;
 
       var url = window.location.href.slice();
       url = url.replace('?authoring', '');
       if (game) {
         url += '&game';
+      }
+      if (autosave !== _config2.default.autosave) {
+        url += '&autosave=' + autosave;
       }
       var props = ['defaultValue', 'showInCodap', 'showInCodapInGameMode', 'showInMainView'];
       inputs.forEach(function (item) {
@@ -19770,7 +19787,7 @@ var DATA_SET_TEMPLATE = {
       pluralCase: 'Summary',
       setOfCasesWithArticle: 'a run'
     },
-    attrs: [{ name: 'Run number', type: 'categorical'
+    attrs: [{ name: _config2.default.game ? 'Step' : 'Run number', type: 'categorical'
       // will be extended by outputs defined in config
     }]
   }, {
@@ -19855,11 +19872,13 @@ function requestCreateDataSet(name, template) {
 function generateCodapData(options) {
   var outputs = (0, _physics.calcOutputs)(options);
   var values = {
-    'Run number': options.runNumber,
     'Time': options.elapsedTime
   };
   if (_config2.default.game) {
     values['Challenge number'] = options.challengeIdx + 1;
+    values['Step'] = options.stepIdx + 1;
+  } else {
+    values['Run number'] = options.runNumber;
   }
   Object.keys(_config2.default.inputs).forEach(function (inputName) {
     var input = _config2.default.inputs[inputName];
@@ -21125,7 +21144,8 @@ var SimulationBase = function (_PureComponent) {
           dataSaved = _state2.dataSaved,
           discardDataWarningEnabled = _state2.discardDataWarningEnabled;
 
-      if (!codapPresent || codapPresent && dataSaved || !discardDataWarningEnabled) {
+      if (!codapPresent || codapPresent && dataSaved || !discardDataWarningEnabled || _config2.default.autosave) {
+        // In autosave mode, data will be saved automatically at the end of the run anyway.
         this.setupNewRun();
       } else {
         this.setState({
@@ -21193,6 +21213,10 @@ var SimulationBase = function (_PureComponent) {
         elapsedTime: newElapsedTime,
         isRunning: newElapsedTime < this.outputs.totalTime
       });
+
+      if (_config2.default.autosave && newElapsedTime === this.outputs.totalTime) {
+        this.saveData();
+      }
     }
   }, {
     key: 'calculateGameScore',
@@ -21416,7 +21440,7 @@ var SimulationBase = function (_PureComponent) {
           options: this.state, setOptions: this.handleOptionsChange,
           outputs: this.outputs,
           setupNewRun: this.setupNewRunIfDataSaved,
-          saveData: codapPresent ? this.saveData : false,
+          saveData: !_config2.default.autosave && codapPresent ? this.saveData : false,
           dataSaved: dataSaved,
           simFinished: simulationFinished,
           disabledInputs: disabledInputs,
