@@ -244,7 +244,8 @@ export default class SimulationBase extends PureComponent {
 
   setupNewRunIfDataSaved () {
     const { codapPresent, dataSaved, discardDataWarningEnabled } = this.state
-    if (!codapPresent || (codapPresent && dataSaved) || !discardDataWarningEnabled) {
+    if (!codapPresent || (codapPresent && dataSaved) || !discardDataWarningEnabled || config.autosave) {
+      // In autosave mode, data will be saved automatically at the end of the run anyway.
       this.setupNewRun()
     } else {
       this.setState({
@@ -302,6 +303,10 @@ export default class SimulationBase extends PureComponent {
       elapsedTime: newElapsedTime,
       isRunning: newElapsedTime < this.outputs.totalTime
     })
+
+    if (config.autosave && newElapsedTime === this.outputs.totalTime) {
+      this.saveData()
+    }
   }
 
   calculateGameScore () {
@@ -467,7 +472,7 @@ export default class SimulationBase extends PureComponent {
           options={this.state} setOptions={this.handleOptionsChange}
           outputs={this.outputs}
           setupNewRun={this.setupNewRunIfDataSaved}
-          saveData={codapPresent ? this.saveData : false}
+          saveData={!config.autosave && codapPresent ? this.saveData : false}
           dataSaved={dataSaved}
           simFinished={simulationFinished}
           disabledInputs={disabledInputs}

@@ -41,6 +41,7 @@ export default class Authoring extends PureComponent {
     super(props)
     this.state = {
       game: config.game,
+      autosave: config.autosave,
       inputs: getInputsData(),
       outputs: getOutputsData(),
       iframeSrc: ''
@@ -48,11 +49,14 @@ export default class Authoring extends PureComponent {
   }
 
   get finalUrl () {
-    const { inputs, outputs, game } = this.state
+    const { inputs, outputs, game, autosave } = this.state
     let url = window.location.href.slice()
     url = url.replace('?authoring', '')
     if (game) {
       url += '&game'
+    }
+    if (autosave !== config.autosave) {
+      url += `&autosave=${autosave}`
     }
     const props = ['defaultValue', 'showInCodap', 'showInCodapInGameMode', 'showInMainView']
     inputs.forEach(item => {
@@ -112,12 +116,13 @@ export default class Authoring extends PureComponent {
   }
 
   render () {
-    const { game, inputs, outputs, iframeSrc } = this.state
+    const { game, autosave, inputs, outputs, iframeSrc } = this.state
     const finalUrl = this.finalUrl
     return (
       <div className={authoringStyles.authoring} >
         <h1>Customize simulation configuration, inputs and outputs</h1>
-        <Checkbox className={authoringStyles.inline} checked={game} onChange={this.toggleValue.bind(this, 'game')} /> Game mode
+        <p><Checkbox className={authoringStyles.inline} checked={game} onChange={this.toggleValue.bind(this, 'game')} /> Game mode</p>
+        <p><Checkbox className={authoringStyles.inline} checked={autosave} onChange={this.toggleValue.bind(this, 'autosave')} /> Autosave</p>
         <h3>Inputs</h3>
         <Table selectable={false}>
           <TableHead>

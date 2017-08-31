@@ -2,6 +2,7 @@ import { getURLParam } from './utils'
 
 const config = {
   game: false,
+  autosave: true, // save data to CODAP automatically
   inputs: {
     mass: {
       codapDef: {name: 'Mass', unit: 'kg', type: 'numeric', precision: 2},
