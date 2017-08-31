@@ -25,7 +25,7 @@ export default class RampDistanceLabel extends PureComponent {
       }}>
         Distance up ramp
         <div className={styles.reading}>
-          { distance.toFixed(2) }
+          { distance.toFixed(2) } m
         </div>
       </span>
     )

@@ -50,6 +50,7 @@ export default class Controls extends PureComponent {
             <div className={controlsStyles.slider}>
               <Slider min={input.range[0]} theme={sliderTheme} max={input.range[1]} editable value={options[inputName]} onChange={this.setOption.bind(this, inputName)} disabled={disabled} />
             </div>
+            <div className={controlsStyles.unit}>{ input.codapDef.unit }</div>
           </div>
         )
       }
@@ -63,10 +64,12 @@ export default class Controls extends PureComponent {
     Object.keys(config.outputs).forEach(outputName => {
       const output = config.outputs[outputName]
       if (output.showInMainView) {
+        const value = outputs[outputName] !== null ? outputs[outputName].toFixed(2) : ''
         components.push(
           <div key={outputName} className={controlsStyles.outputContainer}>
             <div className={controlsStyles.label}>{ output.codapDef.name }</div>
-            <Input className={controlsStyles.output} type='text' value={outputs[outputName].toFixed(2)} disabled />
+            <Input className={controlsStyles.output} type='text' value={value} disabled />
+            <div className={controlsStyles.unit}>{ output.codapDef.unit }</div>
           </div>
         )
       }

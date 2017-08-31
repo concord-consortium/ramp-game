@@ -70,7 +70,7 @@ export function calcOutputs ({ initialCarX, gravity, surfaceFriction, rampTopX, 
   if (elapsedTime < timeToGround) {
     carX = initialCarX + calcRampDisplacement(rampAcceleration, elapsedTime) * Math.cos(rampAngle)
     carVelocity = rampAcceleration * elapsedTime
-    currentEndDistance = -1 * calcDistanceUpRamp(carX, rampAngle)
+    currentEndDistance = null // it won't be shown in UI before car reaches bottom of the ramp
   } else {
     const groundElapsedTime = Math.min(elapsedTime - timeToGround, timeOnGround)
     currentEndDistance = c.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, groundElapsedTime)

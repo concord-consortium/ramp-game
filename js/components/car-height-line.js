@@ -12,7 +12,7 @@ export default class CarHeightLine extends PureComponent {
     return (
       <Group>
         <Line points={points} fill={'grey'} stroke={'black'} strokeWidth={1} />
-        <Text x={sx(carX) - 16} y={sy(carY * 0.5) + 15} fontFamily={'Arial'} fontSize={14} text={`${carY.toFixed(2)}`} rotation={-90} fill='navy' />
+        <Text x={sx(carX) - 16} y={sy(carY * 0.5) + 15} fontFamily={'Arial'} fontSize={14} text={`${carY.toFixed(2)} m`} rotation={-90} fill='black' />
       </Group>
     )
   }

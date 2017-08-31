@@ -19,7 +19,7 @@ export default class Ground extends PureComponent {
       const xPos = sx(x)
       let points = [xPos, yPos, xPos, yPos + markHeight]
       lineMarks.push(<Line points={points} closed={false} stroke={'white'} strokeWidth={1} key={'mark' + x} />)
-      lineMarks.push(<Text x={xPos - 9} y={yPos + markHeight * 1.2} fontFamily={'Arial'} fontSize={14} text={x.toFixed(1)} fill={'white'} key={'text' + x} />)
+      lineMarks.push(<Text x={xPos - 9} y={yPos + markHeight * 1.2} fontFamily={'Arial'} fontSize={14} text={`${x.toFixed(1)} m`} fill={'white'} key={'text' + x} />)
     }
     return lineMarks
   }
