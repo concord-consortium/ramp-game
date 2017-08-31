@@ -2,8 +2,9 @@ export const MIN_SCORE_TO_ADVANCE = 33
 export const GAME_INPUTS = ['surfaceFriction']
 
 export function calcGameScore (carX, targetX, targetWidth) {
-  const dist = Math.min(targetWidth * 0.5, Math.abs(targetX - carX))
-  return Math.round(100 * (1 - dist / (targetWidth * 0.5)))
+  const targetRadius = 0.5 * targetWidth
+  const dist = Math.min(targetRadius, Math.abs(targetX - carX))
+  return 50 * (1 + Math.cos(Math.PI * dist / targetRadius))
 }
 
 export function calcStarsCount (score) {

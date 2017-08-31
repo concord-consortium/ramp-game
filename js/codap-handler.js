@@ -183,12 +183,12 @@ export default class CodapHandler {
     })
   }
 
-  log (action, params = {}) {
+  log (action, params) {
     codapInterface.sendRequest({
       'action': 'notify',
       'resource': 'logMessage',
       'values': {
-        'formatStr': `${action}:${JSON.stringify(params)}`
+        'formatStr': params ? `${action}:${JSON.stringify(params)}` : action + ':'
       }
     })
   }

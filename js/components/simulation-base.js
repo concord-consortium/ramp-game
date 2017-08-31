@@ -14,7 +14,7 @@ import RampDistanceLabel from './ramp-distance-label'
 import CarHeightLine from './car-height-line'
 import GameTarget from './game-target'
 import { calcOutputs, calcRampLength, calcRampAngle } from '../physics'
-import { calcGameScore, challenges, MIN_SCORE_TO_ADVANCE } from '../game'
+import { calcGameScore, calcStarsCount, challenges, MIN_SCORE_TO_ADVANCE } from '../game'
 import CodapHandler, { generateCodapData } from '../codap-handler'
 import config from '../config'
 import dialogTheme from '../../css/dialog-theme.less'
@@ -156,7 +156,8 @@ export default class SimulationBase extends PureComponent {
           isRunning: false
         })
       } else {
-        this.log('SimulationStarted', true)
+        // Pass all the CODAP attributes (inputs and outputs) as SimulationStarted params.
+        this.log('SimulationStarted', generateCodapData(this.state))
         window.requestAnimationFrame(this.rafHandler)
       }
     }
@@ -170,8 +171,27 @@ export default class SimulationBase extends PureComponent {
       this.setupChallenge(prevState.challengeIdx)
       this.saveGameStateToCodap()
     }
-    if (this.challengeActive && elapsedTime === this.outputs.totalTime) {
-      this.calculateGameScore()
+    if (elapsedTime !== prevState.elapsedTime && elapsedTime === this.outputs.totalTime) {
+      this.simulationFinished()
+    }
+  }
+
+  simulationFinished () {
+    const logParams = {}
+    if (this.challengeActive) {
+      const { targetX, targetWidth } = this.state
+      const { carX } = this.outputs
+      const score = calcGameScore(carX, targetX, targetWidth)
+      this.setState({
+        lastScore: score
+      })
+      logParams.score = score
+      logParams.starScore = calcStarsCount(score)
+    }
+    this.log('SimulationFinished', logParams)
+
+    if (config.autosave) {
+      this.saveData()
     }
   }
 
@@ -271,6 +291,7 @@ export default class SimulationBase extends PureComponent {
     this.setState({
       discardDataDialogActive: false
     })
+    this.log('DataDiscarded')
   }
 
   toggleDiscardDataWarning () {
@@ -302,19 +323,6 @@ export default class SimulationBase extends PureComponent {
     this.setState({
       elapsedTime: newElapsedTime,
       isRunning: newElapsedTime < this.outputs.totalTime
-    })
-
-    if (config.autosave && newElapsedTime === this.outputs.totalTime) {
-      this.saveData()
-    }
-  }
-
-  calculateGameScore () {
-    const { targetX, targetWidth } = this.state
-    const { carX } = this.outputs
-    const score = calcGameScore(carX, targetX, targetWidth)
-    this.setState({
-      lastScore: score
     })
   }
 
@@ -395,7 +403,7 @@ export default class SimulationBase extends PureComponent {
     const { codapPresent } = this.state
     if (codapPresent) {
       this.codapHandler.generateAndSendData(this.state)
-      this.log('DataSaved', true)
+      this.log('DataSaved')
     }
     this.setState({ dataSaved: true })
   }
@@ -450,13 +458,16 @@ export default class SimulationBase extends PureComponent {
     this.showDialogWithMessage('Congratulations. You’ve won! Click "Return to activity" and answer the questions there.')
   }
 
-  log (action, includeCodapAttributes = false) {
+  log (action, params) {
     const { codapPresent, laraPresent } = this.state
-    const attrs = includeCodapAttributes ? generateCodapData(this.state) : {}
     if (codapPresent) {
-      this.codapHandler.log(action, attrs)
+      this.codapHandler.log(action, params)
     } else if (laraPresent) {
-      this.laraPhone.post('log', { action, data: attrs })
+      const attrs = { action }
+      if (params) {
+        attrs.data = params
+      }
+      this.laraPhone.post('log', attrs)
     }
   }
 
