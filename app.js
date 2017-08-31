@@ -6523,8 +6523,9 @@ var MIN_SCORE_TO_ADVANCE = exports.MIN_SCORE_TO_ADVANCE = 33;
 var GAME_INPUTS = exports.GAME_INPUTS = ['surfaceFriction'];
 
 function calcGameScore(carX, targetX, targetWidth) {
-  var dist = Math.min(targetWidth * 0.5, Math.abs(targetX - carX));
-  return Math.round(100 * (1 - dist / (targetWidth * 0.5)));
+  var targetRadius = 0.5 * targetWidth;
+  var dist = Math.min(targetRadius, Math.abs(targetX - carX));
+  return 50 * (1 + Math.cos(Math.PI * dist / targetRadius));
 }
 
 function calcStarsCount(score) {
@@ -11627,7 +11628,7 @@ function calcOutputs(_ref) {
   if (elapsedTime < timeToGround) {
     carX = initialCarX + calcRampDisplacement(rampAcceleration, elapsedTime) * Math.cos(rampAngle);
     carVelocity = rampAcceleration * elapsedTime;
-    currentEndDistance = -1 * calcDistanceUpRamp(carX, rampAngle);
+    currentEndDistance = null; // it won't be shown in UI before car reaches bottom of the ramp
   } else {
     var groundElapsedTime = Math.min(elapsedTime - timeToGround, timeOnGround);
     currentEndDistance = _simConstants2.default.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, groundElapsedTime);
@@ -19953,14 +19954,12 @@ var CodapHandler = function () {
     }
   }, {
     key: 'log',
-    value: function log(action) {
-      var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
+    value: function log(action, params) {
       codapInterface.sendRequest({
         'action': 'notify',
         'resource': 'logMessage',
         'values': {
-          'formatStr': action + ':' + JSON.stringify(params)
+          'formatStr': params ? action + ':' + JSON.stringify(params) : action + ':'
         }
       });
     }
@@ -20025,7 +20024,7 @@ var CarHeightLine = function (_PureComponent) {
         _reactKonva.Group,
         null,
         _react2.default.createElement(_reactKonva.Line, { points: points, fill: 'grey', stroke: 'black', strokeWidth: 1 }),
-        _react2.default.createElement(_reactKonva.Text, { x: sx(carX) - 16, y: sy(carY * 0.5) + 15, fontFamily: 'Arial', fontSize: 14, text: '' + carY.toFixed(2), rotation: -90, fill: 'navy' })
+        _react2.default.createElement(_reactKonva.Text, { x: sx(carX) - 16, y: sy(carY * 0.5) + 15, fontFamily: 'Arial', fontSize: 14, text: carY.toFixed(2) + ' m', rotation: -90, fill: 'black' })
       );
     }
   }]);
@@ -20324,6 +20323,11 @@ var Controls = function (_PureComponent) {
               'div',
               { className: _controls2.default.slider },
               _react2.default.createElement(_slider2.default, { min: input.range[0], theme: _sliderTheme2.default, max: input.range[1], editable: true, value: options[inputName], onChange: _this2.setOption.bind(_this2, inputName), disabled: disabled })
+            ),
+            _react2.default.createElement(
+              'div',
+              { className: _controls2.default.unit },
+              input.codapDef.unit
             )
           ));
         }
@@ -20339,6 +20343,7 @@ var Controls = function (_PureComponent) {
       Object.keys(_config2.default.outputs).forEach(function (outputName) {
         var output = _config2.default.outputs[outputName];
         if (output.showInMainView) {
+          var value = outputs[outputName] !== null ? outputs[outputName].toFixed(2) : '';
           components.push(_react2.default.createElement(
             'div',
             { key: outputName, className: _controls2.default.outputContainer },
@@ -20347,7 +20352,12 @@ var Controls = function (_PureComponent) {
               { className: _controls2.default.label },
               output.codapDef.name
             ),
-            _react2.default.createElement(_input2.default, { className: _controls2.default.output, type: 'text', value: outputs[outputName].toFixed(2), disabled: true })
+            _react2.default.createElement(_input2.default, { className: _controls2.default.output, type: 'text', value: value, disabled: true }),
+            _react2.default.createElement(
+              'div',
+              { className: _controls2.default.unit },
+              output.codapDef.unit
+            )
           ));
         }
       });
@@ -20529,7 +20539,7 @@ var Ground = function (_PureComponent) {
         var xPos = sx(x);
         var points = [xPos, yPos, xPos, yPos + markHeight];
         lineMarks.push(_react2.default.createElement(_reactKonva.Line, { points: points, closed: false, stroke: 'white', strokeWidth: 1, key: 'mark' + x }));
-        lineMarks.push(_react2.default.createElement(_reactKonva.Text, { x: xPos - 9, y: yPos + markHeight * 1.2, fontFamily: 'Arial', fontSize: 14, text: x.toFixed(1), fill: 'white', key: 'text' + x }));
+        lineMarks.push(_react2.default.createElement(_reactKonva.Text, { x: xPos - 9, y: yPos + markHeight * 1.2, fontFamily: 'Arial', fontSize: 14, text: x.toFixed(1) + ' m', fill: 'white', key: 'text' + x }));
       }
       return lineMarks;
     }
@@ -20748,7 +20758,8 @@ var RampDistanceLabel = function (_PureComponent) {
         _react2.default.createElement(
           'div',
           { className: _rampDistanceLabel2.default.reading },
-          distance.toFixed(2)
+          distance.toFixed(2),
+          ' m'
         )
       );
     }
@@ -20814,9 +20825,9 @@ var Ramp = function (_PureComponent) {
       return _react2.default.createElement(
         _reactKonva.Group,
         null,
-        _react2.default.createElement(_reactKonva.Line, { points: points, closed: true, fill: 'grey', stroke: 'black', strokeWidth: 1 }),
+        _react2.default.createElement(_reactKonva.Line, { points: points, closed: true, fill: '#959595', stroke: 'black', strokeWidth: 1 }),
         _react2.default.createElement(_reactKonva.Arc, { x: sx(_simConstants2.default.rampEndX), y: sy(_simConstants2.default.rampBottomY), outerRadius: 40, innerRadius: 0, fill: '#dddddd', stroke: 0, angle: angleInDeg, rotation: 180 }),
-        _react2.default.createElement(_reactKonva.Text, { x: sx(_simConstants2.default.rampEndX) - 35, y: sy(_simConstants2.default.rampBottomY) - 17, fontFamily: 'Arial', fontSize: 14, text: Math.round(angleInDeg) + '°', fill: 'navy' })
+        _react2.default.createElement(_reactKonva.Text, { x: sx(_simConstants2.default.rampEndX) - 35, y: sy(_simConstants2.default.rampBottomY) - 17, fontFamily: 'Arial', fontSize: 14, text: Math.round(angleInDeg) + '°', fill: 'black' })
       );
     }
   }]);
@@ -21074,7 +21085,8 @@ var SimulationBase = function (_PureComponent) {
             isRunning: false
           });
         } else {
-          this.log('SimulationStarted', true);
+          // Pass all the CODAP attributes (inputs and outputs) as SimulationStarted params.
+          this.log('SimulationStarted', (0, _codapHandler.generateCodapData)(this.state));
           window.requestAnimationFrame(this.rafHandler);
         }
       }
@@ -21088,8 +21100,31 @@ var SimulationBase = function (_PureComponent) {
         this.setupChallenge(prevState.challengeIdx);
         this.saveGameStateToCodap();
       }
-      if (this.challengeActive && elapsedTime === this.outputs.totalTime) {
-        this.calculateGameScore();
+      if (elapsedTime !== prevState.elapsedTime && elapsedTime === this.outputs.totalTime) {
+        this.simulationFinished();
+      }
+    }
+  }, {
+    key: 'simulationFinished',
+    value: function simulationFinished() {
+      var logParams = {};
+      if (this.challengeActive) {
+        var _state2 = this.state,
+            targetX = _state2.targetX,
+            targetWidth = _state2.targetWidth;
+        var carX = this.outputs.carX;
+
+        var score = (0, _game.calcGameScore)(carX, targetX, targetWidth);
+        this.setState({
+          lastScore: score
+        });
+        logParams.score = score;
+        logParams.starScore = (0, _game.calcStarsCount)(score);
+      }
+      this.log('SimulationFinished', logParams);
+
+      if (_config2.default.autosave) {
+        this.saveData();
       }
     }
   }, {
@@ -21139,10 +21174,10 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'setupNewRunIfDataSaved',
     value: function setupNewRunIfDataSaved() {
-      var _state2 = this.state,
-          codapPresent = _state2.codapPresent,
-          dataSaved = _state2.dataSaved,
-          discardDataWarningEnabled = _state2.discardDataWarningEnabled;
+      var _state3 = this.state,
+          codapPresent = _state3.codapPresent,
+          dataSaved = _state3.dataSaved,
+          discardDataWarningEnabled = _state3.discardDataWarningEnabled;
 
       if (!codapPresent || codapPresent && dataSaved || !discardDataWarningEnabled || _config2.default.autosave) {
         // In autosave mode, data will be saved automatically at the end of the run anyway.
@@ -21174,6 +21209,7 @@ var SimulationBase = function (_PureComponent) {
       this.setState({
         discardDataDialogActive: false
       });
+      this.log('DataDiscarded');
     }
   }, {
     key: 'toggleDiscardDataWarning',
@@ -21192,9 +21228,9 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'rafHandler',
     value: function rafHandler(timestamp) {
-      var _state3 = this.state,
-          elapsedTime = _state3.elapsedTime,
-          isRunning = _state3.isRunning;
+      var _state4 = this.state,
+          elapsedTime = _state4.elapsedTime,
+          isRunning = _state4.isRunning;
 
       if (isRunning) {
         window.requestAnimationFrame(this.rafHandler);
@@ -21212,23 +21248,6 @@ var SimulationBase = function (_PureComponent) {
       this.setState({
         elapsedTime: newElapsedTime,
         isRunning: newElapsedTime < this.outputs.totalTime
-      });
-
-      if (_config2.default.autosave && newElapsedTime === this.outputs.totalTime) {
-        this.saveData();
-      }
-    }
-  }, {
-    key: 'calculateGameScore',
-    value: function calculateGameScore() {
-      var _state4 = this.state,
-          targetX = _state4.targetX,
-          targetWidth = _state4.targetWidth;
-      var carX = this.outputs.carX;
-
-      var score = (0, _game.calcGameScore)(carX, targetX, targetWidth);
-      this.setState({
-        lastScore: score
       });
     }
   }, {
@@ -21320,7 +21339,7 @@ var SimulationBase = function (_PureComponent) {
 
       if (codapPresent) {
         this.codapHandler.generateAndSendData(this.state);
-        this.log('DataSaved', true);
+        this.log('DataSaved');
       }
       this.setState({ dataSaved: true });
     }
@@ -21388,17 +21407,19 @@ var SimulationBase = function (_PureComponent) {
     }
   }, {
     key: 'log',
-    value: function log(action) {
-      var includeCodapAttributes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    value: function log(action, params) {
       var _state8 = this.state,
           codapPresent = _state8.codapPresent,
           laraPresent = _state8.laraPresent;
 
-      var attrs = includeCodapAttributes ? (0, _codapHandler.generateCodapData)(this.state) : {};
       if (codapPresent) {
-        this.codapHandler.log(action, attrs);
+        this.codapHandler.log(action, params);
       } else if (laraPresent) {
-        this.laraPhone.post('log', { action: action, data: attrs });
+        var attrs = { action: action };
+        if (params) {
+          attrs.data = params;
+        }
+        this.laraPhone.post('log', attrs);
       }
     }
   }, {
@@ -26478,7 +26499,7 @@ exports = module.exports = __webpack_require__(20)();
 
 
 // module
-exports.push([module.i, ".controls--controls--KK6lP6QF {\n  position: absolute;\n  top: 0;\n  right: 0;\n  z-index: 100;\n  transform-origin: top right;\n}\n@media (max-width: 720px), (max-height: 320px) {\n  .controls--controls--KK6lP6QF {\n    transform: scale(0.84);\n  }\n}\n@media (max-width: 590px), (max-height: 250px) {\n  .controls--controls--KK6lP6QF {\n    transform: scale(0.7);\n  }\n}\n@media (max-width: 465px), (max-height: 210px) {\n  .controls--controls--KK6lP6QF {\n    transform: scale(0.6);\n  }\n}\n.controls--controls--KK6lP6QF .controls--buttons--3-rQSGIL {\n  text-align: right;\n}\n.controls--controls--KK6lP6QF button {\n  margin: 10px;\n}\n.controls--controls--KK6lP6QF .controls--label--bdKKbNUw {\n  display: inline-block;\n  font-size: 16px;\n  vertical-align: middle;\n}\n.controls--controls--KK6lP6QF .controls--sliderContainer--3F3S1dcT,\n.controls--controls--KK6lP6QF .controls--outputContainer--2nIV_Yju {\n  text-align: right;\n}\n.controls--controls--KK6lP6QF .controls--slider--1-LJynGz {\n  text-align: left;\n  display: inline-block;\n  width: 250px;\n  margin: 3px 10px 3px 0;\n  vertical-align: middle;\n}\n.controls--controls--KK6lP6QF .controls--output--2fLNOm5_ {\n  display: inline-block;\n  width: 45px;\n  margin: 0 10px 0 10px;\n  padding: 0;\n}\n.controls--controls--KK6lP6QF .controls--output--2fLNOm5_ input {\n  text-align: center;\n  color: #333 !important;\n}\n", "", {"version":3,"sources":["/Users/piotr/Concord/inquiry-space-2/css/controls.less"],"names":[],"mappings":"AAAA;EACE,mBAAmB;EACnB,OAAO;EACP,SAAS;EACT,aAAa;EACb,4BAA4B;CAC7B;AACD;EACE;IACE,uBAAuB;GACxB;CACF;AACD;EACE;IACE,sBAAsB;GACvB;CACF;AACD;EACE;IACE,sBAAsB;GACvB;CACF;AACD;EACE,kBAAkB;CACnB;AACD;EACE,aAAa;CACd;AACD;EACE,sBAAsB;EACtB,gBAAgB;EAChB,uBAAuB;CACxB;AACD;;EAEE,kBAAkB;CACnB;AACD;EACE,iBAAiB;EACjB,sBAAsB;EACtB,aAAa;EACb,uBAAuB;EACvB,uBAAuB;CACxB;AACD;EACE,sBAAsB;EACtB,YAAY;EACZ,sBAAsB;EACtB,WAAW;CACZ;AACD;EACE,mBAAmB;EACnB,uBAAuB;CACxB","file":"controls.less","sourcesContent":[".controls {\n  position: absolute;\n  top: 0;\n  right: 0;\n  z-index: 100;\n  transform-origin: top right;\n}\n@media (max-width: 720px), (max-height: 320px) {\n  .controls {\n    transform: scale(0.84);\n  }\n}\n@media (max-width: 590px), (max-height: 250px) {\n  .controls {\n    transform: scale(0.7);\n  }\n}\n@media (max-width: 465px), (max-height: 210px) {\n  .controls {\n    transform: scale(0.6);\n  }\n}\n.controls .buttons {\n  text-align: right;\n}\n.controls button {\n  margin: 10px;\n}\n.controls .label {\n  display: inline-block;\n  font-size: 16px;\n  vertical-align: middle;\n}\n.controls .sliderContainer,\n.controls .outputContainer {\n  text-align: right;\n}\n.controls .slider {\n  text-align: left;\n  display: inline-block;\n  width: 250px;\n  margin: 3px 10px 3px 0;\n  vertical-align: middle;\n}\n.controls .output {\n  display: inline-block;\n  width: 45px;\n  margin: 0 10px 0 10px;\n  padding: 0;\n}\n.controls .output input {\n  text-align: center;\n  color: #333 !important;\n}\n"],"sourceRoot":""}]);
+exports.push([module.i, ".controls--controls--KK6lP6QF {\n  position: absolute;\n  top: 0;\n  right: 0;\n  z-index: 100;\n  transform-origin: top right;\n}\n@media (max-width: 720px), (max-height: 320px) {\n  .controls--controls--KK6lP6QF {\n    transform: scale(0.84);\n  }\n}\n@media (max-width: 590px), (max-height: 250px) {\n  .controls--controls--KK6lP6QF {\n    transform: scale(0.7);\n  }\n}\n@media (max-width: 465px), (max-height: 210px) {\n  .controls--controls--KK6lP6QF {\n    transform: scale(0.6);\n  }\n}\n.controls--controls--KK6lP6QF .controls--buttons--3-rQSGIL {\n  text-align: right;\n}\n.controls--controls--KK6lP6QF button {\n  margin: 10px;\n}\n.controls--controls--KK6lP6QF .controls--label--bdKKbNUw {\n  display: inline-block;\n  font-size: 16px;\n  vertical-align: middle;\n}\n.controls--controls--KK6lP6QF .controls--sliderContainer--3F3S1dcT,\n.controls--controls--KK6lP6QF .controls--outputContainer--2nIV_Yju {\n  text-align: right;\n}\n.controls--controls--KK6lP6QF .controls--slider--1-LJynGz {\n  text-align: left;\n  display: inline-block;\n  width: 250px;\n  margin: 3px 3px 3px 0;\n  vertical-align: middle;\n}\n.controls--controls--KK6lP6QF .controls--unit--3SmgnG9A {\n  font-size: 12px;\n  text-align: left;\n  display: inline-block;\n  width: 28px;\n  vertical-align: middle;\n}\n.controls--controls--KK6lP6QF .controls--output--2fLNOm5_ {\n  display: inline-block;\n  width: 45px;\n  margin: 0 3px 0 10px;\n  padding: 0;\n}\n.controls--controls--KK6lP6QF .controls--output--2fLNOm5_ input {\n  text-align: center;\n  color: #333 !important;\n}\n", "", {"version":3,"sources":["/Users/piotr/Concord/inquiry-space-2/css/controls.less"],"names":[],"mappings":"AAAA;EACE,mBAAmB;EACnB,OAAO;EACP,SAAS;EACT,aAAa;EACb,4BAA4B;CAC7B;AACD;EACE;IACE,uBAAuB;GACxB;CACF;AACD;EACE;IACE,sBAAsB;GACvB;CACF;AACD;EACE;IACE,sBAAsB;GACvB;CACF;AACD;EACE,kBAAkB;CACnB;AACD;EACE,aAAa;CACd;AACD;EACE,sBAAsB;EACtB,gBAAgB;EAChB,uBAAuB;CACxB;AACD;;EAEE,kBAAkB;CACnB;AACD;EACE,iBAAiB;EACjB,sBAAsB;EACtB,aAAa;EACb,sBAAsB;EACtB,uBAAuB;CACxB;AACD;EACE,gBAAgB;EAChB,iBAAiB;EACjB,sBAAsB;EACtB,YAAY;EACZ,uBAAuB;CACxB;AACD;EACE,sBAAsB;EACtB,YAAY;EACZ,qBAAqB;EACrB,WAAW;CACZ;AACD;EACE,mBAAmB;EACnB,uBAAuB;CACxB","file":"controls.less","sourcesContent":[".controls {\n  position: absolute;\n  top: 0;\n  right: 0;\n  z-index: 100;\n  transform-origin: top right;\n}\n@media (max-width: 720px), (max-height: 320px) {\n  .controls {\n    transform: scale(0.84);\n  }\n}\n@media (max-width: 590px), (max-height: 250px) {\n  .controls {\n    transform: scale(0.7);\n  }\n}\n@media (max-width: 465px), (max-height: 210px) {\n  .controls {\n    transform: scale(0.6);\n  }\n}\n.controls .buttons {\n  text-align: right;\n}\n.controls button {\n  margin: 10px;\n}\n.controls .label {\n  display: inline-block;\n  font-size: 16px;\n  vertical-align: middle;\n}\n.controls .sliderContainer,\n.controls .outputContainer {\n  text-align: right;\n}\n.controls .slider {\n  text-align: left;\n  display: inline-block;\n  width: 250px;\n  margin: 3px 3px 3px 0;\n  vertical-align: middle;\n}\n.controls .unit {\n  font-size: 12px;\n  text-align: left;\n  display: inline-block;\n  width: 28px;\n  vertical-align: middle;\n}\n.controls .output {\n  display: inline-block;\n  width: 45px;\n  margin: 0 3px 0 10px;\n  padding: 0;\n}\n.controls .output input {\n  text-align: center;\n  color: #333 !important;\n}\n"],"sourceRoot":""}]);
 
 // exports
 exports.locals = {
@@ -26488,6 +26509,7 @@ exports.locals = {
 	"sliderContainer": "controls--sliderContainer--3F3S1dcT",
 	"outputContainer": "controls--outputContainer--2nIV_Yju",
 	"slider": "controls--slider--1-LJynGz",
+	"unit": "controls--unit--3SmgnG9A",
 	"output": "controls--output--2fLNOm5_"
 };
 
