@@ -2,7 +2,10 @@ import { getURLParam } from './utils'
 
 const config = {
   game: false,
-  autosave: true, // save data to CODAP automatically
+  // Save data to CODAP automatically.
+  autosave: true,
+  // Sends user back to activity after each challenge.
+  returnToActivity: true,
   inputs: {
     mass: {
       codapDef: {name: 'Mass', unit: 'kg', type: 'numeric', precision: 2},

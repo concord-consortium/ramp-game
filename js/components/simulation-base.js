@@ -74,7 +74,8 @@ export default class SimulationBase extends PureComponent {
       genericDialogActive: false,
       genericDialogMessage: '',
 
-      laraPresent: false
+      laraPresent: false,
+      returnToActivity: false
     }
 
     this.outputs = calcOutputs(this.state)
@@ -113,18 +114,14 @@ export default class SimulationBase extends PureComponent {
     // Handle LARA as a parent window.
     this.laraPhone = iframePhone.getIFrameEndpoint()
     this.laraPhone.addListener('initInteractive', (data) => {
-      console.log('LARA detected')
       this.setState({ laraPresent: true })
       if (config.game) {
-        const gameState = typeof data.interactiveState === 'string' ? JSON.parse(data.interactiveState) : data.interactiveState
-        this.loadGameState(gameState)
-      }
-    })
-    this.laraPhone.addListener('initInteractive', (data) => {
-      this.setState({ laraPresent: true })
-      if (config.game) {
-        const gameState = typeof data.interactiveState === 'string' ? JSON.parse(data.interactiveState) : data.interactiveState
-        this.loadGameState(gameState)
+        const interactiveState = typeof data.interactiveState === 'string' ? JSON.parse(data.interactiveState) : data.interactiveState
+        const linkedState = typeof data.linkedState === 'string' ? JSON.parse(data.linkedState) : data.linkedState
+        const gameState = interactiveState || linkedState
+        if (gameState !== null) {
+          this.loadGameState(gameState)
+        }
       }
       this.laraPhone.post('supportedFeatures', {
         apiVersion: 1,
@@ -409,7 +406,7 @@ export default class SimulationBase extends PureComponent {
   }
 
   setupChallenge (prevChallengeIdx) {
-    const { challengeIdx, stepIdx, initialCarX, surfaceFriction } = this.state
+    const { challengeIdx, stepIdx, initialCarX, surfaceFriction, returnToActivity } = this.state
     const challenge = challenges[challengeIdx]
     if (!challenge) {
       this.gameCompleted()
@@ -427,7 +424,7 @@ export default class SimulationBase extends PureComponent {
       lastScore: null
     })
 
-    if (challengeIdx !== prevChallengeIdx) {
+    if (challengeIdx !== prevChallengeIdx && !returnToActivity) {
       this.showDialogWithMessage(challenge.message)
     }
   }
@@ -435,17 +432,27 @@ export default class SimulationBase extends PureComponent {
   updateChallenge () {
     const { challengeIdx, stepIdx, lastScore } = this.state
     const challenge = challenges[challengeIdx]
+    const nextChallenge = challenges[challengeIdx + 1]
     let newStepIdx = stepIdx
     let newChallengeIdx = challengeIdx
+    let returnToActivity = false
     if (lastScore >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 < challenge.steps) {
+      // Next step.
       newStepIdx = stepIdx + 1
-    } else if (lastScore >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 === challenge.steps) {
+    } else if (lastScore >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 === challenge.steps && nextChallenge) {
+      // Next challenge.
+      newChallengeIdx = challengeIdx + 1
+      newStepIdx = 0
+      returnToActivity = config.returnToActivity
+    } else if (lastScore >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 === challenge.steps && !nextChallenge) {
+      // End of the game.
       newChallengeIdx = challengeIdx + 1
       newStepIdx = 0
     }
     this.setState({
       challengeIdx: newChallengeIdx,
-      stepIdx: newStepIdx
+      stepIdx: newStepIdx,
+      returnToActivity
     })
   }
 
@@ -474,7 +481,7 @@ export default class SimulationBase extends PureComponent {
   render () {
     const { rampTopX, rampTopY, scaleX, scaleY, codapPresent, dataSaved, discardDataDialogActive, elapsedTime,
       discardDataWarningEnabled, targetX, targetWidth, carDragging, inclineControl, challengeIdx, stepIdx, lastScore,
-      disabledInputs, genericDialogActive, genericDialogMessage } = this.state
+      disabledInputs, genericDialogActive, genericDialogMessage, returnToActivity } = this.state
     const { simulationFinished, carX, carY, rampAngle, carAngle, startDistanceUpRamp } = this.outputs
     const simulationStarted = elapsedTime > 0
     return (
@@ -541,6 +548,14 @@ export default class SimulationBase extends PureComponent {
           onOverlayClick={this.hideGenericDialog}
         >
           { genericDialogMessage }
+        </Dialog>
+        <Dialog
+          theme={dialogTheme}
+          active={returnToActivity}
+        >
+          {/* Note that this dialog cannot be closed. It's intentional. User has to go back to LARA and go to the next page. */}
+          Congratulations! You have completed Challenge { challengeIdx }.
+          Click the <strong>"Return to activity"</strong> link and answer the questions there.
         </Dialog>
       </div>
     )

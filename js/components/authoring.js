@@ -36,28 +36,41 @@ function getOutputsData () {
   return data
 }
 
+const BASIC_OPTIONS = [
+  {name: 'game', dispName: 'Game'},
+  {name: 'autosave', dispName: 'Autosave'},
+  {name: 'returnToActivity', dispName: 'Return to activity dialog'}
+]
+
 export default class Authoring extends PureComponent {
   constructor (props) {
     super(props)
     this.state = {
-      game: config.game,
-      autosave: config.autosave,
       inputs: getInputsData(),
       outputs: getOutputsData(),
       iframeSrc: ''
     }
+    BASIC_OPTIONS.forEach(opt => {
+      this.state[opt.name] = config[opt.name]
+    })
   }
 
   get finalUrl () {
-    const { inputs, outputs, game, autosave } = this.state
+    const { inputs, outputs } = this.state
     let url = window.location.href.slice()
     url = url.replace('?authoring', '')
-    if (game) {
-      url += '&game'
-    }
-    if (autosave !== config.autosave) {
-      url += `&autosave=${autosave}`
-    }
+
+    BASIC_OPTIONS.forEach(opt => {
+      const val = this.state[opt.name]
+      if (val !== config[opt.name]) {
+        if (val === true) {
+          url += `&${opt.name}`
+        } else {
+          url += `&${opt.name}=${val}`
+        }
+      }
+    })
+
     const props = ['defaultValue', 'showInCodap', 'showInCodapInGameMode', 'showInMainView']
     inputs.forEach(item => {
       props.forEach(prop => {
@@ -116,13 +129,16 @@ export default class Authoring extends PureComponent {
   }
 
   render () {
-    const { game, autosave, inputs, outputs, iframeSrc } = this.state
+    const { inputs, outputs, iframeSrc } = this.state
     const finalUrl = this.finalUrl
     return (
       <div className={authoringStyles.authoring} >
         <h1>Customize simulation configuration, inputs and outputs</h1>
-        <p><Checkbox className={authoringStyles.inline} checked={game} onChange={this.toggleValue.bind(this, 'game')} /> Game mode</p>
-        <p><Checkbox className={authoringStyles.inline} checked={autosave} onChange={this.toggleValue.bind(this, 'autosave')} /> Autosave</p>
+        {
+          BASIC_OPTIONS.map(opt => {
+            return <div key={opt.name}><Checkbox className={authoringStyles.inline} checked={this.state[opt.name]} onChange={this.toggleValue.bind(this, opt.name)} /> { opt.dispName }</div>
+          })
+        }
         <h3>Inputs</h3>
         <Table selectable={false}>
           <TableHead>
