@@ -173,6 +173,15 @@ export default class CodapHandler {
 
   setCodapState (state) {
     Object.assign(this.state, state)
+    // Notify CODAP that interactive is "dirty" and needs to be saved.
+    // This action isn't indented for it, but it seems there's no dedicated API for it.
+    return codapInterface.sendRequest({
+      action: 'notify',
+      resource: 'undoChangeNotice',
+      'values': {
+        operation: 'undoableActionPerformed'
+      }
+    })
   }
 
   generateAndSendData (options) {

@@ -131,7 +131,7 @@ export default class SimulationBase extends PureComponent {
       })
     })
     this.laraPhone.addListener('getInteractiveState', () => {
-      this.laraPhone.post('interactiveState', this.gameState)
+      this.saveGameState()
     })
 
     if (this.challengeActive) {
@@ -166,7 +166,7 @@ export default class SimulationBase extends PureComponent {
     }
     if (challengeIdx !== prevState.challengeIdx || stepIdx !== prevState.stepIdx) {
       this.setupChallenge(prevState.challengeIdx)
-      this.saveGameStateToCodap()
+      this.saveGameState()
     }
     if (elapsedTime !== prevState.elapsedTime && elapsedTime === this.outputs.totalTime) {
       this.simulationFinished()
@@ -230,10 +230,13 @@ export default class SimulationBase extends PureComponent {
     return MAX_Y - screenY / this.pixelMeterRatio
   }
 
-  saveGameStateToCodap () {
-    const { codapPresent } = this.state
+  saveGameState () {
+    const { codapPresent, laraPresent } = this.state
     if (codapPresent) {
       this.codapHandler.setCodapState(this.gameState)
+    }
+    if (laraPresent) {
+      this.laraPhone.post('interactiveState', this.gameState)
     }
   }
 
