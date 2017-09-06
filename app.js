@@ -19949,6 +19949,15 @@ var CodapHandler = function () {
     key: 'setCodapState',
     value: function setCodapState(state) {
       Object.assign(this.state, state);
+      // Notify CODAP that interactive is "dirty" and needs to be saved.
+      // This action isn't indented for it, but it seems there's no dedicated API for it.
+      return codapInterface.sendRequest({
+        action: 'notify',
+        resource: 'undoChangeNotice',
+        'values': {
+          operation: 'undoableActionPerformed'
+        }
+      });
     }
   }, {
     key: 'generateAndSendData',
@@ -21061,7 +21070,7 @@ var SimulationBase = function (_PureComponent) {
         });
       });
       this.laraPhone.addListener('getInteractiveState', function () {
-        _this2.laraPhone.post('interactiveState', _this2.gameState);
+        _this2.saveGameState();
       });
 
       if (this.challengeActive) {
@@ -21105,7 +21114,7 @@ var SimulationBase = function (_PureComponent) {
       }
       if (challengeIdx !== prevState.challengeIdx || stepIdx !== prevState.stepIdx) {
         this.setupChallenge(prevState.challengeIdx);
-        this.saveGameStateToCodap();
+        this.saveGameState();
       }
       if (elapsedTime !== prevState.elapsedTime && elapsedTime === this.outputs.totalTime) {
         this.simulationFinished();
@@ -21145,12 +21154,17 @@ var SimulationBase = function (_PureComponent) {
       return MAX_Y - screenY / this.pixelMeterRatio;
     }
   }, {
-    key: 'saveGameStateToCodap',
-    value: function saveGameStateToCodap() {
-      var codapPresent = this.state.codapPresent;
+    key: 'saveGameState',
+    value: function saveGameState() {
+      var _state3 = this.state,
+          codapPresent = _state3.codapPresent,
+          laraPresent = _state3.laraPresent;
 
       if (codapPresent) {
         this.codapHandler.setCodapState(this.gameState);
+      }
+      if (laraPresent) {
+        this.laraPhone.post('interactiveState', this.gameState);
       }
     }
   }, {
@@ -21181,10 +21195,10 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'setupNewRunIfDataSaved',
     value: function setupNewRunIfDataSaved() {
-      var _state3 = this.state,
-          codapPresent = _state3.codapPresent,
-          dataSaved = _state3.dataSaved,
-          discardDataWarningEnabled = _state3.discardDataWarningEnabled;
+      var _state4 = this.state,
+          codapPresent = _state4.codapPresent,
+          dataSaved = _state4.dataSaved,
+          discardDataWarningEnabled = _state4.discardDataWarningEnabled;
 
       if (!codapPresent || codapPresent && dataSaved || !discardDataWarningEnabled || _config2.default.autosave) {
         // In autosave mode, data will be saved automatically at the end of the run anyway.
@@ -21235,9 +21249,9 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'rafHandler',
     value: function rafHandler(timestamp) {
-      var _state4 = this.state,
-          elapsedTime = _state4.elapsedTime,
-          isRunning = _state4.isRunning;
+      var _state5 = this.state,
+          elapsedTime = _state5.elapsedTime,
+          isRunning = _state5.isRunning;
 
       if (isRunning) {
         window.requestAnimationFrame(this.rafHandler);
@@ -21287,9 +21301,9 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'handleCarPosChange',
     value: function handleCarPosChange(newXScreen, newYScreen) {
-      var _state5 = this.state,
-          rampTopX = _state5.rampTopX,
-          rampTopY = _state5.rampTopY;
+      var _state6 = this.state,
+          rampTopX = _state6.rampTopX,
+          rampTopY = _state6.rampTopY;
 
       if (!this.draggingActive) {
         return;
@@ -21353,12 +21367,12 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'setupChallenge',
     value: function setupChallenge(prevChallengeIdx) {
-      var _state6 = this.state,
-          challengeIdx = _state6.challengeIdx,
-          stepIdx = _state6.stepIdx,
-          initialCarX = _state6.initialCarX,
-          surfaceFriction = _state6.surfaceFriction,
-          returnToActivity = _state6.returnToActivity;
+      var _state7 = this.state,
+          challengeIdx = _state7.challengeIdx,
+          stepIdx = _state7.stepIdx,
+          initialCarX = _state7.initialCarX,
+          surfaceFriction = _state7.surfaceFriction,
+          returnToActivity = _state7.returnToActivity;
 
       var challenge = _game.challenges[challengeIdx];
       if (!challenge) {
@@ -21384,10 +21398,10 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'updateChallenge',
     value: function updateChallenge() {
-      var _state7 = this.state,
-          challengeIdx = _state7.challengeIdx,
-          stepIdx = _state7.stepIdx,
-          lastScore = _state7.lastScore;
+      var _state8 = this.state,
+          challengeIdx = _state8.challengeIdx,
+          stepIdx = _state8.stepIdx,
+          lastScore = _state8.lastScore;
 
       var challenge = _game.challenges[challengeIdx];
       var nextChallenge = _game.challenges[challengeIdx + 1];
@@ -21426,9 +21440,9 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'log',
     value: function log(action, params) {
-      var _state8 = this.state,
-          codapPresent = _state8.codapPresent,
-          laraPresent = _state8.laraPresent;
+      var _state9 = this.state,
+          codapPresent = _state9.codapPresent,
+          laraPresent = _state9.laraPresent;
 
       if (codapPresent) {
         this.codapHandler.log(action, params);
@@ -21443,27 +21457,27 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'render',
     value: function render() {
-      var _state9 = this.state,
-          rampTopX = _state9.rampTopX,
-          rampTopY = _state9.rampTopY,
-          scaleX = _state9.scaleX,
-          scaleY = _state9.scaleY,
-          codapPresent = _state9.codapPresent,
-          dataSaved = _state9.dataSaved,
-          discardDataDialogActive = _state9.discardDataDialogActive,
-          elapsedTime = _state9.elapsedTime,
-          discardDataWarningEnabled = _state9.discardDataWarningEnabled,
-          targetX = _state9.targetX,
-          targetWidth = _state9.targetWidth,
-          carDragging = _state9.carDragging,
-          inclineControl = _state9.inclineControl,
-          challengeIdx = _state9.challengeIdx,
-          stepIdx = _state9.stepIdx,
-          lastScore = _state9.lastScore,
-          disabledInputs = _state9.disabledInputs,
-          genericDialogActive = _state9.genericDialogActive,
-          genericDialogMessage = _state9.genericDialogMessage,
-          returnToActivity = _state9.returnToActivity;
+      var _state10 = this.state,
+          rampTopX = _state10.rampTopX,
+          rampTopY = _state10.rampTopY,
+          scaleX = _state10.scaleX,
+          scaleY = _state10.scaleY,
+          codapPresent = _state10.codapPresent,
+          dataSaved = _state10.dataSaved,
+          discardDataDialogActive = _state10.discardDataDialogActive,
+          elapsedTime = _state10.elapsedTime,
+          discardDataWarningEnabled = _state10.discardDataWarningEnabled,
+          targetX = _state10.targetX,
+          targetWidth = _state10.targetWidth,
+          carDragging = _state10.carDragging,
+          inclineControl = _state10.inclineControl,
+          challengeIdx = _state10.challengeIdx,
+          stepIdx = _state10.stepIdx,
+          lastScore = _state10.lastScore,
+          disabledInputs = _state10.disabledInputs,
+          genericDialogActive = _state10.genericDialogActive,
+          genericDialogMessage = _state10.genericDialogMessage,
+          returnToActivity = _state10.returnToActivity;
       var _outputs = this.outputs,
           simulationFinished = _outputs.simulationFinished,
           carX = _outputs.carX,
@@ -21549,9 +21563,9 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'gameState',
     get: function get() {
-      var _state10 = this.state,
-          challengeIdx = _state10.challengeIdx,
-          stepIdx = _state10.stepIdx;
+      var _state11 = this.state,
+          challengeIdx = _state11.challengeIdx,
+          stepIdx = _state11.stepIdx;
 
       return { game: true, challengeIdx: challengeIdx, stepIdx: stepIdx };
     }
