@@ -20001,6 +20001,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+var FONT = 'museo-sans, verdana, arial';
+
 var CarHeightLine = function (_PureComponent) {
   _inherits(CarHeightLine, _PureComponent);
 
@@ -20024,7 +20026,8 @@ var CarHeightLine = function (_PureComponent) {
         _reactKonva.Group,
         null,
         _react2.default.createElement(_reactKonva.Line, { points: points, fill: 'grey', stroke: 'black', strokeWidth: 1 }),
-        _react2.default.createElement(_reactKonva.Text, { x: sx(carX) - 16, y: sy(carY * 0.5) + 15, fontFamily: 'Arial', fontSize: 14, text: carY.toFixed(2) + ' m', rotation: -90, fill: 'black' })
+        _react2.default.createElement(_reactKonva.Text, { x: sx(carX) - 16, y: sy(carY * 0.5) + 18, fontFamily: FONT, fontStyle: 'bold', fontSize: 14, text: carY.toFixed(2) + ' m', rotation: -90, fill: 'black' }),
+        _react2.default.createElement(_reactKonva.Text, { x: sx(carX) - 32, y: sy(carY * 0.5) + 18, fontFamily: FONT, fontSize: 14, text: 'Height', rotation: -90, fill: 'black' })
       );
     }
   }]);
