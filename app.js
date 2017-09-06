@@ -6362,7 +6362,10 @@ var _utils = __webpack_require__(112);
 
 var config = {
   game: false,
-  autosave: true, // save data to CODAP automatically
+  // Save data to CODAP automatically.
+  autosave: true,
+  // Sends user back to activity after each challenge.
+  returnToActivity: true,
   inputs: {
     mass: {
       codapDef: { name: 'Mass', unit: 'kg', type: 'numeric', precision: 2 },
@@ -19424,6 +19427,8 @@ function getOutputsData() {
   return data;
 }
 
+var BASIC_OPTIONS = [{ name: 'game', dispName: 'Game' }, { name: 'autosave', dispName: 'Autosave' }, { name: 'returnToActivity', dispName: 'Return to activity dialog' }];
+
 var Authoring = function (_PureComponent) {
   _inherits(Authoring, _PureComponent);
 
@@ -19433,12 +19438,13 @@ var Authoring = function (_PureComponent) {
     var _this = _possibleConstructorReturn(this, (Authoring.__proto__ || Object.getPrototypeOf(Authoring)).call(this, props));
 
     _this.state = {
-      game: _config2.default.game,
-      autosave: _config2.default.autosave,
       inputs: getInputsData(),
       outputs: getOutputsData(),
       iframeSrc: ''
     };
+    BASIC_OPTIONS.forEach(function (opt) {
+      _this.state[opt.name] = _config2.default[opt.name];
+    });
     return _this;
   }
 
@@ -19488,8 +19494,6 @@ var Authoring = function (_PureComponent) {
       var _this3 = this;
 
       var _state = this.state,
-          game = _state.game,
-          autosave = _state.autosave,
           inputs = _state.inputs,
           outputs = _state.outputs,
           iframeSrc = _state.iframeSrc;
@@ -19503,18 +19507,15 @@ var Authoring = function (_PureComponent) {
           null,
           'Customize simulation configuration, inputs and outputs'
         ),
-        _react2.default.createElement(
-          'p',
-          null,
-          _react2.default.createElement(_checkbox2.default, { className: _authoring2.default.inline, checked: game, onChange: this.toggleValue.bind(this, 'game') }),
-          ' Game mode'
-        ),
-        _react2.default.createElement(
-          'p',
-          null,
-          _react2.default.createElement(_checkbox2.default, { className: _authoring2.default.inline, checked: autosave, onChange: this.toggleValue.bind(this, 'autosave') }),
-          ' Autosave'
-        ),
+        BASIC_OPTIONS.map(function (opt) {
+          return _react2.default.createElement(
+            'div',
+            { key: opt.name },
+            _react2.default.createElement(_checkbox2.default, { className: _authoring2.default.inline, checked: _this3.state[opt.name], onChange: _this3.toggleValue.bind(_this3, opt.name) }),
+            ' ',
+            opt.dispName
+          );
+        }),
         _react2.default.createElement(
           'h3',
           null,
@@ -19664,20 +19665,26 @@ var Authoring = function (_PureComponent) {
   }, {
     key: 'finalUrl',
     get: function get() {
+      var _this4 = this;
+
       var _state2 = this.state,
           inputs = _state2.inputs,
-          outputs = _state2.outputs,
-          game = _state2.game,
-          autosave = _state2.autosave;
+          outputs = _state2.outputs;
 
       var url = window.location.href.slice();
       url = url.replace('?authoring', '');
-      if (game) {
-        url += '&game';
-      }
-      if (autosave !== _config2.default.autosave) {
-        url += '&autosave=' + autosave;
-      }
+
+      BASIC_OPTIONS.forEach(function (opt) {
+        var val = _this4.state[opt.name];
+        if (val !== _config2.default[opt.name]) {
+          if (val === true) {
+            url += '&' + opt.name;
+          } else {
+            url += '&' + opt.name + '=' + val;
+          }
+        }
+      });
+
       var props = ['defaultValue', 'showInCodap', 'showInCodapInGameMode', 'showInMainView'];
       inputs.forEach(function (item) {
         props.forEach(function (prop) {
@@ -20994,7 +21001,8 @@ var SimulationBase = function (_PureComponent) {
       genericDialogActive: false,
       genericDialogMessage: '',
 
-      laraPresent: false
+      laraPresent: false,
+      returnToActivity: false
     };
 
     _this.outputs = (0, _physics.calcOutputs)(_this.state);
@@ -21036,18 +21044,14 @@ var SimulationBase = function (_PureComponent) {
       // Handle LARA as a parent window.
       this.laraPhone = iframePhone.getIFrameEndpoint();
       this.laraPhone.addListener('initInteractive', function (data) {
-        console.log('LARA detected');
         _this2.setState({ laraPresent: true });
         if (_config2.default.game) {
-          var gameState = typeof data.interactiveState === 'string' ? JSON.parse(data.interactiveState) : data.interactiveState;
-          _this2.loadGameState(gameState);
-        }
-      });
-      this.laraPhone.addListener('initInteractive', function (data) {
-        _this2.setState({ laraPresent: true });
-        if (_config2.default.game) {
-          var gameState = typeof data.interactiveState === 'string' ? JSON.parse(data.interactiveState) : data.interactiveState;
-          _this2.loadGameState(gameState);
+          var interactiveState = typeof data.interactiveState === 'string' ? JSON.parse(data.interactiveState) : data.interactiveState;
+          var linkedState = typeof data.linkedState === 'string' ? JSON.parse(data.linkedState) : data.linkedState;
+          var gameState = interactiveState || linkedState;
+          if (gameState !== null) {
+            _this2.loadGameState(gameState);
+          }
         }
         _this2.laraPhone.post('supportedFeatures', {
           apiVersion: 1,
@@ -21353,7 +21357,8 @@ var SimulationBase = function (_PureComponent) {
           challengeIdx = _state6.challengeIdx,
           stepIdx = _state6.stepIdx,
           initialCarX = _state6.initialCarX,
-          surfaceFriction = _state6.surfaceFriction;
+          surfaceFriction = _state6.surfaceFriction,
+          returnToActivity = _state6.returnToActivity;
 
       var challenge = _game.challenges[challengeIdx];
       if (!challenge) {
@@ -21372,7 +21377,7 @@ var SimulationBase = function (_PureComponent) {
         lastScore: null
       });
 
-      if (challengeIdx !== prevChallengeIdx) {
+      if (challengeIdx !== prevChallengeIdx && !returnToActivity) {
         this.showDialogWithMessage(challenge.message);
       }
     }
@@ -21385,17 +21390,27 @@ var SimulationBase = function (_PureComponent) {
           lastScore = _state7.lastScore;
 
       var challenge = _game.challenges[challengeIdx];
+      var nextChallenge = _game.challenges[challengeIdx + 1];
       var newStepIdx = stepIdx;
       var newChallengeIdx = challengeIdx;
+      var returnToActivity = false;
       if (lastScore >= _game.MIN_SCORE_TO_ADVANCE && stepIdx + 1 < challenge.steps) {
+        // Next step.
         newStepIdx = stepIdx + 1;
-      } else if (lastScore >= _game.MIN_SCORE_TO_ADVANCE && stepIdx + 1 === challenge.steps) {
+      } else if (lastScore >= _game.MIN_SCORE_TO_ADVANCE && stepIdx + 1 === challenge.steps && nextChallenge) {
+        // Next challenge.
+        newChallengeIdx = challengeIdx + 1;
+        newStepIdx = 0;
+        returnToActivity = _config2.default.returnToActivity;
+      } else if (lastScore >= _game.MIN_SCORE_TO_ADVANCE && stepIdx + 1 === challenge.steps && !nextChallenge) {
+        // End of the game.
         newChallengeIdx = challengeIdx + 1;
         newStepIdx = 0;
       }
       this.setState({
         challengeIdx: newChallengeIdx,
-        stepIdx: newStepIdx
+        stepIdx: newStepIdx,
+        returnToActivity: returnToActivity
       });
     }
   }, {
@@ -21447,7 +21462,8 @@ var SimulationBase = function (_PureComponent) {
           lastScore = _state9.lastScore,
           disabledInputs = _state9.disabledInputs,
           genericDialogActive = _state9.genericDialogActive,
-          genericDialogMessage = _state9.genericDialogMessage;
+          genericDialogMessage = _state9.genericDialogMessage,
+          returnToActivity = _state9.returnToActivity;
       var _outputs = this.outputs,
           simulationFinished = _outputs.simulationFinished,
           carX = _outputs.carX,
@@ -21511,6 +21527,22 @@ var SimulationBase = function (_PureComponent) {
             onOverlayClick: this.hideGenericDialog
           },
           genericDialogMessage
+        ),
+        _react2.default.createElement(
+          _dialog2.default,
+          {
+            theme: _dialogTheme2.default,
+            active: returnToActivity
+          },
+          'Congratulations! You have completed Challenge ',
+          challengeIdx,
+          '. Click the ',
+          _react2.default.createElement(
+            'strong',
+            null,
+            '"Return to activity"'
+          ),
+          ' link and answer the questions there.'
         )
       );
     }
@@ -26525,12 +26557,13 @@ exports = module.exports = __webpack_require__(20)();
 
 
 // module
-exports.push([module.i, ".dialog-theme--dialog--ch_njsAf {\n  font-size: 16px;\n}\n.dialog-theme--dialog--ch_njsAf section {\n  padding-bottom: 0;\n}\n.dialog-theme--dialog--ch_njsAf .dialog-theme--dontShowAgain--LF0n34Fd {\n  margin: 10px 0 0 0;\n}\n", "", {"version":3,"sources":["/Users/piotr/Concord/inquiry-space-2/css/dialog-theme.less"],"names":[],"mappings":"AAAA;EACE,gBAAgB;CACjB;AACD;EACE,kBAAkB;CACnB;AACD;EACE,mBAAmB;CACpB","file":"dialog-theme.less","sourcesContent":[".dialog {\n  font-size: 16px;\n}\n.dialog section {\n  padding-bottom: 0;\n}\n.dialog .dontShowAgain {\n  margin: 10px 0 0 0;\n}\n"],"sourceRoot":""}]);
+exports.push([module.i, ".dialog-theme--dialog--ch_njsAf {\n  font-size: 16px;\n}\n.dialog-theme--dialog--ch_njsAf .dialog-theme--dontShowAgain--LF0n34Fd {\n  margin: 10px 0 0 0;\n}\n.dialog-theme--dialog--ch_njsAf .dialog-theme--navigation--HkrblILt {\n  margin-top: -20px;\n}\n", "", {"version":3,"sources":["/Users/piotr/Concord/inquiry-space-2/css/dialog-theme.less"],"names":[],"mappings":"AAAA;EACE,gBAAgB;CACjB;AACD;EACE,mBAAmB;CACpB;AACD;EACE,kBAAkB;CACnB","file":"dialog-theme.less","sourcesContent":[".dialog {\n  font-size: 16px;\n}\n.dialog .dontShowAgain {\n  margin: 10px 0 0 0;\n}\n.dialog .navigation {\n  margin-top: -20px;\n}\n"],"sourceRoot":""}]);
 
 // exports
 exports.locals = {
 	"dialog": "dialog-theme--dialog--ch_njsAf",
-	"dontShowAgain": "dialog-theme--dontShowAgain--LF0n34Fd"
+	"dontShowAgain": "dialog-theme--dontShowAgain--LF0n34Fd",
+	"navigation": "dialog-theme--navigation--HkrblILt"
 };
 
 /***/ }),
