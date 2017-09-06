@@ -16,7 +16,7 @@ export default class GameTarget extends PureComponent {
           height={MARKER_HEIGHT} fill={COLOR} />
         <Rect x={sx(x - width * 0.5)} y={sy(0) - BASE_HEIGHT} width={width * pixelMeterRatio} height={BASE_HEIGHT}
           fill={COLOR} />
-        <Text x={sx(x) - 15} y={sy(0) - MARKER_HEIGHT - 15} fontFamily={'Arial'} fontSize={14} text={x.toFixed(2)} fill={'black'} />
+        <Text x={sx(x) - 20} y={sy(0) - MARKER_HEIGHT - 15} fontFamily={'Arial'} fontSize={14} text={`${x.toFixed(2)} m`} fill={'black'} />
       </Group>
     )
   }
