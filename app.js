@@ -20428,7 +20428,7 @@ var Controls = function (_PureComponent) {
               _react2.default.createElement(
                 'div',
                 { className: _controls2.default.slider },
-                _react2.default.createElement(_slider2.default, { min: output.range[0], theme: _sliderTheme2.default, max: output.range[1], editable: true, value: value, onChange: _this3.setOption.bind(_this3, outputName) })
+                _react2.default.createElement(_slider2.default, { min: output.range[0], theme: _sliderTheme2.default, max: output.range[1], editable: true, value: value, onChange: _this3.setOption.bind(_this3, outputName), disabled: _this3.simStarted })
               ),
               _react2.default.createElement(
                 'div',
