@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react'
-import c from '../sim-constants'
+import * as c from '../sim-constants'
 import { Group, Text, Rect, Line } from 'react-konva'
 
 export const GROUND_HEIGHT = 35 // px

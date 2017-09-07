@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react'
-import c from '../sim-constants'
+import * as c from '../sim-constants'
 import { Group, Text, Line, Arc } from 'react-konva'
 
 export default class Ramp extends PureComponent {

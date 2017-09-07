@@ -7,13 +7,13 @@ import InclineControl from './incline-control'
 import Controls from './controls'
 import ConfirmationDialog from './confirmation-dialog'
 import ChallengeStatus from './challenge-status'
-import c from '../sim-constants'
+import * as c from '../sim-constants'
 import VehicleImage from './vehicle-image'
 import StarRating from './star-rating'
 import RampDistanceLabel from './ramp-distance-label'
 import CarHeightLine from './car-height-line'
 import GameTarget from './game-target'
-import { calcOutputs, calcRampLength, calcRampAngle } from '../physics'
+import { calcOutputs, calcRampLength, calcRampAngle, calcDistanceUpRamp } from '../physics'
 import { calcGameScore, calcStarsCount, challenges, MIN_SCORE_TO_ADVANCE } from '../game'
 import CodapHandler, { generateCodapData } from '../codap-handler'
 import config from '../config'
@@ -21,21 +21,15 @@ import dialogTheme from '../../css/dialog-theme.less'
 
 import { Layer, Stage } from 'react-konva'
 
-// MKS units are used everywhere: meters, kilograms and seconds.
-const MIN_X = -2.3
-const MIN_Y = 0
-const MAX_X = 5.05
-const MAX_Y = 3
-
 function getScaleX (pixelMeterRatio) {
   return function scaleX (worldX) {
-    return (worldX - MIN_X) * pixelMeterRatio
+    return (worldX - c.minX) * pixelMeterRatio
   }
 }
 
 function getScaleY (pixelMeterRatio) {
   return function scaleY (worldY) {
-    return (MAX_Y - worldY) * pixelMeterRatio
+    return (c.maxY - worldY) * pixelMeterRatio
   }
 }
 
@@ -211,8 +205,8 @@ export default class SimulationBase extends PureComponent {
   }
 
   get pixelMeterRatio () {
-    const xScale = this.simWidth / (MAX_X - MIN_X)
-    const yScale = (this.simHeight - GROUND_HEIGHT) / (MAX_Y - MIN_Y)
+    const xScale = this.simWidth / (c.maxX - c.minX)
+    const yScale = (this.simHeight - GROUND_HEIGHT) / (c.maxY - c.minY)
     return Math.min(xScale, yScale)
   }
 
@@ -223,11 +217,11 @@ export default class SimulationBase extends PureComponent {
   }
 
   invScaleX (screenX) {
-    return screenX / this.pixelMeterRatio + MIN_X
+    return screenX / this.pixelMeterRatio + c.minX
   }
 
   invScaleY (screenY) {
-    return MAX_Y - screenY / this.pixelMeterRatio
+    return c.maxY - screenY / this.pixelMeterRatio
   }
 
   saveGameState () {
@@ -302,6 +296,21 @@ export default class SimulationBase extends PureComponent {
   }
 
   handleOptionsChange (newOptions) {
+    const newState = {}
+    Object.keys(newOptions).forEach(name => {
+      if (config.inputs[name]) {
+        // Simple case, an option is just an input stored in component's state.
+        newState[name] = newOptions[name]
+      } else if (name === 'rampAngle') {
+        // It means that user wants to change some property which isn't treated as model input.
+        // It needs to be translated to model inputs update.
+        this.updateRampAngle(newOptions.rampAngle * Math.PI / 180)
+      } else if (name === 'startHeightAboveGround') {
+        this.updateCarHeightOffGround(newOptions.startHeightAboveGround)
+      } else if (name === 'startDistanceUpRamp') {
+        this.updateDistanceUpRamp(newOptions.startDistanceUpRamp)
+      }
+    })
     this.setState(newOptions)
   }
 
@@ -330,18 +339,45 @@ export default class SimulationBase extends PureComponent {
     if (!this.draggingActive) {
       return
     }
-    let newXWorld = this.invScaleX(newXScreen)
-    let newYWorld = this.invScaleY(newYScreen)
-    if (newXWorld < c.rampStartX + 0.3) {
-      newXWorld = c.rampStartX + 0.3
-    } else if (newXWorld > c.rampEndX - 1e-4) {
-      // 1e-4 so angle is never 90 deg and we don't need to handle it in a special way.
-      newXWorld = c.rampEndX - 1e-4
+    this.updateRampTopPos(this.invScaleX(newXScreen), this.invScaleY(newYScreen))
+  }
+
+  updateRampAngle (newAngle) {
+    function getNewY (newX) {
+      return Math.max(c.minRampTopY, Math.min(c.maxRampTopY, c.rampBottomY + Math.abs(newX - c.rampEndX) * Math.tan(newAngle)))
     }
-    if (newYWorld < c.rampBottomY + 0.2) {
-      newYWorld = c.rampBottomY + 0.2
-    } else if (newYWorld > MAX_Y - 0.2) {
-      newYWorld = MAX_Y - 0.2
+    function getNewX (newY) {
+      return Math.max(c.minRampTopX, Math.min(c.maxRampTopX, c.rampEndX - Math.abs(newY - c.rampBottomY) / Math.tan(newAngle)))
+    }
+    // Angle isn't stored as model input, so it needs to be translated to ramp top point position.
+    newAngle = Math.min(Math.PI * 0.5 - 1e-4, Math.max(1e-4, Number(newAngle)))
+    const { rampTopX, rampTopY } = this.state
+    let newX = rampTopX
+    let newY = rampTopY
+    if (newAngle < this.outputs.rampAngle) {
+      newX = getNewX(newY)
+      if (calcRampAngle(newX, newY) !== newAngle) {
+        newY = getNewY(newX)
+      }
+    } else {
+      newY = getNewY(newX)
+      if (calcRampAngle(newX, newY) !== newAngle) {
+        newX = getNewX(newY)
+      }
+    }
+    this.updateRampTopPos(newX, newY)
+  }
+
+  updateRampTopPos (newXWorld, newYWorld) {
+    if (newXWorld < c.minRampTopX) {
+      newXWorld = c.minRampTopX
+    } else if (newXWorld > c.maxRampTopX) {
+      newXWorld = c.maxRampTopX
+    }
+    if (newYWorld < c.minRampTopY) {
+      newYWorld = c.minRampTopY
+    } else if (newYWorld > c.maxRampTopY) {
+      newYWorld = c.maxRampTopY
     }
 
     const newCarRampDist = Math.min(this.outputs.startDistanceUpRamp, calcRampLength(newXWorld, newYWorld))
@@ -349,6 +385,24 @@ export default class SimulationBase extends PureComponent {
       rampTopX: newXWorld,
       rampTopY: newYWorld,
       initialCarX: c.rampEndX - newCarRampDist * Math.cos(calcRampAngle(newXWorld, newYWorld))
+    })
+  }
+
+  updateCarHeightOffGround (newHeight) {
+    const { rampAngle } = this.outputs
+    const { rampTopX } = this.state
+    const newCarX = c.rampEndX - newHeight / Math.tan(rampAngle)
+    this.setState({
+      initialCarX: Math.min(c.rampEndX - 1e-6, Math.max(rampTopX, newCarX))
+    })
+  }
+
+  updateDistanceUpRamp (newDist) {
+    const { rampAngle } = this.outputs
+    const { rampTopX } = this.state
+    const newCarX = c.rampEndX - newDist * Math.cos(rampAngle)
+    this.setState({
+      initialCarX: Math.min(c.rampEndX - 1e-6, Math.max(rampTopX, newCarX))
     })
   }
 

@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react'
-import c from '../sim-constants'
+import * as c from '../sim-constants'
 import { Text, Line, Group } from 'react-konva'
 
 const FONT = 'museo-sans, verdana, arial'

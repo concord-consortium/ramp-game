@@ -1,5 +1,6 @@
 export const MIN_SCORE_TO_ADVANCE = 33
 export const GAME_INPUTS = ['surfaceFriction']
+export const GAME_OUTPUTS = ['startHeightAboveGround', 'startDistanceUpRamp', 'currentEndDistance']
 
 export function calcGameScore (carX, targetX, targetWidth) {
   const targetRadius = 0.5 * targetWidth

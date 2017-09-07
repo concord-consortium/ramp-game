@@ -5,7 +5,7 @@ import Input from 'react-toolbox/lib/input'
 import config from '../config'
 import controlsStyles from '../../css/controls.less'
 import sliderTheme from '../../css/slider-theme.less'
-import { GAME_INPUTS } from '../game'
+import { GAME_INPUTS, GAME_OUTPUTS } from '../game'
 
 export default class Controls extends PureComponent {
   constructor (props) {
@@ -63,15 +63,33 @@ export default class Controls extends PureComponent {
     const components = []
     Object.keys(config.outputs).forEach(outputName => {
       const output = config.outputs[outputName]
-      if (output.showInMainView) {
-        const value = outputs[outputName] !== null ? outputs[outputName].toFixed(2) : ''
-        components.push(
-          <div key={outputName} className={controlsStyles.outputContainer}>
-            <div className={controlsStyles.label}>{ output.codapDef.name }</div>
-            <Input className={controlsStyles.output} type='text' value={value} disabled />
-            <div className={controlsStyles.unit}>{ output.codapDef.unit }</div>
-          </div>
-        )
+      const hiddenInGame = config.game && GAME_OUTPUTS.indexOf(outputName) === -1
+      if (output.showInMainView && !hiddenInGame) {
+        let value = outputs[outputName]
+        if (output.dispFunc) {
+          value = output.dispFunc(value)
+        }
+        value = value !== null ? Number(value.toFixed(2)) : ''
+        if (!output.editable) {
+          components.push(
+            <div key={outputName} className={controlsStyles.outputContainer}>
+              <div className={controlsStyles.label}>{ output.codapDef.name }</div>
+              <Input className={controlsStyles.output} type='text' value={value} disabled={!output.editable} onChange={this.setOption.bind(this, outputName)} />
+              <div className={controlsStyles.unit}>{ output.codapDef.unit }</div>
+            </div>
+          )
+        } else {
+          // Some outputs are editable. It sounds strange, but new output value will be transformed to inputs update.
+          components.push(
+            <div key={outputName} className={controlsStyles.sliderContainer}>
+              <div className={controlsStyles.label}>{ output.codapDef.name }</div>
+              <div className={controlsStyles.slider}>
+                <Slider min={output.range[0]} theme={sliderTheme} max={output.range[1]} editable value={value} onChange={this.setOption.bind(this, outputName)} />
+              </div>
+              <div className={controlsStyles.unit}>{ output.codapDef.unit }</div>
+            </div>
+          )
+        }
       }
     })
     return components

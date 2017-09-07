@@ -1,4 +1,4 @@
-import c from './sim-constants'
+import * as c from './sim-constants'
 
 export function calcRampAngle (rampTopX, rampTopY) {
   return Math.atan2(rampTopX - c.rampEndX, rampTopY - c.rampBottomY) + Math.PI * 0.5
@@ -11,9 +11,8 @@ export function calcRampLength (rampTopX, rampTopY) {
 }
 
 export function calcDistanceUpRamp (carX, rampAngle) {
-  const x = carX - c.rampEndX
-  const y = calcCarY(carX, rampAngle) - c.rampBottomY
-  return Math.sqrt(x * x + y * y)
+  const x = Math.abs(carX - c.rampEndX)
+  return x / Math.cos(rampAngle)
 }
 
 export function calcRampAcceleration (gravity, surfaceFriction, rampAngle) {

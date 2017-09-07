@@ -1,4 +1,5 @@
 import { getURLParam } from './utils'
+import * as c from './sim-constants'
 
 const config = {
   game: false,
@@ -38,21 +39,28 @@ const config = {
       codapType: 'summary',
       showInCodap: true,
       showInCodapInGameMode: false,
-      showInMainView: false
-    },
-    startHeightAboveGround: {
-      codapDef: {name: 'Start height above ground', unit: 'm', type: 'numeric', precision: 2},
-      codapType: 'summary',
-      showInCodap: true,
-      showInCodapInGameMode: true,
-      showInMainView: false
+      showInMainView: true,
+      editable: true,
+      range: [0.001, 90],
+      dispFunc: function (v) { return v * 180 / Math.PI }
     },
     startDistanceUpRamp: {
       codapDef: {name: 'Distance up ramp', unit: 'm', type: 'numeric', precision: 2},
       codapType: 'summary',
       showInCodap: true,
       showInCodapInGameMode: true,
-      showInMainView: false
+      showInMainView: true,
+      editable: true,
+      range: [0, 4]
+    },
+    startHeightAboveGround: {
+      codapDef: {name: 'Start height above ground', unit: 'm', type: 'numeric', precision: 2},
+      codapType: 'summary',
+      showInCodap: true,
+      showInCodapInGameMode: true,
+      showInMainView: true,
+      editable: true,
+      range: [0, c.maxY - c.rampBottomY]
     },
     currentEndDistance: {
       codapDef: {name: 'End distance', unit: 'm', type: 'numeric', precision: 2},
