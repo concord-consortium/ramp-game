@@ -6407,7 +6407,7 @@ var config = {
       showInCodapInGameMode: true,
       showInMainView: true,
       defaultValue: 0.3,
-      range: [0.01, 1]
+      range: [0.1, 1]
     }
   },
   outputs: {
