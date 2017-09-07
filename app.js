@@ -1548,7 +1548,7 @@ module.exports = function (it) {
 
 
 
-var _prodInvariant = __webpack_require__(76);
+var _prodInvariant = __webpack_require__(77);
 
 var ReactCurrentOwner = __webpack_require__(45);
 
@@ -2106,7 +2106,7 @@ var _prodInvariant = __webpack_require__(8),
 var CallbackQueue = __webpack_require__(213);
 var PooledClass = __webpack_require__(64);
 var ReactFeatureFlags = __webpack_require__(218);
-var ReactReconciler = __webpack_require__(75);
+var ReactReconciler = __webpack_require__(76);
 var Transaction = __webpack_require__(108);
 
 var invariant = __webpack_require__(2);
@@ -2584,7 +2584,7 @@ if (__webpack_require__(15)) {
   var createArrayIncludes = __webpack_require__(89);
   var speciesConstructor = __webpack_require__(102);
   var ArrayIterators = __webpack_require__(138);
-  var Iterators = __webpack_require__(68);
+  var Iterators = __webpack_require__(69);
   var $iterDetect = __webpack_require__(96);
   var setSpecies = __webpack_require__(61);
   var arrayFill = __webpack_require__(113);
@@ -3983,7 +3983,7 @@ var React = __webpack_require__(66);
 var PropTypes = __webpack_require__(12);
 var createClass = __webpack_require__(473);
 
-var ReactInstanceMap = __webpack_require__(74);
+var ReactInstanceMap = __webpack_require__(75);
 var ReactMultiChild = __webpack_require__(222);
 var ReactUpdates = __webpack_require__(38);
 
@@ -4852,13 +4852,42 @@ module.exports = ReactElement;
 
 /***/ }),
 /* 68 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+// MKS units are used everywhere: meters, kilograms and seconds.
+
+var minX = exports.minX = -2.3;
+var minY = exports.minY = 0;
+var maxX = exports.maxX = 5.05;
+var maxY = exports.maxY = 3;
+
+var rampStartX = exports.rampStartX = -2.25;
+var rampEndX = exports.rampEndX = 0;
+var rampBottomY = exports.rampBottomY = 0;
+
+// Range of point placed at the top of the ramp (where the car can be placed)
+var minRampTopX = exports.minRampTopX = rampStartX + 0.3;
+var maxRampTopX = exports.maxRampTopX = rampEndX - 1e-4;
+var minRampTopY = exports.minRampTopY = rampBottomY + 0.2;
+var maxRampTopY = exports.maxRampTopY = maxY - 0.2;
+
+var runoffEndX = exports.runoffEndX = 5;
+
+/***/ }),
+/* 69 */
 /***/ (function(module, exports) {
 
 module.exports = {};
 
 
 /***/ }),
-/* 69 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var def = __webpack_require__(16).f;
@@ -4871,7 +4900,7 @@ module.exports = function (it, tag, stat) {
 
 
 /***/ }),
-/* 70 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var $export = __webpack_require__(0);
@@ -4907,7 +4936,7 @@ module.exports = exporter;
 
 
 /***/ }),
-/* 71 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isObject = __webpack_require__(9);
@@ -4918,7 +4947,7 @@ module.exports = function (it, TYPE) {
 
 
 /***/ }),
-/* 72 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var _isPlaceholder = __webpack_require__(142);
@@ -4944,7 +4973,7 @@ module.exports = function _curry1(fn) {
 
 
 /***/ }),
-/* 73 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5067,7 +5096,7 @@ DOMLazyTree.queueText = queueText;
 module.exports = DOMLazyTree;
 
 /***/ }),
-/* 74 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5118,7 +5147,7 @@ var ReactInstanceMap = {
 module.exports = ReactInstanceMap;
 
 /***/ }),
-/* 75 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5290,7 +5319,7 @@ module.exports = ReactReconciler;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 76 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5332,23 +5361,6 @@ function reactProdInvariant(code) {
 }
 
 module.exports = reactProdInvariant;
-
-/***/ }),
-/* 77 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = {
-  rampStartX: -2.25,
-  rampEndX: 0,
-  rampBottomY: 0,
-  runoffEndX: 5
-};
 
 /***/ }),
 /* 78 */
@@ -6360,6 +6372,12 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _utils = __webpack_require__(112);
 
+var _simConstants = __webpack_require__(68);
+
+var c = _interopRequireWildcard(_simConstants);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 var config = {
   game: false,
   // Save data to CODAP automatically.
@@ -6398,21 +6416,30 @@ var config = {
       codapType: 'summary',
       showInCodap: true,
       showInCodapInGameMode: false,
-      showInMainView: false
-    },
-    startHeightAboveGround: {
-      codapDef: { name: 'Start height above ground', unit: 'm', type: 'numeric', precision: 2 },
-      codapType: 'summary',
-      showInCodap: true,
-      showInCodapInGameMode: true,
-      showInMainView: false
+      showInMainView: true,
+      editable: true,
+      range: [0.001, 90],
+      dispFunc: function dispFunc(v) {
+        return v * 180 / Math.PI;
+      }
     },
     startDistanceUpRamp: {
       codapDef: { name: 'Distance up ramp', unit: 'm', type: 'numeric', precision: 2 },
       codapType: 'summary',
       showInCodap: true,
       showInCodapInGameMode: true,
-      showInMainView: false
+      showInMainView: true,
+      editable: true,
+      range: [0, 4]
+    },
+    startHeightAboveGround: {
+      codapDef: { name: 'Start height above ground', unit: 'm', type: 'numeric', precision: 2 },
+      codapType: 'summary',
+      showInCodap: true,
+      showInCodapInGameMode: true,
+      showInMainView: true,
+      editable: true,
+      range: [0, c.maxY - c.rampBottomY]
     },
     currentEndDistance: {
       codapDef: { name: 'End distance', unit: 'm', type: 'numeric', precision: 2 },
@@ -6524,6 +6551,7 @@ exports.calcGameScore = calcGameScore;
 exports.calcStarsCount = calcStarsCount;
 var MIN_SCORE_TO_ADVANCE = exports.MIN_SCORE_TO_ADVANCE = 33;
 var GAME_INPUTS = exports.GAME_INPUTS = ['surfaceFriction'];
+var GAME_OUTPUTS = exports.GAME_OUTPUTS = ['startHeightAboveGround', 'startDistanceUpRamp', 'currentEndDistance'];
 
 function calcGameScore(carX, targetX, targetWidth) {
   var targetRadius = 0.5 * targetWidth;
@@ -6642,7 +6670,7 @@ var anInstance = __webpack_require__(54);
 var isObject = __webpack_require__(9);
 var fails = __webpack_require__(7);
 var $iterDetect = __webpack_require__(96);
-var setToStringTag = __webpack_require__(69);
+var setToStringTag = __webpack_require__(70);
 var inheritIfRequired = __webpack_require__(120);
 
 module.exports = function (NAME, wrapper, methods, common, IS_MAP, IS_WEAK) {
@@ -6990,7 +7018,7 @@ module.exports = {
 /* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _curry1 = __webpack_require__(72);
+var _curry1 = __webpack_require__(73);
 var _isPlaceholder = __webpack_require__(142);
 
 
@@ -8321,7 +8349,7 @@ module.exports = function (that, target, C) {
 /***/ (function(module, exports, __webpack_require__) {
 
 // check on default Array iterator
-var Iterators = __webpack_require__(68);
+var Iterators = __webpack_require__(69);
 var ITERATOR = __webpack_require__(10)('iterator');
 var ArrayProto = Array.prototype;
 
@@ -8338,7 +8366,7 @@ module.exports = function (it) {
 
 var create = __webpack_require__(57);
 var descriptor = __webpack_require__(59);
-var setToStringTag = __webpack_require__(69);
+var setToStringTag = __webpack_require__(70);
 var IteratorPrototype = {};
 
 // 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
@@ -8361,9 +8389,9 @@ var $export = __webpack_require__(0);
 var redefine = __webpack_require__(27);
 var hide = __webpack_require__(26);
 var has = __webpack_require__(25);
-var Iterators = __webpack_require__(68);
+var Iterators = __webpack_require__(69);
 var $iterCreate = __webpack_require__(122);
-var setToStringTag = __webpack_require__(69);
+var setToStringTag = __webpack_require__(70);
 var getPrototypeOf = __webpack_require__(32);
 var ITERATOR = __webpack_require__(10)('iterator');
 var BUGGY = !([].keys && 'next' in [].keys()); // Safari has buggy iterators w/o `next`
@@ -8769,7 +8797,7 @@ var toIndex = __webpack_require__(193);
 var gOPN = __webpack_require__(58).f;
 var dP = __webpack_require__(16).f;
 var arrayFill = __webpack_require__(113);
-var setToStringTag = __webpack_require__(69);
+var setToStringTag = __webpack_require__(70);
 var ARRAY_BUFFER = 'ArrayBuffer';
 var DATA_VIEW = 'DataView';
 var PROTOTYPE = 'prototype';
@@ -9053,7 +9081,7 @@ module.exports = function (name) {
 
 var classof = __webpack_require__(78);
 var ITERATOR = __webpack_require__(10)('iterator');
-var Iterators = __webpack_require__(68);
+var Iterators = __webpack_require__(69);
 module.exports = __webpack_require__(40).getIteratorMethod = function (it) {
   if (it != undefined) return it[ITERATOR]
     || it['@@iterator']
@@ -9069,7 +9097,7 @@ module.exports = __webpack_require__(40).getIteratorMethod = function (it) {
 
 var addToUnscopables = __webpack_require__(49);
 var step = __webpack_require__(178);
-var Iterators = __webpack_require__(68);
+var Iterators = __webpack_require__(69);
 var toIObject = __webpack_require__(29);
 
 // 22.1.3.4 Array.prototype.entries()
@@ -9200,7 +9228,7 @@ module.exports = ReactPropTypesSecret;
 /* 141 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _curry1 = __webpack_require__(72);
+var _curry1 = __webpack_require__(73);
 var _curry2 = __webpack_require__(104);
 var _isPlaceholder = __webpack_require__(142);
 
@@ -9268,7 +9296,7 @@ module.exports = function _isPlaceholder(a) {
 
 
 
-var DOMLazyTree = __webpack_require__(73);
+var DOMLazyTree = __webpack_require__(74);
 var Danger = __webpack_require__(532);
 var ReactDOMComponentTree = __webpack_require__(18);
 var ReactInstrumentation = __webpack_require__(34);
@@ -10100,7 +10128,7 @@ module.exports = ReactErrorUtils;
 var _prodInvariant = __webpack_require__(8);
 
 var ReactCurrentOwner = __webpack_require__(45);
-var ReactInstanceMap = __webpack_require__(74);
+var ReactInstanceMap = __webpack_require__(75);
 var ReactInstrumentation = __webpack_require__(34);
 var ReactUpdates = __webpack_require__(38);
 
@@ -11548,26 +11576,25 @@ exports.calcTimeOnGround = calcTimeOnGround;
 exports.calcCarY = calcCarY;
 exports.calcOutputs = calcOutputs;
 
-var _simConstants = __webpack_require__(77);
+var _simConstants = __webpack_require__(68);
 
-var _simConstants2 = _interopRequireDefault(_simConstants);
+var c = _interopRequireWildcard(_simConstants);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function calcRampAngle(rampTopX, rampTopY) {
-  return Math.atan2(rampTopX - _simConstants2.default.rampEndX, rampTopY - _simConstants2.default.rampBottomY) + Math.PI * 0.5;
+  return Math.atan2(rampTopX - c.rampEndX, rampTopY - c.rampBottomY) + Math.PI * 0.5;
 }
 
 function calcRampLength(rampTopX, rampTopY) {
-  var x = rampTopX - _simConstants2.default.rampEndX;
-  var y = rampTopY - _simConstants2.default.rampBottomY;
+  var x = rampTopX - c.rampEndX;
+  var y = rampTopY - c.rampBottomY;
   return Math.sqrt(x * x + y * y);
 }
 
 function calcDistanceUpRamp(carX, rampAngle) {
-  var x = carX - _simConstants2.default.rampEndX;
-  var y = calcCarY(carX, rampAngle) - _simConstants2.default.rampBottomY;
-  return Math.sqrt(x * x + y * y);
+  var x = Math.abs(carX - c.rampEndX);
+  return x / Math.cos(rampAngle);
 }
 
 function calcRampAcceleration(gravity, surfaceFriction, rampAngle) {
@@ -11602,8 +11629,8 @@ function calcTimeOnGround(velocityAtBottomOfRamp, groundAcceleration) {
 }
 
 function calcCarY(carX, rampAngle) {
-  if (carX < _simConstants2.default.rampEndX) {
-    return _simConstants2.default.rampBottomY - (carX - _simConstants2.default.rampEndX) * Math.tan(rampAngle);
+  if (carX < c.rampEndX) {
+    return c.rampBottomY - (carX - c.rampEndX) * Math.tan(rampAngle);
   } else {
     return 0;
   }
@@ -11634,7 +11661,7 @@ function calcOutputs(_ref) {
     currentEndDistance = null; // it won't be shown in UI before car reaches bottom of the ramp
   } else {
     var groundElapsedTime = Math.min(elapsedTime - timeToGround, timeOnGround);
-    currentEndDistance = _simConstants2.default.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, groundElapsedTime);
+    currentEndDistance = c.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, groundElapsedTime);
     carX = currentEndDistance;
     carVelocity = velocityAtBottomOfRamp + groundAcceleration * groundElapsedTime;
   }
@@ -11646,12 +11673,12 @@ function calcOutputs(_ref) {
     timeToGround: timeToGround,
     carX: carX,
     carY: calcCarY(carX, rampAngle),
-    carAngle: carX < _simConstants2.default.rampEndX ? rampAngle : 0,
+    carAngle: carX < c.rampEndX ? rampAngle : 0,
     carVelocity: carVelocity,
     rampLength: calcRampLength(rampTopX, rampTopY),
     startHeightAboveGround: calcCarY(initialCarX, rampAngle),
     totalTime: timeToGround + timeOnGround,
-    endDistance: _simConstants2.default.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, timeOnGround),
+    endDistance: c.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, timeOnGround),
     simulationFinished: elapsedTime === totalTime
   };
 }
@@ -11796,7 +11823,7 @@ var step = __webpack_require__(178);
 var setSpecies = __webpack_require__(61);
 var DESCRIPTORS = __webpack_require__(15);
 var fastKey = __webpack_require__(50).fastKey;
-var validate = __webpack_require__(71);
+var validate = __webpack_require__(72);
 var SIZE = DESCRIPTORS ? '_s' : 'size';
 
 var getEntry = function (that, key) {
@@ -11959,7 +11986,7 @@ var anInstance = __webpack_require__(54);
 var forOf = __webpack_require__(55);
 var createArrayMethod = __webpack_require__(39);
 var $has = __webpack_require__(25);
-var validate = __webpack_require__(71);
+var validate = __webpack_require__(72);
 var arrayFind = createArrayMethod(5);
 var arrayFindIndex = createArrayMethod(6);
 var id = 0;
@@ -12345,7 +12372,7 @@ module.exports = Reflect && Reflect.ownKeys || function ownKeys(it) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var $parseFloat = __webpack_require__(6).parseFloat;
-var $trim = __webpack_require__(70).trim;
+var $trim = __webpack_require__(71).trim;
 
 module.exports = 1 / $parseFloat(__webpack_require__(133) + '-0') !== -Infinity ? function parseFloat(str) {
   var string = $trim(String(str), 3);
@@ -12359,7 +12386,7 @@ module.exports = 1 / $parseFloat(__webpack_require__(133) + '-0') !== -Infinity 
 /***/ (function(module, exports, __webpack_require__) {
 
 var $parseInt = __webpack_require__(6).parseInt;
-var $trim = __webpack_require__(70).trim;
+var $trim = __webpack_require__(71).trim;
 var ws = __webpack_require__(133);
 var hex = /^[-+]?0[xX]/;
 
@@ -12448,7 +12475,7 @@ exports.f = __webpack_require__(10);
 "use strict";
 
 var strong = __webpack_require__(171);
-var validate = __webpack_require__(71);
+var validate = __webpack_require__(72);
 var MAP = 'Map';
 
 // 23.1 Map Objects
@@ -12485,7 +12512,7 @@ if (__webpack_require__(15) && /./g.flags != 'g') __webpack_require__(16).f(RegE
 "use strict";
 
 var strong = __webpack_require__(171);
-var validate = __webpack_require__(71);
+var validate = __webpack_require__(72);
 var SET = 'Set';
 
 // 23.2 Set Objects
@@ -12512,7 +12539,7 @@ var assign = __webpack_require__(182);
 var weak = __webpack_require__(173);
 var isObject = __webpack_require__(9);
 var fails = __webpack_require__(7);
-var validate = __webpack_require__(71);
+var validate = __webpack_require__(72);
 var WEAK_MAP = 'WeakMap';
 var getWeak = meta.getWeak;
 var isExtensible = Object.isExtensible;
@@ -14251,7 +14278,7 @@ module.exports = function _isString(x) {
 /* 210 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _curry1 = __webpack_require__(72);
+var _curry1 = __webpack_require__(73);
 var _has = __webpack_require__(207);
 var _isArguments = __webpack_require__(514);
 
@@ -15417,7 +15444,7 @@ module.exports = ReactInputSelection;
 
 var _prodInvariant = __webpack_require__(8);
 
-var DOMLazyTree = __webpack_require__(73);
+var DOMLazyTree = __webpack_require__(74);
 var DOMProperty = __webpack_require__(52);
 var React = __webpack_require__(66);
 var ReactBrowserEventEmitter = __webpack_require__(106);
@@ -15426,10 +15453,10 @@ var ReactDOMComponentTree = __webpack_require__(18);
 var ReactDOMContainerInfo = __webpack_require__(542);
 var ReactDOMFeatureFlags = __webpack_require__(544);
 var ReactFeatureFlags = __webpack_require__(218);
-var ReactInstanceMap = __webpack_require__(74);
+var ReactInstanceMap = __webpack_require__(75);
 var ReactInstrumentation = __webpack_require__(34);
 var ReactMarkupChecksum = __webpack_require__(564);
-var ReactReconciler = __webpack_require__(75);
+var ReactReconciler = __webpack_require__(76);
 var ReactUpdateQueue = __webpack_require__(150);
 var ReactUpdates = __webpack_require__(38);
 
@@ -15962,11 +15989,11 @@ module.exports = ReactMount;
 var _prodInvariant = __webpack_require__(8);
 
 var ReactComponentEnvironment = __webpack_require__(148);
-var ReactInstanceMap = __webpack_require__(74);
+var ReactInstanceMap = __webpack_require__(75);
 var ReactInstrumentation = __webpack_require__(34);
 
 var ReactCurrentOwner = __webpack_require__(45);
-var ReactReconciler = __webpack_require__(75);
+var ReactReconciler = __webpack_require__(76);
 var ReactChildReconciler = __webpack_require__(537);
 
 var emptyFunction = __webpack_require__(33);
@@ -18668,7 +18695,7 @@ exports.default = prefixer;
 
 
 
-var _prodInvariant = __webpack_require__(76),
+var _prodInvariant = __webpack_require__(77),
     _assign = __webpack_require__(11);
 
 var ReactNoopUpdateQueue = __webpack_require__(250);
@@ -20003,11 +20030,13 @@ var _react = __webpack_require__(4);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _simConstants = __webpack_require__(77);
+var _simConstants = __webpack_require__(68);
 
-var _simConstants2 = _interopRequireDefault(_simConstants);
+var c = _interopRequireWildcard(_simConstants);
 
 var _reactKonva = __webpack_require__(65);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -20037,7 +20066,7 @@ var CarHeightLine = function (_PureComponent) {
           carX = _props.carX,
           carY = _props.carY;
 
-      var points = [sx(carX), sy(carY), sx(carX), sy(_simConstants2.default.rampBottomY)];
+      var points = [sx(carX), sy(carY), sx(carX), sy(c.rampBottomY)];
       return _react2.default.createElement(
         _reactKonva.Group,
         null,
@@ -20356,28 +20385,58 @@ var Controls = function (_PureComponent) {
   }, {
     key: 'renderOutputs',
     value: function renderOutputs() {
+      var _this3 = this;
+
       var outputs = this.props.outputs;
 
       var components = [];
       Object.keys(_config2.default.outputs).forEach(function (outputName) {
         var output = _config2.default.outputs[outputName];
-        if (output.showInMainView) {
-          var value = outputs[outputName] !== null ? outputs[outputName].toFixed(2) : '';
-          components.push(_react2.default.createElement(
-            'div',
-            { key: outputName, className: _controls2.default.outputContainer },
-            _react2.default.createElement(
+        var hiddenInGame = _config2.default.game && _game.GAME_OUTPUTS.indexOf(outputName) === -1;
+        if (output.showInMainView && !hiddenInGame) {
+          var value = outputs[outputName];
+          if (output.dispFunc) {
+            value = output.dispFunc(value);
+          }
+          value = value !== null ? Number(value.toFixed(2)) : '';
+          if (!output.editable) {
+            components.push(_react2.default.createElement(
               'div',
-              { className: _controls2.default.label },
-              output.codapDef.name
-            ),
-            _react2.default.createElement(_input2.default, { className: _controls2.default.output, type: 'text', value: value, disabled: true }),
-            _react2.default.createElement(
+              { key: outputName, className: _controls2.default.outputContainer },
+              _react2.default.createElement(
+                'div',
+                { className: _controls2.default.label },
+                output.codapDef.name
+              ),
+              _react2.default.createElement(_input2.default, { className: _controls2.default.output, type: 'text', value: value, disabled: !output.editable, onChange: _this3.setOption.bind(_this3, outputName) }),
+              _react2.default.createElement(
+                'div',
+                { className: _controls2.default.unit },
+                output.codapDef.unit
+              )
+            ));
+          } else {
+            // Some outputs are editable. It sounds strange, but new output value will be transformed to inputs update.
+            components.push(_react2.default.createElement(
               'div',
-              { className: _controls2.default.unit },
-              output.codapDef.unit
-            )
-          ));
+              { key: outputName, className: _controls2.default.sliderContainer },
+              _react2.default.createElement(
+                'div',
+                { className: _controls2.default.label },
+                output.codapDef.name
+              ),
+              _react2.default.createElement(
+                'div',
+                { className: _controls2.default.slider },
+                _react2.default.createElement(_slider2.default, { min: output.range[0], theme: _sliderTheme2.default, max: output.range[1], editable: true, value: value, onChange: _this3.setOption.bind(_this3, outputName) })
+              ),
+              _react2.default.createElement(
+                'div',
+                { className: _controls2.default.unit },
+                output.codapDef.unit
+              )
+            ));
+          }
         }
       });
       return components;
@@ -20514,11 +20573,13 @@ var _react = __webpack_require__(4);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _simConstants = __webpack_require__(77);
+var _simConstants = __webpack_require__(68);
 
-var _simConstants2 = _interopRequireDefault(_simConstants);
+var c = _interopRequireWildcard(_simConstants);
 
 var _reactKonva = __webpack_require__(65);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -20548,13 +20609,13 @@ var Ground = function (_PureComponent) {
           sy = _props.sy;
 
 
-      var yPos = sy(_simConstants2.default.rampBottomY);
+      var yPos = sy(c.rampBottomY);
       var markHeight = GROUND_HEIGHT * 0.4;
-      var step = (_simConstants2.default.runoffEndX - _simConstants2.default.rampEndX) / MARKS_COUNT;
+      var step = (c.runoffEndX - c.rampEndX) / MARKS_COUNT;
 
       var lineMarks = [];
       for (var i = 0; i < MARKS_COUNT; i++) {
-        var x = _simConstants2.default.rampEndX + step * i;
+        var x = c.rampEndX + step * i;
         var xPos = sx(x);
         var points = [xPos, yPos, xPos, yPos + markHeight];
         lineMarks.push(_react2.default.createElement(_reactKonva.Line, { points: points, closed: false, stroke: 'white', strokeWidth: 1, key: 'mark' + x }));
@@ -20570,11 +20631,11 @@ var Ground = function (_PureComponent) {
           sy = _props2.sy,
           pixelMeterRatio = _props2.pixelMeterRatio;
 
-      var width = (_simConstants2.default.runoffEndX - _simConstants2.default.rampStartX) * pixelMeterRatio;
+      var width = (c.runoffEndX - c.rampStartX) * pixelMeterRatio;
       return _react2.default.createElement(
         _reactKonva.Group,
         null,
-        _react2.default.createElement(_reactKonva.Rect, { x: sx(_simConstants2.default.rampStartX), y: sy(_simConstants2.default.rampBottomY), width: width, height: GROUND_HEIGHT, fill: 'green', stroke: 'black', strokeWidth: 1 }),
+        _react2.default.createElement(_reactKonva.Rect, { x: sx(c.rampStartX), y: sy(c.rampBottomY), width: width, height: GROUND_HEIGHT, fill: 'green', stroke: 'black', strokeWidth: 1 }),
         this.renderMarks()
       );
     }
@@ -20806,11 +20867,13 @@ var _react = __webpack_require__(4);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _simConstants = __webpack_require__(77);
+var _simConstants = __webpack_require__(68);
 
-var _simConstants2 = _interopRequireDefault(_simConstants);
+var c = _interopRequireWildcard(_simConstants);
 
 var _reactKonva = __webpack_require__(65);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -20839,14 +20902,14 @@ var Ramp = function (_PureComponent) {
           pointY = _props.pointY,
           angle = _props.angle;
 
-      var points = [sx(_simConstants2.default.rampStartX), sy(pointY), sx(_simConstants2.default.rampStartX), sy(_simConstants2.default.rampBottomY), sx(_simConstants2.default.rampEndX), sy(_simConstants2.default.rampBottomY), sx(pointX), sy(pointY)];
+      var points = [sx(c.rampStartX), sy(pointY), sx(c.rampStartX), sy(c.rampBottomY), sx(c.rampEndX), sy(c.rampBottomY), sx(pointX), sy(pointY)];
       var angleInDeg = angle * 180 / Math.PI;
       return _react2.default.createElement(
         _reactKonva.Group,
         null,
         _react2.default.createElement(_reactKonva.Line, { points: points, closed: true, fill: '#959595', stroke: 'black', strokeWidth: 1 }),
-        _react2.default.createElement(_reactKonva.Arc, { x: sx(_simConstants2.default.rampEndX), y: sy(_simConstants2.default.rampBottomY), outerRadius: 40, innerRadius: 0, fill: '#dddddd', stroke: 0, angle: angleInDeg, rotation: 180 }),
-        _react2.default.createElement(_reactKonva.Text, { x: sx(_simConstants2.default.rampEndX) - 35, y: sy(_simConstants2.default.rampBottomY) - 17, fontFamily: 'Arial', fontSize: 14, text: Math.round(angleInDeg) + '°', fill: 'black' })
+        _react2.default.createElement(_reactKonva.Arc, { x: sx(c.rampEndX), y: sy(c.rampBottomY), outerRadius: 40, innerRadius: 0, fill: '#dddddd', stroke: 0, angle: angleInDeg, rotation: 180 }),
+        _react2.default.createElement(_reactKonva.Text, { x: sx(c.rampEndX) - 35, y: sy(c.rampBottomY) - 17, fontFamily: 'Arial', fontSize: 14, text: Math.round(angleInDeg) + '°', fill: 'black' })
       );
     }
   }]);
@@ -20901,9 +20964,9 @@ var _challengeStatus = __webpack_require__(258);
 
 var _challengeStatus2 = _interopRequireDefault(_challengeStatus);
 
-var _simConstants = __webpack_require__(77);
+var _simConstants = __webpack_require__(68);
 
-var _simConstants2 = _interopRequireDefault(_simConstants);
+var c = _interopRequireWildcard(_simConstants);
 
 var _vehicleImage = __webpack_require__(268);
 
@@ -20943,6 +21006,8 @@ var _dialogTheme2 = _interopRequireDefault(_dialogTheme);
 
 var _reactKonva = __webpack_require__(65);
 
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -20952,21 +21017,15 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /* global iframePhone */
 
 
-// MKS units are used everywhere: meters, kilograms and seconds.
-var MIN_X = -2.3;
-var MIN_Y = 0;
-var MAX_X = 5.05;
-var MAX_Y = 3;
-
 function getScaleX(pixelMeterRatio) {
   return function scaleX(worldX) {
-    return (worldX - MIN_X) * pixelMeterRatio;
+    return (worldX - c.minX) * pixelMeterRatio;
   };
 }
 
 function getScaleY(pixelMeterRatio) {
   return function scaleY(worldY) {
-    return (MAX_Y - worldY) * pixelMeterRatio;
+    return (c.maxY - worldY) * pixelMeterRatio;
   };
 }
 
@@ -21146,12 +21205,12 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'invScaleX',
     value: function invScaleX(screenX) {
-      return screenX / this.pixelMeterRatio + MIN_X;
+      return screenX / this.pixelMeterRatio + c.minX;
     }
   }, {
     key: 'invScaleY',
     value: function invScaleY(screenY) {
-      return MAX_Y - screenY / this.pixelMeterRatio;
+      return c.maxY - screenY / this.pixelMeterRatio;
     }
   }, {
     key: 'saveGameState',
@@ -21244,6 +21303,23 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'handleOptionsChange',
     value: function handleOptionsChange(newOptions) {
+      var _this3 = this;
+
+      var newState = {};
+      Object.keys(newOptions).forEach(function (name) {
+        if (_config2.default.inputs[name]) {
+          // Simple case, an option is just an input stored in component's state.
+          newState[name] = newOptions[name];
+        } else if (name === 'rampAngle') {
+          // It means that user wants to change some property which isn't treated as model input.
+          // It needs to be translated to model inputs update.
+          _this3.updateRampAngle(newOptions.rampAngle * Math.PI / 180);
+        } else if (name === 'startHeightAboveGround') {
+          _this3.updateCarHeightOffGround(newOptions.startHeightAboveGround);
+        } else if (name === 'startDistanceUpRamp') {
+          _this3.updateDistanceUpRamp(newOptions.startDistanceUpRamp);
+        }
+      });
       this.setState(newOptions);
     }
   }, {
@@ -21277,33 +21353,87 @@ var SimulationBase = function (_PureComponent) {
       if (!this.draggingActive) {
         return;
       }
-      var newXWorld = this.invScaleX(newXScreen);
-      var newYWorld = this.invScaleY(newYScreen);
-      if (newXWorld < _simConstants2.default.rampStartX + 0.3) {
-        newXWorld = _simConstants2.default.rampStartX + 0.3;
-      } else if (newXWorld > _simConstants2.default.rampEndX - 1e-4) {
-        // 1e-4 so angle is never 90 deg and we don't need to handle it in a special way.
-        newXWorld = _simConstants2.default.rampEndX - 1e-4;
+      this.updateRampTopPos(this.invScaleX(newXScreen), this.invScaleY(newYScreen));
+    }
+  }, {
+    key: 'updateRampAngle',
+    value: function updateRampAngle(newAngle) {
+      function getNewY(newX) {
+        return Math.max(c.minRampTopY, Math.min(c.maxRampTopY, c.rampBottomY + Math.abs(newX - c.rampEndX) * Math.tan(newAngle)));
       }
-      if (newYWorld < _simConstants2.default.rampBottomY + 0.2) {
-        newYWorld = _simConstants2.default.rampBottomY + 0.2;
-      } else if (newYWorld > MAX_Y - 0.2) {
-        newYWorld = MAX_Y - 0.2;
+      function getNewX(newY) {
+        return Math.max(c.minRampTopX, Math.min(c.maxRampTopX, c.rampEndX - Math.abs(newY - c.rampBottomY) / Math.tan(newAngle)));
+      }
+      // Angle isn't stored as model input, so it needs to be translated to ramp top point position.
+      newAngle = Math.min(Math.PI * 0.5 - 1e-4, Math.max(1e-4, Number(newAngle)));
+      var _state6 = this.state,
+          rampTopX = _state6.rampTopX,
+          rampTopY = _state6.rampTopY;
+
+      var newX = rampTopX;
+      var newY = rampTopY;
+      if (newAngle < this.outputs.rampAngle) {
+        newX = getNewX(newY);
+        if ((0, _physics.calcRampAngle)(newX, newY) !== newAngle) {
+          newY = getNewY(newX);
+        }
+      } else {
+        newY = getNewY(newX);
+        if ((0, _physics.calcRampAngle)(newX, newY) !== newAngle) {
+          newX = getNewX(newY);
+        }
+      }
+      this.updateRampTopPos(newX, newY);
+    }
+  }, {
+    key: 'updateRampTopPos',
+    value: function updateRampTopPos(newXWorld, newYWorld) {
+      if (newXWorld < c.minRampTopX) {
+        newXWorld = c.minRampTopX;
+      } else if (newXWorld > c.maxRampTopX) {
+        newXWorld = c.maxRampTopX;
+      }
+      if (newYWorld < c.minRampTopY) {
+        newYWorld = c.minRampTopY;
+      } else if (newYWorld > c.maxRampTopY) {
+        newYWorld = c.maxRampTopY;
       }
 
       var newCarRampDist = Math.min(this.outputs.startDistanceUpRamp, (0, _physics.calcRampLength)(newXWorld, newYWorld));
       this.setState({
         rampTopX: newXWorld,
         rampTopY: newYWorld,
-        initialCarX: _simConstants2.default.rampEndX - newCarRampDist * Math.cos((0, _physics.calcRampAngle)(newXWorld, newYWorld))
+        initialCarX: c.rampEndX - newCarRampDist * Math.cos((0, _physics.calcRampAngle)(newXWorld, newYWorld))
+      });
+    }
+  }, {
+    key: 'updateCarHeightOffGround',
+    value: function updateCarHeightOffGround(newHeight) {
+      var rampAngle = this.outputs.rampAngle;
+      var rampTopX = this.state.rampTopX;
+
+      var newCarX = c.rampEndX - newHeight / Math.tan(rampAngle);
+      this.setState({
+        initialCarX: Math.min(c.rampEndX - 1e-6, Math.max(rampTopX, newCarX))
+      });
+    }
+  }, {
+    key: 'updateDistanceUpRamp',
+    value: function updateDistanceUpRamp(newDist) {
+      var rampAngle = this.outputs.rampAngle;
+      var rampTopX = this.state.rampTopX;
+
+      var newCarX = c.rampEndX - newDist * Math.cos(rampAngle);
+      this.setState({
+        initialCarX: Math.min(c.rampEndX - 1e-6, Math.max(rampTopX, newCarX))
       });
     }
   }, {
     key: 'handleCarPosChange',
     value: function handleCarPosChange(newXScreen, newYScreen) {
-      var _state6 = this.state,
-          rampTopX = _state6.rampTopX,
-          rampTopY = _state6.rampTopY;
+      var _state7 = this.state,
+          rampTopX = _state7.rampTopX,
+          rampTopY = _state7.rampTopY;
 
       if (!this.draggingActive) {
         return;
@@ -21315,20 +21445,20 @@ var SimulationBase = function (_PureComponent) {
         // control via X
         if (newXWorld < rampTopX) {
           newXWorld = rampTopX;
-        } else if (newXWorld > _simConstants2.default.rampEndX) {
-          newXWorld = _simConstants2.default.rampEndX;
+        } else if (newXWorld > c.rampEndX) {
+          newXWorld = c.rampEndX;
         }
       } else {
         // control via Y
-        if (newYWorld < _simConstants2.default.rampBottomY) {
-          newYWorld = _simConstants2.default.rampBottomY;
+        if (newYWorld < c.rampBottomY) {
+          newYWorld = c.rampBottomY;
         } else if (newYWorld > rampTopY) {
           newYWorld = rampTopY;
         }
-        newXWorld = _simConstants2.default.rampEndX - (newYWorld - _simConstants2.default.rampBottomY) / Math.tan(rampAngle);
+        newXWorld = c.rampEndX - (newYWorld - c.rampBottomY) / Math.tan(rampAngle);
       }
       this.setState({
-        initialCarX: Math.min(newXWorld, _simConstants2.default.rampEndX - 1e-6)
+        initialCarX: Math.min(newXWorld, c.rampEndX - 1e-6)
       });
     }
   }, {
@@ -21367,12 +21497,12 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'setupChallenge',
     value: function setupChallenge(prevChallengeIdx) {
-      var _state7 = this.state,
-          challengeIdx = _state7.challengeIdx,
-          stepIdx = _state7.stepIdx,
-          initialCarX = _state7.initialCarX,
-          surfaceFriction = _state7.surfaceFriction,
-          returnToActivity = _state7.returnToActivity;
+      var _state8 = this.state,
+          challengeIdx = _state8.challengeIdx,
+          stepIdx = _state8.stepIdx,
+          initialCarX = _state8.initialCarX,
+          surfaceFriction = _state8.surfaceFriction,
+          returnToActivity = _state8.returnToActivity;
 
       var challenge = _game.challenges[challengeIdx];
       if (!challenge) {
@@ -21398,10 +21528,10 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'updateChallenge',
     value: function updateChallenge() {
-      var _state8 = this.state,
-          challengeIdx = _state8.challengeIdx,
-          stepIdx = _state8.stepIdx,
-          lastScore = _state8.lastScore;
+      var _state9 = this.state,
+          challengeIdx = _state9.challengeIdx,
+          stepIdx = _state9.stepIdx,
+          lastScore = _state9.lastScore;
 
       var challenge = _game.challenges[challengeIdx];
       var nextChallenge = _game.challenges[challengeIdx + 1];
@@ -21440,9 +21570,9 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'log',
     value: function log(action, params) {
-      var _state9 = this.state,
-          codapPresent = _state9.codapPresent,
-          laraPresent = _state9.laraPresent;
+      var _state10 = this.state,
+          codapPresent = _state10.codapPresent,
+          laraPresent = _state10.laraPresent;
 
       if (codapPresent) {
         this.codapHandler.log(action, params);
@@ -21457,27 +21587,27 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'render',
     value: function render() {
-      var _state10 = this.state,
-          rampTopX = _state10.rampTopX,
-          rampTopY = _state10.rampTopY,
-          scaleX = _state10.scaleX,
-          scaleY = _state10.scaleY,
-          codapPresent = _state10.codapPresent,
-          dataSaved = _state10.dataSaved,
-          discardDataDialogActive = _state10.discardDataDialogActive,
-          elapsedTime = _state10.elapsedTime,
-          discardDataWarningEnabled = _state10.discardDataWarningEnabled,
-          targetX = _state10.targetX,
-          targetWidth = _state10.targetWidth,
-          carDragging = _state10.carDragging,
-          inclineControl = _state10.inclineControl,
-          challengeIdx = _state10.challengeIdx,
-          stepIdx = _state10.stepIdx,
-          lastScore = _state10.lastScore,
-          disabledInputs = _state10.disabledInputs,
-          genericDialogActive = _state10.genericDialogActive,
-          genericDialogMessage = _state10.genericDialogMessage,
-          returnToActivity = _state10.returnToActivity;
+      var _state11 = this.state,
+          rampTopX = _state11.rampTopX,
+          rampTopY = _state11.rampTopY,
+          scaleX = _state11.scaleX,
+          scaleY = _state11.scaleY,
+          codapPresent = _state11.codapPresent,
+          dataSaved = _state11.dataSaved,
+          discardDataDialogActive = _state11.discardDataDialogActive,
+          elapsedTime = _state11.elapsedTime,
+          discardDataWarningEnabled = _state11.discardDataWarningEnabled,
+          targetX = _state11.targetX,
+          targetWidth = _state11.targetWidth,
+          carDragging = _state11.carDragging,
+          inclineControl = _state11.inclineControl,
+          challengeIdx = _state11.challengeIdx,
+          stepIdx = _state11.stepIdx,
+          lastScore = _state11.lastScore,
+          disabledInputs = _state11.disabledInputs,
+          genericDialogActive = _state11.genericDialogActive,
+          genericDialogMessage = _state11.genericDialogMessage,
+          returnToActivity = _state11.returnToActivity;
       var _outputs = this.outputs,
           simulationFinished = _outputs.simulationFinished,
           carX = _outputs.carX,
@@ -21563,9 +21693,9 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'gameState',
     get: function get() {
-      var _state11 = this.state,
-          challengeIdx = _state11.challengeIdx,
-          stepIdx = _state11.stepIdx;
+      var _state12 = this.state,
+          challengeIdx = _state12.challengeIdx,
+          stepIdx = _state12.stepIdx;
 
       return { game: true, challengeIdx: challengeIdx, stepIdx: stepIdx };
     }
@@ -21589,8 +21719,8 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'pixelMeterRatio',
     get: function get() {
-      var xScale = this.simWidth / (MAX_X - MIN_X);
-      var yScale = (this.simHeight - _ground.GROUND_HEIGHT) / (MAX_Y - MIN_Y);
+      var xScale = this.simWidth / (c.maxX - c.minX);
+      var yScale = (this.simHeight - _ground.GROUND_HEIGHT) / (c.maxY - c.minY);
       return Math.min(xScale, yScale);
     }
   }, {
@@ -22871,7 +23001,7 @@ var fails = __webpack_require__(7);
 var gOPN = __webpack_require__(58).f;
 var gOPD = __webpack_require__(31).f;
 var dP = __webpack_require__(16).f;
-var $trim = __webpack_require__(70).trim;
+var $trim = __webpack_require__(71).trim;
 var NUMBER = 'Number';
 var $Number = global[NUMBER];
 var Base = $Number;
@@ -23645,7 +23775,7 @@ if (!USE_NATIVE) {
 }
 
 $export($export.G + $export.W + $export.F * !USE_NATIVE, { Promise: $Promise });
-__webpack_require__(69)($Promise, PROMISE);
+__webpack_require__(70)($Promise, PROMISE);
 __webpack_require__(61)(PROMISE);
 Wrapper = __webpack_require__(40)[PROMISE];
 
@@ -24620,7 +24750,7 @@ __webpack_require__(28)('sup', function (createHTML) {
 "use strict";
 
 // 21.1.3.25 String.prototype.trim()
-__webpack_require__(70)('trim', function ($trim) {
+__webpack_require__(71)('trim', function ($trim) {
   return function trim() {
     return $trim(this, 3);
   };
@@ -24642,7 +24772,7 @@ var redefine = __webpack_require__(27);
 var META = __webpack_require__(50).KEY;
 var $fails = __webpack_require__(7);
 var shared = __webpack_require__(101);
-var setToStringTag = __webpack_require__(69);
+var setToStringTag = __webpack_require__(70);
 var uid = __webpack_require__(63);
 var wks = __webpack_require__(10);
 var wksExt = __webpack_require__(194);
@@ -25038,7 +25168,7 @@ __webpack_require__(47)('Uint8', 1, function (init) {
 "use strict";
 
 var weak = __webpack_require__(173);
-var validate = __webpack_require__(71);
+var validate = __webpack_require__(72);
 var WEAK_SET = 'WeakSet';
 
 // 23.4 WeakSet Objects
@@ -26067,7 +26197,7 @@ $export($export.P, 'String', {
 "use strict";
 
 // https://github.com/sebmarkbage/ecmascript-string-left-right-trim
-__webpack_require__(70)('trimLeft', function ($trim) {
+__webpack_require__(71)('trimLeft', function ($trim) {
   return function trimLeft() {
     return $trim(this, 1);
   };
@@ -26081,7 +26211,7 @@ __webpack_require__(70)('trimLeft', function ($trim) {
 "use strict";
 
 // https://github.com/sebmarkbage/ecmascript-string-left-right-trim
-__webpack_require__(70)('trimRight', function ($trim) {
+__webpack_require__(71)('trimRight', function ($trim) {
   return function trimRight() {
     return $trim(this, 2);
   };
@@ -26153,7 +26283,7 @@ var getKeys = __webpack_require__(51);
 var redefine = __webpack_require__(27);
 var global = __webpack_require__(6);
 var hide = __webpack_require__(26);
-var Iterators = __webpack_require__(68);
+var Iterators = __webpack_require__(69);
 var wks = __webpack_require__(10);
 var ITERATOR = wks('iterator');
 var TO_STRING_TAG = wks('toStringTag');
@@ -26548,7 +26678,7 @@ exports = module.exports = __webpack_require__(20)();
 
 
 // module
-exports.push([module.i, ".controls--controls--KK6lP6QF {\n  position: absolute;\n  top: 0;\n  right: 0;\n  z-index: 100;\n  transform-origin: top right;\n}\n@media (max-width: 720px), (max-height: 320px) {\n  .controls--controls--KK6lP6QF {\n    transform: scale(0.84);\n  }\n}\n@media (max-width: 590px), (max-height: 250px) {\n  .controls--controls--KK6lP6QF {\n    transform: scale(0.7);\n  }\n}\n@media (max-width: 465px), (max-height: 210px) {\n  .controls--controls--KK6lP6QF {\n    transform: scale(0.6);\n  }\n}\n.controls--controls--KK6lP6QF .controls--buttons--3-rQSGIL {\n  text-align: right;\n}\n.controls--controls--KK6lP6QF button {\n  margin: 10px;\n}\n.controls--controls--KK6lP6QF .controls--label--bdKKbNUw {\n  display: inline-block;\n  font-size: 16px;\n  vertical-align: middle;\n}\n.controls--controls--KK6lP6QF .controls--sliderContainer--3F3S1dcT,\n.controls--controls--KK6lP6QF .controls--outputContainer--2nIV_Yju {\n  text-align: right;\n}\n.controls--controls--KK6lP6QF .controls--slider--1-LJynGz {\n  text-align: left;\n  display: inline-block;\n  width: 250px;\n  margin: 3px 3px 3px 0;\n  vertical-align: middle;\n}\n.controls--controls--KK6lP6QF .controls--unit--3SmgnG9A {\n  font-size: 12px;\n  text-align: left;\n  display: inline-block;\n  width: 28px;\n  vertical-align: middle;\n}\n.controls--controls--KK6lP6QF .controls--output--2fLNOm5_ {\n  display: inline-block;\n  width: 45px;\n  margin: 0 3px 0 10px;\n  padding: 0;\n}\n.controls--controls--KK6lP6QF .controls--output--2fLNOm5_ input {\n  text-align: center;\n  color: #333 !important;\n}\n", "", {"version":3,"sources":["/Users/piotr/Concord/inquiry-space-2/css/controls.less"],"names":[],"mappings":"AAAA;EACE,mBAAmB;EACnB,OAAO;EACP,SAAS;EACT,aAAa;EACb,4BAA4B;CAC7B;AACD;EACE;IACE,uBAAuB;GACxB;CACF;AACD;EACE;IACE,sBAAsB;GACvB;CACF;AACD;EACE;IACE,sBAAsB;GACvB;CACF;AACD;EACE,kBAAkB;CACnB;AACD;EACE,aAAa;CACd;AACD;EACE,sBAAsB;EACtB,gBAAgB;EAChB,uBAAuB;CACxB;AACD;;EAEE,kBAAkB;CACnB;AACD;EACE,iBAAiB;EACjB,sBAAsB;EACtB,aAAa;EACb,sBAAsB;EACtB,uBAAuB;CACxB;AACD;EACE,gBAAgB;EAChB,iBAAiB;EACjB,sBAAsB;EACtB,YAAY;EACZ,uBAAuB;CACxB;AACD;EACE,sBAAsB;EACtB,YAAY;EACZ,qBAAqB;EACrB,WAAW;CACZ;AACD;EACE,mBAAmB;EACnB,uBAAuB;CACxB","file":"controls.less","sourcesContent":[".controls {\n  position: absolute;\n  top: 0;\n  right: 0;\n  z-index: 100;\n  transform-origin: top right;\n}\n@media (max-width: 720px), (max-height: 320px) {\n  .controls {\n    transform: scale(0.84);\n  }\n}\n@media (max-width: 590px), (max-height: 250px) {\n  .controls {\n    transform: scale(0.7);\n  }\n}\n@media (max-width: 465px), (max-height: 210px) {\n  .controls {\n    transform: scale(0.6);\n  }\n}\n.controls .buttons {\n  text-align: right;\n}\n.controls button {\n  margin: 10px;\n}\n.controls .label {\n  display: inline-block;\n  font-size: 16px;\n  vertical-align: middle;\n}\n.controls .sliderContainer,\n.controls .outputContainer {\n  text-align: right;\n}\n.controls .slider {\n  text-align: left;\n  display: inline-block;\n  width: 250px;\n  margin: 3px 3px 3px 0;\n  vertical-align: middle;\n}\n.controls .unit {\n  font-size: 12px;\n  text-align: left;\n  display: inline-block;\n  width: 28px;\n  vertical-align: middle;\n}\n.controls .output {\n  display: inline-block;\n  width: 45px;\n  margin: 0 3px 0 10px;\n  padding: 0;\n}\n.controls .output input {\n  text-align: center;\n  color: #333 !important;\n}\n"],"sourceRoot":""}]);
+exports.push([module.i, ".controls--controls--KK6lP6QF {\n  position: absolute;\n  top: 0;\n  right: 0;\n  z-index: 100;\n  transform-origin: top right;\n}\n@media (max-width: 720px), (max-height: 320px) {\n  .controls--controls--KK6lP6QF {\n    transform: scale(0.84);\n  }\n}\n@media (max-width: 590px), (max-height: 250px) {\n  .controls--controls--KK6lP6QF {\n    transform: scale(0.7);\n  }\n}\n@media (max-width: 465px), (max-height: 210px) {\n  .controls--controls--KK6lP6QF {\n    transform: scale(0.6);\n  }\n}\n.controls--controls--KK6lP6QF .controls--buttons--3-rQSGIL {\n  text-align: right;\n}\n.controls--controls--KK6lP6QF button {\n  margin: 10px;\n}\n.controls--controls--KK6lP6QF .controls--label--bdKKbNUw {\n  display: inline-block;\n  font-size: 16px;\n  vertical-align: middle;\n}\n.controls--controls--KK6lP6QF .controls--sliderContainer--3F3S1dcT,\n.controls--controls--KK6lP6QF .controls--outputContainer--2nIV_Yju {\n  text-align: right;\n}\n.controls--controls--KK6lP6QF .controls--slider--1-LJynGz {\n  text-align: left;\n  display: inline-block;\n  width: 250px;\n  margin: 0 3px 0 0;\n  vertical-align: middle;\n}\n.controls--controls--KK6lP6QF .controls--unit--3SmgnG9A {\n  font-size: 12px;\n  text-align: left;\n  display: inline-block;\n  width: 28px;\n  vertical-align: middle;\n}\n.controls--controls--KK6lP6QF .controls--output--2fLNOm5_ {\n  display: inline-block;\n  width: 45px;\n  margin: 0 3px 0 10px;\n  padding: 0;\n}\n.controls--controls--KK6lP6QF .controls--output--2fLNOm5_ input {\n  text-align: center;\n  color: #333 !important;\n}\n", "", {"version":3,"sources":["/Users/piotr/Concord/inquiry-space-2/css/controls.less"],"names":[],"mappings":"AAAA;EACE,mBAAmB;EACnB,OAAO;EACP,SAAS;EACT,aAAa;EACb,4BAA4B;CAC7B;AACD;EACE;IACE,uBAAuB;GACxB;CACF;AACD;EACE;IACE,sBAAsB;GACvB;CACF;AACD;EACE;IACE,sBAAsB;GACvB;CACF;AACD;EACE,kBAAkB;CACnB;AACD;EACE,aAAa;CACd;AACD;EACE,sBAAsB;EACtB,gBAAgB;EAChB,uBAAuB;CACxB;AACD;;EAEE,kBAAkB;CACnB;AACD;EACE,iBAAiB;EACjB,sBAAsB;EACtB,aAAa;EACb,kBAAkB;EAClB,uBAAuB;CACxB;AACD;EACE,gBAAgB;EAChB,iBAAiB;EACjB,sBAAsB;EACtB,YAAY;EACZ,uBAAuB;CACxB;AACD;EACE,sBAAsB;EACtB,YAAY;EACZ,qBAAqB;EACrB,WAAW;CACZ;AACD;EACE,mBAAmB;EACnB,uBAAuB;CACxB","file":"controls.less","sourcesContent":[".controls {\n  position: absolute;\n  top: 0;\n  right: 0;\n  z-index: 100;\n  transform-origin: top right;\n}\n@media (max-width: 720px), (max-height: 320px) {\n  .controls {\n    transform: scale(0.84);\n  }\n}\n@media (max-width: 590px), (max-height: 250px) {\n  .controls {\n    transform: scale(0.7);\n  }\n}\n@media (max-width: 465px), (max-height: 210px) {\n  .controls {\n    transform: scale(0.6);\n  }\n}\n.controls .buttons {\n  text-align: right;\n}\n.controls button {\n  margin: 10px;\n}\n.controls .label {\n  display: inline-block;\n  font-size: 16px;\n  vertical-align: middle;\n}\n.controls .sliderContainer,\n.controls .outputContainer {\n  text-align: right;\n}\n.controls .slider {\n  text-align: left;\n  display: inline-block;\n  width: 250px;\n  margin: 0 3px 0 0;\n  vertical-align: middle;\n}\n.controls .unit {\n  font-size: 12px;\n  text-align: left;\n  display: inline-block;\n  width: 28px;\n  vertical-align: middle;\n}\n.controls .output {\n  display: inline-block;\n  width: 45px;\n  margin: 0 3px 0 10px;\n  padding: 0;\n}\n.controls .output input {\n  text-align: center;\n  color: #333 !important;\n}\n"],"sourceRoot":""}]);
 
 // exports
 exports.locals = {
@@ -46215,7 +46345,7 @@ module.exports = (function() {
 /* 518 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _curry1 = __webpack_require__(72);
+var _curry1 = __webpack_require__(73);
 var _isArray = __webpack_require__(208);
 var _isString = __webpack_require__(209);
 
@@ -46338,7 +46468,7 @@ module.exports = function pipe() {
 /* 521 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var _curry1 = __webpack_require__(72);
+var _curry1 = __webpack_require__(73);
 var _isString = __webpack_require__(209);
 
 
@@ -46414,7 +46544,7 @@ module.exports = _curry3(_checkForMethod('slice', function slice(fromIndex, toIn
 /***/ (function(module, exports, __webpack_require__) {
 
 var _checkForMethod = __webpack_require__(206);
-var _curry1 = __webpack_require__(72);
+var _curry1 = __webpack_require__(73);
 var slice = __webpack_require__(522);
 
 
@@ -47929,7 +48059,7 @@ module.exports = ChangeEventPlugin;
 
 var _prodInvariant = __webpack_require__(8);
 
-var DOMLazyTree = __webpack_require__(73);
+var DOMLazyTree = __webpack_require__(74);
 var ExecutionEnvironment = __webpack_require__(21);
 
 var createNodesFromMarkup = __webpack_require__(495);
@@ -48454,7 +48584,7 @@ module.exports = HTMLDOMPropertyConfig;
 
 
 
-var ReactReconciler = __webpack_require__(75);
+var ReactReconciler = __webpack_require__(76);
 
 var instantiateReactComponent = __webpack_require__(231);
 var KeyEscapeUtils = __webpack_require__(146);
@@ -48653,10 +48783,10 @@ var React = __webpack_require__(66);
 var ReactComponentEnvironment = __webpack_require__(148);
 var ReactCurrentOwner = __webpack_require__(45);
 var ReactErrorUtils = __webpack_require__(149);
-var ReactInstanceMap = __webpack_require__(74);
+var ReactInstanceMap = __webpack_require__(75);
 var ReactInstrumentation = __webpack_require__(34);
 var ReactNodeTypes = __webpack_require__(223);
-var ReactReconciler = __webpack_require__(75);
+var ReactReconciler = __webpack_require__(76);
 
 if (process.env.NODE_ENV !== 'production') {
   var checkReactTypeSpec = __webpack_require__(586);
@@ -49557,7 +49687,7 @@ module.exports = ReactCompositeComponent;
 var ReactDOMComponentTree = __webpack_require__(18);
 var ReactDefaultInjection = __webpack_require__(557);
 var ReactMount = __webpack_require__(221);
-var ReactReconciler = __webpack_require__(75);
+var ReactReconciler = __webpack_require__(76);
 var ReactUpdates = __webpack_require__(38);
 var ReactVersion = __webpack_require__(571);
 
@@ -49676,7 +49806,7 @@ var _prodInvariant = __webpack_require__(8),
 
 var AutoFocusUtils = __webpack_require__(528);
 var CSSPropertyOperations = __webpack_require__(530);
-var DOMLazyTree = __webpack_require__(73);
+var DOMLazyTree = __webpack_require__(74);
 var DOMNamespaces = __webpack_require__(144);
 var DOMProperty = __webpack_require__(52);
 var DOMPropertyOperations = __webpack_require__(214);
@@ -50726,7 +50856,7 @@ module.exports = ReactDOMContainerInfo;
 
 var _assign = __webpack_require__(11);
 
-var DOMLazyTree = __webpack_require__(73);
+var DOMLazyTree = __webpack_require__(74);
 var ReactDOMComponentTree = __webpack_require__(18);
 
 var ReactDOMEmptyComponent = function (instantiate) {
@@ -51641,7 +51771,7 @@ var _prodInvariant = __webpack_require__(8),
     _assign = __webpack_require__(11);
 
 var DOMChildrenOperations = __webpack_require__(143);
-var DOMLazyTree = __webpack_require__(73);
+var DOMLazyTree = __webpack_require__(74);
 var ReactDOMComponentTree = __webpack_require__(18);
 
 var escapeTextContentForBrowser = __webpack_require__(109);
@@ -55282,7 +55412,7 @@ var _prodInvariant = __webpack_require__(8);
 
 var ReactCurrentOwner = __webpack_require__(45);
 var ReactDOMComponentTree = __webpack_require__(18);
-var ReactInstanceMap = __webpack_require__(74);
+var ReactInstanceMap = __webpack_require__(75);
 
 var getHostComponentFromComposite = __webpack_require__(228);
 var invariant = __webpack_require__(2);
@@ -59236,7 +59366,7 @@ module.exports = KeyEscapeUtils;
 
 
 
-var _prodInvariant = __webpack_require__(76);
+var _prodInvariant = __webpack_require__(77);
 
 var invariant = __webpack_require__(2);
 
@@ -59820,7 +59950,7 @@ module.exports = '15.6.1';
 
 
 
-var _prodInvariant = __webpack_require__(76);
+var _prodInvariant = __webpack_require__(77);
 
 var ReactPropTypeLocationNames = __webpack_require__(616);
 var ReactPropTypesSecret = __webpack_require__(618);
@@ -59966,7 +60096,7 @@ module.exports = getNextDebugID;
  */
 
 
-var _prodInvariant = __webpack_require__(76);
+var _prodInvariant = __webpack_require__(77);
 
 var ReactElement = __webpack_require__(67);
 
@@ -60011,7 +60141,7 @@ module.exports = onlyChild;
 
 
 
-var _prodInvariant = __webpack_require__(76);
+var _prodInvariant = __webpack_require__(77);
 
 var ReactCurrentOwner = __webpack_require__(45);
 var REACT_ELEMENT_TYPE = __webpack_require__(248);
