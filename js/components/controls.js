@@ -59,7 +59,7 @@ export default class Controls extends PureComponent {
   }
 
   renderOutputs () {
-    const { outputs } = this.props
+    const { outputs, disabledInputs } = this.props
     const components = []
     Object.keys(config.outputs).forEach(outputName => {
       const output = config.outputs[outputName]
@@ -80,11 +80,12 @@ export default class Controls extends PureComponent {
           )
         } else {
           // Some outputs are editable. It sounds strange, but new output value will be transformed to inputs update.
+          const disabled = this.simStarted || disabledInputs.indexOf(outputName) !== -1
           components.push(
             <div key={outputName} className={controlsStyles.sliderContainer}>
               <div className={controlsStyles.label}>{ output.codapDef.name }</div>
               <div className={controlsStyles.slider}>
-                <Slider min={output.range[0]} theme={sliderTheme} max={output.range[1]} editable value={value} onChange={this.setOption.bind(this, outputName)} disabled={this.simStarted} />
+                <Slider min={output.range[0]} theme={sliderTheme} max={output.range[1]} editable value={value} onChange={this.setOption.bind(this, outputName)} disabled={disabled} />
               </div>
               <div className={controlsStyles.unit}>{ output.codapDef.unit }</div>
             </div>

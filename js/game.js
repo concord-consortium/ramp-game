@@ -70,7 +70,7 @@ export const challenges = [
     mass: 0.05,
     carDragging: false,
     initialCarX: -1,
-    disabledInputs: [],
+    disabledInputs: ['startDistanceUpRamp', 'startHeightAboveGround'],
     message: `Welcome to Challenge 4. Now you control the friction rather than the starting height.`,
     unallowedCarDragMsg: 'Remember you can only adjust surface friction in this challenge.',
     targetX (step) {
