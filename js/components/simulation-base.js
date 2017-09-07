@@ -522,6 +522,14 @@ export default class SimulationBase extends PureComponent {
     this.showDialogWithMessage('Congratulations. You’ve won! Click "Return to activity" and answer the questions there.')
   }
 
+  jumpToChallenge (challengeIdx) {
+    this.setState({
+      challengeIdx,
+      stepIdx: 0,
+      returnToActivity: false
+    })
+  }
+
   log (action, params) {
     const { codapPresent, laraPresent } = this.state
     if (codapPresent) {
@@ -613,6 +621,14 @@ export default class SimulationBase extends PureComponent {
           {/* Note that this dialog cannot be closed. It's intentional. User has to go back to LARA and go to the next page. */}
           Congratulations! You have completed Challenge { challengeIdx }.
           Click the <strong>"Return to activity"</strong> link and answer the questions there.
+          <div className={dialogTheme.hidden}>
+            Jump to:
+            {
+              challenges.map((challenge, idx) => {
+                return <a onClick={this.jumpToChallenge.bind(this, idx)}>Challenge { idx + 1}</a>
+              })
+            }
+          </div>
         </Dialog>
       </div>
     )
