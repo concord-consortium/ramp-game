@@ -84,7 +84,7 @@ export default class Controls extends PureComponent {
             <div key={outputName} className={controlsStyles.sliderContainer}>
               <div className={controlsStyles.label}>{ output.codapDef.name }</div>
               <div className={controlsStyles.slider}>
-                <Slider min={output.range[0]} theme={sliderTheme} max={output.range[1]} editable value={value} onChange={this.setOption.bind(this, outputName)} />
+                <Slider min={output.range[0]} theme={sliderTheme} max={output.range[1]} editable value={value} onChange={this.setOption.bind(this, outputName)} disabled={this.simStarted} />
               </div>
               <div className={controlsStyles.unit}>{ output.codapDef.unit }</div>
             </div>
