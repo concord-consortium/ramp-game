@@ -6614,7 +6614,7 @@ var challenges = exports.challenges = [{
   mass: 0.05,
   carDragging: false,
   initialCarX: -1,
-  disabledInputs: [],
+  disabledInputs: ['startDistanceUpRamp', 'startHeightAboveGround'],
   message: 'Welcome to Challenge 4. Now you control the friction rather than the starting height.',
   unallowedCarDragMsg: 'Remember you can only adjust surface friction in this challenge.',
   targetX: function targetX(step) {
@@ -20387,7 +20387,9 @@ var Controls = function (_PureComponent) {
     value: function renderOutputs() {
       var _this3 = this;
 
-      var outputs = this.props.outputs;
+      var _props3 = this.props,
+          outputs = _props3.outputs,
+          disabledInputs = _props3.disabledInputs;
 
       var components = [];
       Object.keys(_config2.default.outputs).forEach(function (outputName) {
@@ -20417,6 +20419,7 @@ var Controls = function (_PureComponent) {
             ));
           } else {
             // Some outputs are editable. It sounds strange, but new output value will be transformed to inputs update.
+            var disabled = _this3.simStarted || disabledInputs.indexOf(outputName) !== -1;
             components.push(_react2.default.createElement(
               'div',
               { key: outputName, className: _controls2.default.sliderContainer },
@@ -20428,7 +20431,7 @@ var Controls = function (_PureComponent) {
               _react2.default.createElement(
                 'div',
                 { className: _controls2.default.slider },
-                _react2.default.createElement(_slider2.default, { min: output.range[0], theme: _sliderTheme2.default, max: output.range[1], editable: true, value: value, onChange: _this3.setOption.bind(_this3, outputName), disabled: _this3.simStarted })
+                _react2.default.createElement(_slider2.default, { min: output.range[0], theme: _sliderTheme2.default, max: output.range[1], editable: true, value: value, onChange: _this3.setOption.bind(_this3, outputName), disabled: disabled })
               ),
               _react2.default.createElement(
                 'div',
@@ -20444,12 +20447,12 @@ var Controls = function (_PureComponent) {
   }, {
     key: 'render',
     value: function render() {
-      var _props3 = this.props,
-          simFinished = _props3.simFinished,
-          saveData = _props3.saveData,
-          setupNewRun = _props3.setupNewRun,
-          dataSaved = _props3.dataSaved,
-          challengeActive = _props3.challengeActive;
+      var _props4 = this.props,
+          simFinished = _props4.simFinished,
+          saveData = _props4.saveData,
+          setupNewRun = _props4.setupNewRun,
+          dataSaved = _props4.dataSaved,
+          challengeActive = _props4.challengeActive;
 
       return _react2.default.createElement(
         'div',
@@ -21568,6 +21571,15 @@ var SimulationBase = function (_PureComponent) {
       this.showDialogWithMessage('Congratulations. You’ve won! Click "Return to activity" and answer the questions there.');
     }
   }, {
+    key: 'jumpToChallenge',
+    value: function jumpToChallenge(challengeIdx) {
+      this.setState({
+        challengeIdx: challengeIdx,
+        stepIdx: 0,
+        returnToActivity: false
+      });
+    }
+  }, {
     key: 'log',
     value: function log(action, params) {
       var _state10 = this.state,
@@ -21587,6 +21599,8 @@ var SimulationBase = function (_PureComponent) {
   }, {
     key: 'render',
     value: function render() {
+      var _this4 = this;
+
       var _state11 = this.state,
           rampTopX = _state11.rampTopX,
           rampTopY = _state11.rampTopY,
@@ -21686,7 +21700,20 @@ var SimulationBase = function (_PureComponent) {
             null,
             '"Return to activity"'
           ),
-          ' link and answer the questions there.'
+          ' link and answer the questions there.',
+          _react2.default.createElement(
+            'div',
+            { className: _dialogTheme2.default.hidden },
+            'Jump to:',
+            _game.challenges.map(function (challenge, idx) {
+              return _react2.default.createElement(
+                'a',
+                { onClick: _this4.jumpToChallenge.bind(_this4, idx) },
+                'Challenge ',
+                idx + 1
+              );
+            })
+          )
         )
       );
     }
@@ -26701,13 +26728,14 @@ exports = module.exports = __webpack_require__(20)();
 
 
 // module
-exports.push([module.i, ".dialog-theme--dialog--ch_njsAf {\n  font-size: 16px;\n}\n.dialog-theme--dialog--ch_njsAf .dialog-theme--dontShowAgain--LF0n34Fd {\n  margin: 10px 0 0 0;\n}\n.dialog-theme--dialog--ch_njsAf .dialog-theme--navigation--HkrblILt {\n  margin-top: -20px;\n}\n", "", {"version":3,"sources":["/Users/piotr/Concord/inquiry-space-2/css/dialog-theme.less"],"names":[],"mappings":"AAAA;EACE,gBAAgB;CACjB;AACD;EACE,mBAAmB;CACpB;AACD;EACE,kBAAkB;CACnB","file":"dialog-theme.less","sourcesContent":[".dialog {\n  font-size: 16px;\n}\n.dialog .dontShowAgain {\n  margin: 10px 0 0 0;\n}\n.dialog .navigation {\n  margin-top: -20px;\n}\n"],"sourceRoot":""}]);
+exports.push([module.i, ".dialog-theme--dialog--ch_njsAf {\n  font-size: 16px;\n}\n.dialog-theme--dialog--ch_njsAf .dialog-theme--dontShowAgain--LF0n34Fd {\n  margin: 10px 0 0 0;\n}\n.dialog-theme--dialog--ch_njsAf .dialog-theme--navigation--HkrblILt {\n  margin-top: -20px;\n}\n.dialog-theme--dialog--ch_njsAf .dialog-theme--hidden--affzzwIt {\n  margin-bottom: -20px;\n  font-size: 9px;\n  color: rgba(0, 0, 0, 0.2);\n  margin-top: 20px;\n  text-align: center;\n}\n.dialog-theme--dialog--ch_njsAf .dialog-theme--hidden--affzzwIt a {\n  margin: 0 2px;\n  cursor: pointer;\n}\n", "", {"version":3,"sources":["/Users/piotr/Concord/inquiry-space-2/css/dialog-theme.less"],"names":[],"mappings":"AAAA;EACE,gBAAgB;CACjB;AACD;EACE,mBAAmB;CACpB;AACD;EACE,kBAAkB;CACnB;AACD;EACE,qBAAqB;EACrB,eAAe;EACf,0BAA0B;EAC1B,iBAAiB;EACjB,mBAAmB;CACpB;AACD;EACE,cAAc;EACd,gBAAgB;CACjB","file":"dialog-theme.less","sourcesContent":[".dialog {\n  font-size: 16px;\n}\n.dialog .dontShowAgain {\n  margin: 10px 0 0 0;\n}\n.dialog .navigation {\n  margin-top: -20px;\n}\n.dialog .hidden {\n  margin-bottom: -20px;\n  font-size: 9px;\n  color: rgba(0, 0, 0, 0.2);\n  margin-top: 20px;\n  text-align: center;\n}\n.dialog .hidden a {\n  margin: 0 2px;\n  cursor: pointer;\n}\n"],"sourceRoot":""}]);
 
 // exports
 exports.locals = {
 	"dialog": "dialog-theme--dialog--ch_njsAf",
 	"dontShowAgain": "dialog-theme--dontShowAgain--LF0n34Fd",
-	"navigation": "dialog-theme--navigation--HkrblILt"
+	"navigation": "dialog-theme--navigation--HkrblILt",
+	"hidden": "dialog-theme--hidden--affzzwIt"
 };
 
 /***/ }),
