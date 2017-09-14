@@ -13,8 +13,9 @@ import StarRating from './star-rating'
 import RampDistanceLabel from './ramp-distance-label'
 import CarHeightLine from './car-height-line'
 import GameTarget from './game-target'
-import { calcOutputs, calcRampLength, calcRampAngle, calcDistanceUpRamp } from '../physics'
-import { calcGameScore, calcStarsCount, challenges, MIN_SCORE_TO_ADVANCE } from '../game'
+import { calcOutputs, calcRampLength, calcRampAngle } from '../physics'
+import { calcGameScore, calcStarsCount, challenges, MIN_SCORE_TO_ADVANCE,
+        MIN_SCORE_TO_AVOID_HINTS, MIN_SCORE_TO_AVOID_REMEDIATION } from '../game'
 import CodapHandler, { generateCodapData } from '../codap-handler'
 import config from '../config'
 import dialogTheme from '../../css/dialog-theme.less'
@@ -58,7 +59,12 @@ export default class SimulationBase extends PureComponent {
       stepIdx: config.game ? 0 : null,
       targetX: 1,
       targetWidth: 1,
+
+      runsInChallenge: 0,
+      runsInStep: 0,
       lastScore: null,
+      hintableScores: 0,
+      remedialScores: 0,
 
       codapPresent: false,
       dataSaved: false,
@@ -170,11 +176,33 @@ export default class SimulationBase extends PureComponent {
   simulationFinished () {
     const logParams = {}
     if (this.challengeActive) {
-      const { targetX, targetWidth } = this.state
+      const { stepIdx, targetX, targetWidth } = this.state
       const { carX } = this.outputs
       const score = calcGameScore(carX, targetX, targetWidth)
+      let { runsInChallenge, runsInStep, hintableScores, remedialScores } = this.state
+      ++runsInChallenge
+      ++runsInStep
+      if (score < MIN_SCORE_TO_AVOID_REMEDIATION) {
+        ++remedialScores
+      } else {
+        remedialScores = 0
+      }
+      if (score < MIN_SCORE_TO_AVOID_HINTS) {
+        ++hintableScores
+      } else {
+        hintableScores = 0
+      }
+
+      const challenge = this.challengeActive
+      if (challenge && challenge.hint) {
+        challenge.hint({ step: stepIdx, runsInChallenge, runsInStep, score, hintableScores, remedialScores })
+      }
+
       this.setState({
-        lastScore: score
+        lastScore: score,
+        runsInStep,
+        hintableScores,
+        remedialScores
       })
       logParams.score = score
       logParams.starScore = calcStarsCount(score)
@@ -213,7 +241,7 @@ export default class SimulationBase extends PureComponent {
   get challengeActive () {
     const { challengeIdx } = this.state
     // When game is finished, challengeIdx === challenges.length, so challenges[challengeIdx] === undefined
-    return challengeIdx !== null && challenges[challengeIdx]
+    return challengeIdx != null && challenges[challengeIdx]
   }
 
   invScaleX (screenX) {
@@ -478,7 +506,8 @@ export default class SimulationBase extends PureComponent {
       disabledInputs: challenge.disabledInputs,
       surfaceFriction: challenge.surfaceFriction !== undefined ? challenge.surfaceFriction : surfaceFriction,
       initialCarX: challenge.initialCarX !== undefined ? challenge.initialCarX : initialCarX,
-      lastScore: null
+      lastScore: null,
+      remedialScores: 0
     })
 
     if (challengeIdx !== prevChallengeIdx && !returnToActivity) {
@@ -490,10 +519,18 @@ export default class SimulationBase extends PureComponent {
     const { challengeIdx, stepIdx, lastScore } = this.state
     const challenge = challenges[challengeIdx]
     const nextChallenge = challenges[challengeIdx + 1]
+    let { runsInChallenge, runsInStep, remedialScores } = this.state
     let newStepIdx = stepIdx
     let newChallengeIdx = challengeIdx
     let returnToActivity = false
-    if (lastScore >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 < challenge.steps) {
+    if (challenge.loseStep &&
+        challenge.loseStep({ stepIdx, runsInChallenge, runsInStep, score: lastScore, remedialScores })) {
+      // one step back
+      if (stepIdx > 0) {
+        newStepIdx = stepIdx - 1
+        remedialScores = 0
+      }
+    } else if (lastScore >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 < challenge.steps) {
       // Next step.
       newStepIdx = stepIdx + 1
     } else if (lastScore >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 === challenge.steps && nextChallenge) {
@@ -506,9 +543,20 @@ export default class SimulationBase extends PureComponent {
       newChallengeIdx = challengeIdx + 1
       newStepIdx = 0
     }
+
+    if (newChallengeIdx !== challengeIdx) {
+      runsInChallenge = 0
+    }
+    if ((newChallengeIdx !== challengeIdx) || (newStepIdx !== stepIdx)) {
+      runsInStep = 0
+    }
+
     this.setState({
       challengeIdx: newChallengeIdx,
       stepIdx: newStepIdx,
+      runsInChallenge,
+      runsInStep,
+      remedialScores,
       returnToActivity
     })
   }
