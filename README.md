@@ -1,6 +1,6 @@
 # Inquiry Space 2
 
-This repository reproduces the Inquiry Space project, previously designed in NetLogo, in Javascript.
+This repository reproduces the Inquiry Space project, previously designed in NetLogo, in JavaScript.
 
 ## Testing
 
@@ -11,6 +11,10 @@ https://concord-consortium.github.io/inquiry-space-2/
 Authoring page:
 
 https://concord-consortium.github.io/inquiry-space-2/?authoring
+
+Run in latest CODAP:
+
+https://codap.concord.org/releases/latest?di=https://concord-consortium.github.io/inquiry-space-2/?game
 
 ## Development
 
@@ -36,3 +40,5 @@ and open http://localhost:8080/ or http://localhost:8080/webpack-dev-server/ (au
 #### Github Pages:
 
 Run `./build-and-deploy.sh`
+
+Deploys to https://concord-consortium.github.io/inquiry-space-2/
