@@ -1,6 +1,11 @@
+import { showWebView } from './codap-handler'
+
+export const MIN_SCORE_TO_AVOID_REMEDIATION = 1
+export const MIN_SCORE_TO_AVOID_HINTS = 25
 export const MIN_SCORE_TO_ADVANCE = 33
 export const GAME_INPUTS = ['surfaceFriction']
 export const GAME_OUTPUTS = ['startHeightAboveGround', 'startDistanceUpRamp', 'currentEndDistance']
+const HINT_COMPONENT_TITLE = 'Ramp Game Hints'
 
 export function calcGameScore (carX, targetX, targetWidth) {
   const targetRadius = 0.5 * targetWidth
@@ -49,6 +54,17 @@ export const challenges = [
     },
     targetWidth (step) {
       return 0.9 - step * 0.14
+    },
+    hint (state) {
+      if (state.runsInStep >= 3) {
+        showWebView({
+          title: HINT_COMPONENT_TITLE,
+          URL: 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange2-make-a-graph.html'
+        })
+      }
+    },
+    loseStep (state) {
+      return state.remedialScores >= 3
     }
   },
   {
@@ -63,6 +79,17 @@ export const challenges = [
     },
     targetWidth (step) {
       return 0.9 - step * 0.14
+    },
+    hint (state) {
+      if (state.hintableScores >= 3) {
+        showWebView({
+          title: HINT_COMPONENT_TITLE,
+          URL: 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange3-movable-line.html'
+        })
+      }
+    },
+    loseStep (state) {
+      return state.remedialScores >= 3
     }
   },
   {
@@ -78,6 +105,24 @@ export const challenges = [
     },
     targetWidth (step) {
       return 0.9 - step * 0.14
+    },
+    hint (state) {
+      const urls = [
+        'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-axis-legend-selection.html',
+        'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-axis-selection.html',
+        'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-legend-selection.html',
+        'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-selection.html'
+      ]
+      const randomIndex = Math.floor(Math.random() * urls.length)
+      if (state.hintableScores >= 3) {
+        showWebView({
+          title: HINT_COMPONENT_TITLE,
+          URL: urls[randomIndex]
+        })
+      }
+    },
+    loseStep (state) {
+      return state.remedialScores >= 3
     }
   }
 ]

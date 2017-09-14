@@ -4,7 +4,10 @@
   "description": "This project reproduces the Inquiry Space car ramp challenge in Javascript",
   "main": "js/index.js",
   "scripts": {
-    "lint": "standard --fix"
+    "build": "webpack",
+    "deploy": "./build_and_deploy.sh",
+    "lint": "standard --fix",
+    "start": "webpack-dev-server"
   },
   "repository": {
     "type": "git",

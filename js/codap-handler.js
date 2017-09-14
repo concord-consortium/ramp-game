@@ -132,6 +132,45 @@ export function generateCodapData (options) {
   return values
 }
 
+let randomSuffix = Math.round(Math.random() * 1000000000)
+
+function _createWebView (options) {
+  return codapInterface.sendRequest({
+    action: 'create',
+    resource: 'component',
+    values: {
+      type: 'webView',
+      name: `rampGameHints-${++randomSuffix}`,
+      title: options.title || '',
+      dimensions: {
+        width: options.width || 345,
+        height: options.height || 345
+      },
+      position: 'top',
+      URL: options.URL
+    }
+  })
+}
+
+export function showWebView (options) {
+  return codapInterface.sendRequest({
+    action: 'update',
+    resource: `component[rampGameHints-${randomSuffix}]`,
+    values: options
+  }, function (response) {
+    if (!response.success) {
+      _createWebView(options)
+    }
+  })
+}
+
+export function hideWebView (options) {
+  return codapInterface.sendRequest({
+    action: 'delete',
+    resource: `component[rampGameHints-${randomSuffix}]`
+  })
+}
+
 function generateCompleteData (options) {
   const data = []
   const optionsCopy = Object.assign({}, options)
