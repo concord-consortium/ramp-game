@@ -491,14 +491,26 @@ export default class SimulationBase extends PureComponent {
   }
 
   setupChallenge (prevChallengeIdx) {
-    const { challengeIdx, stepIdx, initialCarX, surfaceFriction, returnToActivity } = this.state
+    const { challengeIdx, stepIdx, initialCarX, surfaceFriction,
+            targetX, targetWidth, returnToActivity } = this.state
     const challenge = challenges[challengeIdx]
     if (!challenge) {
       this.gameCompleted()
       return
     }
+
+    function nextTargetX () {
+      const minTargetMove = challenge.minTargetMove ? challenge.minTargetMove(targetWidth) : 0
+      let newTargetX, diffTargetX
+      do {
+        newTargetX = challenge.targetX(stepIdx)
+        diffTargetX = targetX ? Math.abs(newTargetX - targetX) : 0
+      } while (diffTargetX < minTargetMove)
+      return newTargetX
+    }
+
     this.setState({
-      targetX: challenge.targetX(stepIdx),
+      targetX: nextTargetX(),
       targetWidth: challenge.targetWidth(stepIdx),
       mass: challenge.mass,
       carDragging: challenge.carDragging,

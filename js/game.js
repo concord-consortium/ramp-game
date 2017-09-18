@@ -1,8 +1,8 @@
 import { showWebView } from './codap-handler'
 
-export const MIN_SCORE_TO_AVOID_REMEDIATION = 1
-export const MIN_SCORE_TO_AVOID_HINTS = 25
 export const MIN_SCORE_TO_ADVANCE = 33
+export const MIN_SCORE_TO_AVOID_HINTS = MIN_SCORE_TO_ADVANCE
+export const MIN_SCORE_TO_AVOID_REMEDIATION = MIN_SCORE_TO_ADVANCE
 export const GAME_INPUTS = ['surfaceFriction']
 export const GAME_OUTPUTS = ['startHeightAboveGround', 'startDistanceUpRamp', 'currentEndDistance']
 const HINT_COMPONENT_TITLE = 'Ramp Game Hints'
@@ -26,6 +26,7 @@ export function calcStarsCount (score) {
 
 export const challenges = [
   {
+    /** * Challenge 1 ***/
     steps: 4,
     mass: 0.05,
     surfaceFriction: 0.3,
@@ -42,6 +43,7 @@ export const challenges = [
     }
   },
   {
+    /** * Challenge 2 ***/
     steps: 4,
     mass: 0.05,
     surfaceFriction: 0.3,
@@ -49,6 +51,9 @@ export const challenges = [
     disabledInputs: ['surfaceFriction'],
     message: `Welcome to Challenge 2. The target will now move each time,
               so trial and error may not be a successful strategy here.`,
+    minTargetMove (targetWidth) {
+      return targetWidth ? 0.3 * targetWidth : 0
+    },
     targetX (step) {
       return Math.random() * 3 + 1
     },
@@ -59,6 +64,8 @@ export const challenges = [
       if (state.runsInStep >= 3) {
         showWebView({
           title: HINT_COMPONENT_TITLE,
+          width: 415,
+          height: 560,
           URL: 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange2-make-a-graph.html'
         })
       }
@@ -68,12 +75,16 @@ export const challenges = [
     }
   },
   {
+    /** * Challenge 3 ***/
     steps: 4,
     mass: 0.05,
     surfaceFriction: 0.2,
     carDragging: true,
     disabledInputs: ['surfaceFriction'],
     message: `Welcome Challenge 3. The surface has been changed to have less friction. Can you still hit the target?`,
+    minTargetMove (targetWidth) {
+      return targetWidth ? 0.3 * targetWidth : 0
+    },
     targetX (step) {
       return Math.random() * 3 + 1
     },
@@ -84,6 +95,8 @@ export const challenges = [
       if (state.hintableScores >= 3) {
         showWebView({
           title: HINT_COMPONENT_TITLE,
+          width: 375,
+          height: 415,
           URL: 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange3-movable-line.html'
         })
       }
@@ -93,6 +106,7 @@ export const challenges = [
     }
   },
   {
+    /** * Challenge 4 ***/
     steps: 4,
     mass: 0.05,
     carDragging: false,
@@ -100,6 +114,9 @@ export const challenges = [
     disabledInputs: ['startDistanceUpRamp', 'startHeightAboveGround'],
     message: `Welcome to Challenge 4. Now you control the friction rather than the starting height.`,
     unallowedCarDragMsg: 'Remember you can only adjust surface friction in this challenge.',
+    minTargetMove (targetWidth) {
+      return targetWidth ? 0.3 * targetWidth : 0
+    },
     targetX (step) {
       return Math.random() * 3 + 1
     },
@@ -117,6 +134,8 @@ export const challenges = [
       if (state.hintableScores >= 3) {
         showWebView({
           title: HINT_COMPONENT_TITLE,
+          width: 405,
+          height: 615,
           URL: urls[randomIndex]
         })
       }
