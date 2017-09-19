@@ -6599,8 +6599,8 @@ var challenges = exports.challenges = [{
   carDragging: true,
   disabledInputs: ['surfaceFriction'],
   message: 'Welcome to Challenge 2. The target will now move each time,\n              so trial and error may not be a successful strategy here.',
-  minTargetMove: function minTargetMove(targetWidth) {
-    return targetWidth ? 0.3 * targetWidth : 0;
+  minTargetMove: function minTargetMove(runOffLength) {
+    return runOffLength ? 0.3 * runOffLength : 0;
   },
   targetX: function targetX(step) {
     return Math.random() * 3 + 1;
@@ -6630,8 +6630,8 @@ var challenges = exports.challenges = [{
   carDragging: true,
   disabledInputs: ['surfaceFriction'],
   message: 'Welcome Challenge 3. The surface has been changed to have less friction. Can you still hit the target?',
-  minTargetMove: function minTargetMove(targetWidth) {
-    return targetWidth ? 0.3 * targetWidth : 0;
+  minTargetMove: function minTargetMove(runOffLength) {
+    return runOffLength ? 0.3 * runOffLength : 0;
   },
   targetX: function targetX(step) {
     return Math.random() * 3 + 1;
@@ -6662,8 +6662,8 @@ var challenges = exports.challenges = [{
   disabledInputs: ['startDistanceUpRamp', 'startHeightAboveGround'],
   message: 'Welcome to Challenge 4. Now you control the friction rather than the starting height.',
   unallowedCarDragMsg: 'Remember you can only adjust surface friction in this challenge.',
-  minTargetMove: function minTargetMove(targetWidth) {
-    return targetWidth ? 0.3 * targetWidth : 0;
+  minTargetMove: function minTargetMove(runOffLength) {
+    return runOffLength ? 0.3 * runOffLength : 0;
   },
   targetX: function targetX(step) {
     return Math.random() * 3 + 1;
@@ -21663,7 +21663,7 @@ var SimulationBase = function (_PureComponent) {
       }
 
       function nextTargetX() {
-        var minTargetMove = challenge.minTargetMove ? challenge.minTargetMove(targetWidth) : 0;
+        var minTargetMove = challenge.minTargetMove ? challenge.minTargetMove(c.runoffEndX) : 0;
         var newTargetX = void 0,
             diffTargetX = void 0;
         do {
