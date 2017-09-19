@@ -6433,7 +6433,7 @@ var config = {
       range: [0, 4]
     },
     startHeightAboveGround: {
-      codapDef: { name: 'Start height above ground', unit: 'm', type: 'numeric', precision: 2 },
+      codapDef: { name: 'Height', unit: 'm', type: 'numeric', precision: 2 },
       codapType: 'summary',
       showInCodap: true,
       showInCodapInGameMode: true,
@@ -6505,7 +6505,7 @@ function processUrl(type) {
       return true;
     } else if (urlValue === 'false') {
       return false;
-    } else if (urlValue !== null && !isNaN(urlValue)) {
+    } else if (urlValue != null && !isNaN(urlValue)) {
       // !isNaN(string) means isNumber(string).
       return parseFloat(urlValue);
     }
@@ -6547,15 +6547,15 @@ exports.default = config;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.challenges = exports.GAME_OUTPUTS = exports.GAME_INPUTS = exports.MIN_SCORE_TO_ADVANCE = exports.MIN_SCORE_TO_AVOID_HINTS = exports.MIN_SCORE_TO_AVOID_REMEDIATION = undefined;
+exports.challenges = exports.GAME_OUTPUTS = exports.GAME_INPUTS = exports.MIN_SCORE_TO_AVOID_REMEDIATION = exports.MIN_SCORE_TO_AVOID_HINTS = exports.MIN_SCORE_TO_ADVANCE = undefined;
 exports.calcGameScore = calcGameScore;
 exports.calcStarsCount = calcStarsCount;
 
 var _codapHandler = __webpack_require__(165);
 
-var MIN_SCORE_TO_AVOID_REMEDIATION = exports.MIN_SCORE_TO_AVOID_REMEDIATION = 1;
-var MIN_SCORE_TO_AVOID_HINTS = exports.MIN_SCORE_TO_AVOID_HINTS = 25;
 var MIN_SCORE_TO_ADVANCE = exports.MIN_SCORE_TO_ADVANCE = 33;
+var MIN_SCORE_TO_AVOID_HINTS = exports.MIN_SCORE_TO_AVOID_HINTS = MIN_SCORE_TO_ADVANCE;
+var MIN_SCORE_TO_AVOID_REMEDIATION = exports.MIN_SCORE_TO_AVOID_REMEDIATION = MIN_SCORE_TO_ADVANCE;
 var GAME_INPUTS = exports.GAME_INPUTS = ['surfaceFriction'];
 var GAME_OUTPUTS = exports.GAME_OUTPUTS = ['startHeightAboveGround', 'startDistanceUpRamp', 'currentEndDistance'];
 var HINT_COMPONENT_TITLE = 'Ramp Game Hints';
@@ -6578,6 +6578,7 @@ function calcStarsCount(score) {
 }
 
 var challenges = exports.challenges = [{
+  /** * Challenge 1 ***/
   steps: 4,
   mass: 0.05,
   surfaceFriction: 0.3,
@@ -6591,36 +6592,16 @@ var challenges = exports.challenges = [{
     return 0.9 - step * 0.14;
   }
 }, {
+  /** * Challenge 2 ***/
   steps: 4,
   mass: 0.05,
   surfaceFriction: 0.3,
   carDragging: true,
   disabledInputs: ['surfaceFriction'],
   message: 'Welcome to Challenge 2. The target will now move each time,\n              so trial and error may not be a successful strategy here.',
-  targetX: function targetX(step) {
-    return Math.random() * 3 + 1;
+  minTargetMove: function minTargetMove(targetWidth) {
+    return targetWidth ? 0.3 * targetWidth : 0;
   },
-  targetWidth: function targetWidth(step) {
-    return 0.9 - step * 0.14;
-  },
-  hint: function hint(state) {
-    if (state.runsInStep >= 3) {
-      (0, _codapHandler.showWebView)({
-        title: HINT_COMPONENT_TITLE,
-        URL: 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange2-make-a-graph.html'
-      });
-    }
-  },
-  loseStep: function loseStep(state) {
-    return state.remedialScores >= 3;
-  }
-}, {
-  steps: 4,
-  mass: 0.05,
-  surfaceFriction: 0.2,
-  carDragging: true,
-  disabledInputs: ['surfaceFriction'],
-  message: 'Welcome Challenge 3. The surface has been changed to have less friction. Can you still hit the target?',
   targetX: function targetX(step) {
     return Math.random() * 3 + 1;
   },
@@ -6631,14 +6612,49 @@ var challenges = exports.challenges = [{
     if (state.hintableScores >= 3) {
       (0, _codapHandler.showWebView)({
         title: HINT_COMPONENT_TITLE,
-        URL: 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange3-movable-line.html'
+        width: 415,
+        height: 560,
+        URL: 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange2-make-a-graph.html'
       });
+      return true;
     }
   },
   loseStep: function loseStep(state) {
     return state.remedialScores >= 3;
   }
 }, {
+  /** * Challenge 3 ***/
+  steps: 4,
+  mass: 0.05,
+  surfaceFriction: 0.2,
+  carDragging: true,
+  disabledInputs: ['surfaceFriction'],
+  message: 'Welcome Challenge 3. The surface has been changed to have less friction. Can you still hit the target?',
+  minTargetMove: function minTargetMove(targetWidth) {
+    return targetWidth ? 0.3 * targetWidth : 0;
+  },
+  targetX: function targetX(step) {
+    return Math.random() * 3 + 1;
+  },
+  targetWidth: function targetWidth(step) {
+    return 0.9 - step * 0.14;
+  },
+  hint: function hint(state) {
+    if (state.hintableScores >= 3) {
+      (0, _codapHandler.showWebView)({
+        title: HINT_COMPONENT_TITLE,
+        width: 375,
+        height: 415,
+        URL: 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange3-movable-line.html'
+      });
+      return true;
+    }
+  },
+  loseStep: function loseStep(state) {
+    return state.remedialScores >= 3;
+  }
+}, {
+  /** * Challenge 4 ***/
   steps: 4,
   mass: 0.05,
   carDragging: false,
@@ -6646,6 +6662,9 @@ var challenges = exports.challenges = [{
   disabledInputs: ['startDistanceUpRamp', 'startHeightAboveGround'],
   message: 'Welcome to Challenge 4. Now you control the friction rather than the starting height.',
   unallowedCarDragMsg: 'Remember you can only adjust surface friction in this challenge.',
+  minTargetMove: function minTargetMove(targetWidth) {
+    return targetWidth ? 0.3 * targetWidth : 0;
+  },
   targetX: function targetX(step) {
     return Math.random() * 3 + 1;
   },
@@ -6658,8 +6677,11 @@ var challenges = exports.challenges = [{
     if (state.hintableScores >= 3) {
       (0, _codapHandler.showWebView)({
         title: HINT_COMPONENT_TITLE,
+        width: 405,
+        height: 615,
         URL: urls[randomIndex]
       });
+      return true;
     }
   },
   loseStep: function loseStep(state) {
@@ -11672,7 +11694,7 @@ if (_config2.default.game) {
       pluralCase: 'Game',
       setOfCasesWithArticle: 'a challenge'
     },
-    attrs: [{ name: 'Challenge number', type: 'categorical' }]
+    attrs: [{ name: 'Challenge', type: 'categorical' }]
   });
   DATA_SET_TEMPLATE.collections[1].parent = 'GameSummary';
 }
@@ -11735,7 +11757,7 @@ function generateCodapData(options) {
     'Time': options.elapsedTime
   };
   if (_config2.default.game) {
-    values['Challenge number'] = options.challengeIdx + 1;
+    values['Challenge'] = options.challengeIdx + 1;
     values['Step'] = options.stepIdx + 1;
   } else {
     values['Run number'] = options.runNumber;
@@ -21303,7 +21325,16 @@ var SimulationBase = function (_PureComponent) {
 
         var challenge = this.challengeActive;
         if (challenge && challenge.hint) {
-          challenge.hint({ step: stepIdx, runsInChallenge: runsInChallenge, runsInStep: runsInStep, score: score, hintableScores: hintableScores, remedialScores: remedialScores });
+          if (challenge.hint({
+            step: stepIdx,
+            runsInChallenge: runsInChallenge,
+            runsInStep: runsInStep,
+            score: score,
+            hintableScores: hintableScores,
+            remedialScores: remedialScores })) {
+            // reset hint counter
+            hintableScores = 0;
+          }
         }
 
         this.setState({
@@ -21621,6 +21652,8 @@ var SimulationBase = function (_PureComponent) {
           stepIdx = _state9.stepIdx,
           initialCarX = _state9.initialCarX,
           surfaceFriction = _state9.surfaceFriction,
+          targetX = _state9.targetX,
+          targetWidth = _state9.targetWidth,
           returnToActivity = _state9.returnToActivity;
 
       var challenge = _game.challenges[challengeIdx];
@@ -21628,8 +21661,20 @@ var SimulationBase = function (_PureComponent) {
         this.gameCompleted();
         return;
       }
+
+      function nextTargetX() {
+        var minTargetMove = challenge.minTargetMove ? challenge.minTargetMove(targetWidth) : 0;
+        var newTargetX = void 0,
+            diffTargetX = void 0;
+        do {
+          newTargetX = challenge.targetX(stepIdx);
+          diffTargetX = targetX ? Math.abs(newTargetX - targetX) : 0;
+        } while (diffTargetX < minTargetMove);
+        return newTargetX;
+      }
+
       this.setState({
-        targetX: challenge.targetX(stepIdx),
+        targetX: nextTargetX(),
         targetWidth: challenge.targetWidth(stepIdx),
         mass: challenge.mass,
         carDragging: challenge.carDragging,
@@ -21796,10 +21841,10 @@ var SimulationBase = function (_PureComponent) {
             this.challengeActive && _react2.default.createElement(_gameTarget2.default, { sx: scaleX, sy: scaleY, pixelMeterRatio: this.pixelMeterRatio, x: targetX, width: targetWidth }),
             _react2.default.createElement(_vehicleImage2.default, { sx: scaleX, sy: scaleY, x: carX, y: carY, angle: carAngle, onUnallowedDrag: this.handleUnallowedCarDrag,
               draggable: this.draggingActive && carDragging, onDrag: this.handleCarPosChange }),
-            !simulationStarted && _react2.default.createElement(_carHeightLine2.default, { sx: scaleX, sy: scaleY, carX: carX, carY: carY })
+            !simulationStarted && _config2.default.outputs.startHeightAboveGround.showInMainView && _react2.default.createElement(_carHeightLine2.default, { sx: scaleX, sy: scaleY, carX: carX, carY: carY })
           )
         ),
-        !simulationStarted && _react2.default.createElement(_rampDistanceLabel2.default, { x: scaleX(carX), y: scaleY(carY), angle: rampAngle, distance: startDistanceUpRamp }),
+        !simulationStarted && _config2.default.outputs.startDistanceUpRamp.showInMainView && _react2.default.createElement(_rampDistanceLabel2.default, { x: scaleX(carX), y: scaleY(carY), angle: rampAngle, distance: startDistanceUpRamp }),
         this.challengeActive && _react2.default.createElement(_starRating2.default, { left: scaleX(carX), top: scaleY(0) - 45, score: lastScore }),
         this.challengeActive && _react2.default.createElement(_challengeStatus2.default, { challengeIdx: challengeIdx, stepIdx: stepIdx }),
         _react2.default.createElement(
