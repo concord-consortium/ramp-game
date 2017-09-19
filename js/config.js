@@ -54,7 +54,7 @@ const config = {
       range: [0, 4]
     },
     startHeightAboveGround: {
-      codapDef: {name: 'Start height above ground', unit: 'm', type: 'numeric', precision: 2},
+      codapDef: {name: 'Height', unit: 'm', type: 'numeric', precision: 2},
       codapType: 'summary',
       showInCodap: true,
       showInCodapInGameMode: true,
