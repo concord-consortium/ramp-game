@@ -646,13 +646,13 @@ export default class SimulationBase extends PureComponent {
             <VehicleImage sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle} onUnallowedDrag={this.handleUnallowedCarDrag}
               draggable={this.draggingActive && carDragging} onDrag={this.handleCarPosChange} />
             {
-              !simulationStarted &&
+              !simulationStarted && config.outputs.startHeightAboveGround.showInMainView &&
               <CarHeightLine sx={scaleX} sy={scaleY} carX={carX} carY={carY} />
             }
           </Layer>
         </Stage>
         {
-          !simulationStarted &&
+          !simulationStarted && config.outputs.startDistanceUpRamp.showInMainView &&
           <RampDistanceLabel x={scaleX(carX)} y={scaleY(carY)} angle={rampAngle} distance={startDistanceUpRamp} />
         }
         {

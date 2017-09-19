@@ -126,7 +126,7 @@ function processUrl (type) {
       return true
     } else if (urlValue === 'false') {
       return false
-    } else if (urlValue !== null && !isNaN(urlValue)) {
+    } else if (urlValue != null && !isNaN(urlValue)) {
       // !isNaN(string) means isNumber(string).
       return parseFloat(urlValue)
     }
