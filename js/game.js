@@ -61,13 +61,14 @@ export const challenges = [
       return 0.9 - step * 0.14
     },
     hint (state) {
-      if (state.runsInStep >= 3) {
+      if (state.hintableScores >= 3) {
         showWebView({
           title: HINT_COMPONENT_TITLE,
           width: 415,
           height: 560,
           URL: 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange2-make-a-graph.html'
         })
+        return true
       }
     },
     loseStep (state) {
@@ -99,6 +100,7 @@ export const challenges = [
           height: 415,
           URL: 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange3-movable-line.html'
         })
+        return true
       }
     },
     loseStep (state) {
@@ -138,6 +140,7 @@ export const challenges = [
           height: 615,
           URL: urls[randomIndex]
         })
+        return true
       }
     },
     loseStep (state) {

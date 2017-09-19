@@ -195,7 +195,16 @@ export default class SimulationBase extends PureComponent {
 
       const challenge = this.challengeActive
       if (challenge && challenge.hint) {
-        challenge.hint({ step: stepIdx, runsInChallenge, runsInStep, score, hintableScores, remedialScores })
+        if (challenge.hint({
+          step: stepIdx,
+          runsInChallenge,
+          runsInStep,
+          score,
+          hintableScores,
+          remedialScores })) {
+          // reset hint counter
+          hintableScores = 0
+        }
       }
 
       this.setState({
