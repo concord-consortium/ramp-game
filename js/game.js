@@ -51,8 +51,8 @@ export const challenges = [
     disabledInputs: ['surfaceFriction'],
     message: `Welcome to Challenge 2. The target will now move each time,
               so trial and error may not be a successful strategy here.`,
-    minTargetMove (targetWidth) {
-      return targetWidth ? 0.3 * targetWidth : 0
+    minTargetMove (runOffLength) {
+      return runOffLength ? 0.3 * runOffLength : 0
     },
     targetX (step) {
       return Math.random() * 3 + 1
@@ -83,8 +83,8 @@ export const challenges = [
     carDragging: true,
     disabledInputs: ['surfaceFriction'],
     message: `Welcome Challenge 3. The surface has been changed to have less friction. Can you still hit the target?`,
-    minTargetMove (targetWidth) {
-      return targetWidth ? 0.3 * targetWidth : 0
+    minTargetMove (runOffLength) {
+      return runOffLength ? 0.3 * runOffLength : 0
     },
     targetX (step) {
       return Math.random() * 3 + 1
@@ -116,8 +116,8 @@ export const challenges = [
     disabledInputs: ['startDistanceUpRamp', 'startHeightAboveGround'],
     message: `Welcome to Challenge 4. Now you control the friction rather than the starting height.`,
     unallowedCarDragMsg: 'Remember you can only adjust surface friction in this challenge.',
-    minTargetMove (targetWidth) {
-      return targetWidth ? 0.3 * targetWidth : 0
+    minTargetMove (runOffLength) {
+      return runOffLength ? 0.3 * runOffLength : 0
     },
     targetX (step) {
       return Math.random() * 3 + 1

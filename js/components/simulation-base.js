@@ -509,7 +509,7 @@ export default class SimulationBase extends PureComponent {
     }
 
     function nextTargetX () {
-      const minTargetMove = challenge.minTargetMove ? challenge.minTargetMove(targetWidth) : 0
+      const minTargetMove = challenge.minTargetMove ? challenge.minTargetMove(c.runoffEndX) : 0
       let newTargetX, diffTargetX
       do {
         newTargetX = challenge.targetX(stepIdx)
