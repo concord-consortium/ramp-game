@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react'
 import { challenges } from '../game'
+import StepChangeMessage from './step-change-message'
 import styles from '../../css/challenge-status.less'
 
 function renderDots (count) {
@@ -21,6 +22,7 @@ export default class ChallengeStatus extends PureComponent {
           <span className={styles.dark}>{ renderDots(stepIdx + 1) }</span>
           { renderDots(challenge.steps - stepIdx - 1) }
         </h4>
+        <StepChangeMessage challengeIdx={challengeIdx} stepIdx={stepIdx} />
       </div>
     )
   }

@@ -46,7 +46,7 @@ export default class StepChangeMessage extends PureComponent {
       <div className={styles.stepChangeMessage} style={{ visibility: this.state.visibility }}>
         <Fade classNames={classNames} duration={durations} in={this.state.show}
           onEnter={this.handleEnter} onEntered={this.handleEntered} onExited={this.handleExited}>
-          <h3>Step { stepIdx + 1 }</h3>
+          <h5>Step { stepIdx + 1 }</h5>
         </Fade>
       </div>
     )
