@@ -5,6 +5,7 @@
   "main": "js/index.js",
   "scripts": {
     "build": "webpack",
+    "predeploy": "npm run lint",
     "deploy": "./build_and_deploy.sh",
     "lint": "standard --fix",
     "start": "webpack-dev-server",

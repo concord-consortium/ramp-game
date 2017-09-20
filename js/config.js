@@ -7,6 +7,32 @@ const config = {
   autosave: true,
   // Sends user back to activity after each challenge.
   returnToActivity: true,
+  others: {
+    challenge: {
+      codapDef: {name: 'Challenge', type: 'categorical'},
+      showInCodap: true,
+      showInCodapInGameMode: true,
+      showInMainView: true
+    },
+    run: {
+      codapDef: {name: 'Run number', type: 'categorical'},
+      showInCodap: true,
+      showInCodapInGameMode: false,
+      showInMainView: true
+    },
+    step: {
+      codapDef: {name: 'Step', type: 'categorical'},
+      showInCodap: true,
+      showInCodapInGameMode: true,
+      showInMainView: true
+    },
+    time: {
+      codapDef: {name: 'Time', unit: 's', type: 'numeric', precision: 2},
+      showInCodap: true,
+      showInCodapInGameMode: true,
+      showInMainView: true
+    }
+  },
   inputs: {
     mass: {
       codapDef: {name: 'Mass', unit: 'kg', type: 'numeric', precision: 2},
