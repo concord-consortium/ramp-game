@@ -195,7 +195,16 @@ export default class SimulationBase extends PureComponent {
 
       const challenge = this.challengeActive
       if (challenge && challenge.hint) {
-        challenge.hint({ step: stepIdx, runsInChallenge, runsInStep, score, hintableScores, remedialScores })
+        if (challenge.hint({
+          step: stepIdx,
+          runsInChallenge,
+          runsInStep,
+          score,
+          hintableScores,
+          remedialScores })) {
+          // reset hint counter
+          hintableScores = 0
+        }
       }
 
       this.setState({
@@ -491,14 +500,26 @@ export default class SimulationBase extends PureComponent {
   }
 
   setupChallenge (prevChallengeIdx) {
-    const { challengeIdx, stepIdx, initialCarX, surfaceFriction, returnToActivity } = this.state
+    const { challengeIdx, stepIdx, initialCarX, surfaceFriction,
+            targetX, targetWidth, returnToActivity } = this.state
     const challenge = challenges[challengeIdx]
     if (!challenge) {
       this.gameCompleted()
       return
     }
+
+    function nextTargetX () {
+      const minTargetMove = challenge.minTargetMove ? challenge.minTargetMove(c.runoffEndX) : 0
+      let newTargetX, diffTargetX
+      do {
+        newTargetX = challenge.targetX(stepIdx)
+        diffTargetX = targetX ? Math.abs(newTargetX - targetX) : 0
+      } while (diffTargetX < minTargetMove)
+      return newTargetX
+    }
+
     this.setState({
-      targetX: challenge.targetX(stepIdx),
+      targetX: nextTargetX(),
       targetWidth: challenge.targetWidth(stepIdx),
       mass: challenge.mass,
       carDragging: challenge.carDragging,
@@ -625,13 +646,13 @@ export default class SimulationBase extends PureComponent {
             <VehicleImage sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle} onUnallowedDrag={this.handleUnallowedCarDrag}
               draggable={this.draggingActive && carDragging} onDrag={this.handleCarPosChange} />
             {
-              !simulationStarted &&
+              !simulationStarted && config.outputs.startHeightAboveGround.showInMainView &&
               <CarHeightLine sx={scaleX} sy={scaleY} carX={carX} carY={carY} />
             }
           </Layer>
         </Stage>
         {
-          !simulationStarted &&
+          !simulationStarted && config.outputs.startDistanceUpRamp.showInMainView &&
           <RampDistanceLabel x={scaleX(carX)} y={scaleY(carY)} angle={rampAngle} distance={startDistanceUpRamp} />
         }
         {

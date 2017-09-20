@@ -56,7 +56,7 @@ if (config.game) {
       setOfCasesWithArticle: 'a challenge'
     },
     attrs: [
-      {name: 'Challenge number', type: 'categorical'}
+      {name: 'Challenge', type: 'categorical'}
     ]
   })
   DATA_SET_TEMPLATE.collections[1].parent = 'GameSummary'
@@ -112,7 +112,7 @@ export function generateCodapData (options) {
     'Time': options.elapsedTime
   }
   if (config.game) {
-    values['Challenge number'] = options.challengeIdx + 1
+    values['Challenge'] = options.challengeIdx + 1
     values['Step'] = options.stepIdx + 1
   } else {
     values['Run number'] = options.runNumber

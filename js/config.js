@@ -54,7 +54,7 @@ const config = {
       range: [0, 4]
     },
     startHeightAboveGround: {
-      codapDef: {name: 'Start height above ground', unit: 'm', type: 'numeric', precision: 2},
+      codapDef: {name: 'Height', unit: 'm', type: 'numeric', precision: 2},
       codapType: 'summary',
       showInCodap: true,
       showInCodapInGameMode: true,
@@ -126,7 +126,7 @@ function processUrl (type) {
       return true
     } else if (urlValue === 'false') {
       return false
-    } else if (urlValue !== null && !isNaN(urlValue)) {
+    } else if (urlValue != null && !isNaN(urlValue)) {
       // !isNaN(string) means isNumber(string).
       return parseFloat(urlValue)
     }
