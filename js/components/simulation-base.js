@@ -7,6 +7,7 @@ import InclineControl from './incline-control'
 import Controls from './controls'
 import ConfirmationDialog from './confirmation-dialog'
 import ChallengeStatus from './challenge-status'
+import StepChangeMessage from './step-change-message'
 import * as c from '../sim-constants'
 import VehicleImage from './vehicle-image'
 import StarRating from './star-rating'
@@ -501,7 +502,7 @@ export default class SimulationBase extends PureComponent {
 
   setupChallenge (prevChallengeIdx) {
     const { challengeIdx, stepIdx, initialCarX, surfaceFriction,
-            targetX, targetWidth, returnToActivity } = this.state
+            targetX, returnToActivity } = this.state
     const challenge = challenges[challengeIdx]
     if (!challenge) {
       this.gameCompleted()
@@ -662,6 +663,10 @@ export default class SimulationBase extends PureComponent {
         {
           this.challengeActive &&
           <ChallengeStatus challengeIdx={challengeIdx} stepIdx={stepIdx} />
+        }
+        {
+          this.challengeActive &&
+          <StepChangeMessage challengeIdx={challengeIdx} stepIdx={stepIdx} />
         }
         <ConfirmationDialog
           title='Discard data?'
