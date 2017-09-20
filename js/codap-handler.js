@@ -158,7 +158,7 @@ export function showWebView (options) {
     resource: `component[rampGameHints-${randomSuffix}]`,
     values: options
   }, function (response) {
-    if (!response.success) {
+    if (response && !response.success) {
       _createWebView(options)
     }
   })

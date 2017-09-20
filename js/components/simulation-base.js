@@ -501,7 +501,7 @@ export default class SimulationBase extends PureComponent {
 
   setupChallenge (prevChallengeIdx) {
     const { challengeIdx, stepIdx, initialCarX, surfaceFriction,
-            targetX, targetWidth, returnToActivity } = this.state
+            targetX, returnToActivity } = this.state
     const challenge = challenges[challengeIdx]
     if (!challenge) {
       this.gameCompleted()
