@@ -20260,6 +20260,10 @@ var _react2 = _interopRequireDefault(_react);
 
 var _game = __webpack_require__(88);
 
+var _stepChangeMessage = __webpack_require__(269);
+
+var _stepChangeMessage2 = _interopRequireDefault(_stepChangeMessage);
+
 var _challengeStatus = __webpack_require__(646);
 
 var _challengeStatus2 = _interopRequireDefault(_challengeStatus);
@@ -20315,7 +20319,8 @@ var ChallengeStatus = function (_PureComponent) {
             renderDots(stepIdx + 1)
           ),
           renderDots(challenge.steps - stepIdx - 1)
-        )
+        ),
+        _react2.default.createElement(_stepChangeMessage2.default, { challengeIdx: challengeIdx, stepIdx: stepIdx })
       );
     }
   }]);
@@ -21126,10 +21131,6 @@ var _challengeStatus = __webpack_require__(259);
 
 var _challengeStatus2 = _interopRequireDefault(_challengeStatus);
 
-var _stepChangeMessage = __webpack_require__(269);
-
-var _stepChangeMessage2 = _interopRequireDefault(_stepChangeMessage);
-
 var _simConstants = __webpack_require__(68);
 
 var c = _interopRequireWildcard(_simConstants);
@@ -21904,7 +21905,6 @@ var SimulationBase = function (_PureComponent) {
         !simulationStarted && _config2.default.outputs.startDistanceUpRamp.showInMainView && _react2.default.createElement(_rampDistanceLabel2.default, { x: scaleX(carX), y: scaleY(carY), angle: rampAngle, distance: startDistanceUpRamp }),
         this.challengeActive && _react2.default.createElement(_starRating2.default, { left: scaleX(carX), top: scaleY(0) - 45, score: lastScore }),
         this.challengeActive && _react2.default.createElement(_challengeStatus2.default, { challengeIdx: challengeIdx, stepIdx: stepIdx }),
-        this.challengeActive && _react2.default.createElement(_stepChangeMessage2.default, { challengeIdx: challengeIdx, stepIdx: stepIdx }),
         _react2.default.createElement(
           _confirmationDialog2.default,
           {
@@ -22190,7 +22190,7 @@ var StepChangeMessage = function (_PureComponent) {
           { classNames: classNames, duration: durations, 'in': this.state.show,
             onEnter: this.handleEnter, onEntered: this.handleEntered, onExited: this.handleExited },
           _react2.default.createElement(
-            'h3',
+            'h5',
             null,
             'Step ',
             stepIdx + 1
@@ -27169,7 +27169,7 @@ exports = module.exports = __webpack_require__(20)();
 
 
 // module
-exports.push([module.i, ".step-change-message--stepChangeMessage--1mZmqin6 {\n  position: absolute;\n  z-index: 100;\n  top: 50%;\n  left: 50%;\n  -webkit-transform: translate(-50%, -75%);\n          transform: translate(-50%, -75%);\n  pointer-events: none;\n}\n\n.step-change-message--stepChangeMessage--1mZmqin6 h3 {\n    color: #333;\n    font-weight: 600;\n    font-size: 72px;\n  }\n\n.step-change-message--stepChangeMessage-enter--3a2JwDCd {\n    opacity: 0.01;\n  }\n  \n.step-change-message--stepChangeMessage-enter--3a2JwDCd.step-change-message--stepChangeMessage-enter-active--t6y-w4pC {\n  opacity: 1;\n  -webkit-transition: opacity 600ms ease-in;\n  transition: opacity 600ms ease-in;\n}\n\n.step-change-message--stepChangeMessage-exit--3Lgt43Fy {\n  opacity: 1;\n}\n\n.step-change-message--stepChangeMessage-exit--3Lgt43Fy.step-change-message--stepChangeMessage-exit-active--2fq-pkVd {\n  opacity: 0.01;\n  -webkit-transition: opacity 600ms ease-in;\n  transition: opacity 600ms ease-in;\n}\n", "", {"version":3,"sources":["/Users/kswenson/Development/inquiry-space/inquiry-space-2/css/step-change-message.css"],"names":[],"mappings":"AAAA;EACE,mBAAmB;EACnB,aAAa;EACb,SAAS;EACT,UAAU;EACV,yCAAyC;UACjC,iCAAiC;EACzC,qBAAqB;CACtB;;AAED;IACI,YAAY;IACZ,iBAAiB;IACjB,gBAAgB;GACjB;;AAEH;IACI,cAAc;GACf;;AAEH;EACE,WAAW;EACX,0CAA0C;EAC1C,kCAAkC;CACnC;;AAED;EACE,WAAW;CACZ;;AAED;EACE,cAAc;EACd,0CAA0C;EAC1C,kCAAkC;CACnC","file":"step-change-message.css","sourcesContent":[".stepChangeMessage {\n  position: absolute;\n  z-index: 100;\n  top: 50%;\n  left: 50%;\n  -webkit-transform: translate(-50%, -75%);\n          transform: translate(-50%, -75%);\n  pointer-events: none;\n}\n\n.stepChangeMessage h3 {\n    color: #333;\n    font-weight: 600;\n    font-size: 72px;\n  }\n\n.stepChangeMessage-enter {\n    opacity: 0.01;\n  }\n  \n.stepChangeMessage-enter.stepChangeMessage-enter-active {\n  opacity: 1;\n  -webkit-transition: opacity 600ms ease-in;\n  transition: opacity 600ms ease-in;\n}\n\n.stepChangeMessage-exit {\n  opacity: 1;\n}\n\n.stepChangeMessage-exit.stepChangeMessage-exit-active {\n  opacity: 0.01;\n  -webkit-transition: opacity 600ms ease-in;\n  transition: opacity 600ms ease-in;\n}\n"],"sourceRoot":""}]);
+exports.push([module.i, ".step-change-message--stepChangeMessage--1mZmqin6 {\n  text-align: center;\n}\n\n.step-change-message--stepChangeMessage--1mZmqin6 h5 {\n  color: #333;\n  font-weight: 600;\n  font-size: 24px;\n  margin-top: 4px;\n}\n\n.step-change-message--stepChangeMessage-enter--3a2JwDCd {\n  opacity: 0.01;\n}\n\n.step-change-message--stepChangeMessage-enter--3a2JwDCd.step-change-message--stepChangeMessage-enter-active--t6y-w4pC {\n  opacity: 1;\n  -webkit-transition: opacity 600ms ease-in;\n  transition: opacity 600ms ease-in;\n}\n\n.step-change-message--stepChangeMessage-exit--3Lgt43Fy {\n  opacity: 1;\n}\n\n.step-change-message--stepChangeMessage-exit--3Lgt43Fy.step-change-message--stepChangeMessage-exit-active--2fq-pkVd {\n  opacity: 0.01;\n  -webkit-transition: opacity 600ms ease-in;\n  transition: opacity 600ms ease-in;\n}\n", "", {"version":3,"sources":["/Users/kswenson/Development/inquiry-space/inquiry-space-2/css/step-change-message.css"],"names":[],"mappings":"AAAA;EACE,mBAAmB;CACpB;;AAED;EACE,YAAY;EACZ,iBAAiB;EACjB,gBAAgB;EAChB,gBAAgB;CACjB;;AAED;EACE,cAAc;CACf;;AAED;EACE,WAAW;EACX,0CAA0C;EAC1C,kCAAkC;CACnC;;AAED;EACE,WAAW;CACZ;;AAED;EACE,cAAc;EACd,0CAA0C;EAC1C,kCAAkC;CACnC","file":"step-change-message.css","sourcesContent":[".stepChangeMessage {\n  text-align: center;\n}\n\n.stepChangeMessage h5 {\n  color: #333;\n  font-weight: 600;\n  font-size: 24px;\n  margin-top: 4px;\n}\n\n.stepChangeMessage-enter {\n  opacity: 0.01;\n}\n\n.stepChangeMessage-enter.stepChangeMessage-enter-active {\n  opacity: 1;\n  -webkit-transition: opacity 600ms ease-in;\n  transition: opacity 600ms ease-in;\n}\n\n.stepChangeMessage-exit {\n  opacity: 1;\n}\n\n.stepChangeMessage-exit.stepChangeMessage-exit-active {\n  opacity: 0.01;\n  -webkit-transition: opacity 600ms ease-in;\n  transition: opacity 600ms ease-in;\n}\n"],"sourceRoot":""}]);
 
 // exports
 exports.locals = {
