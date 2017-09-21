@@ -21307,7 +21307,9 @@ var SimulationBase = function (_PureComponent) {
       var match = / attribute (.*) }/.exec(msg.values.message);
       var attr = match && match[1];
       _this.codapActions.hasPutAttributeOnLegend = true;
-      _this.codapActions.hasPutChallengeOnLegend = attr === 'Challenge';
+      if (attr === _config2.default.others.challenge.codapDef.name) {
+        _this.codapActions.hasPutChallengeOnLegend = true;
+      }
     };
 
     _this.showMovableLineLogHandler = function (msg) {
