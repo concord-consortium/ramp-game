@@ -111,7 +111,9 @@ export default class SimulationBase extends PureComponent {
   }
 
   createComponentHandler = (msg) => {
-    this.codapActions.hasCreatedGraph = (msg.values.type === 'graph')
+    if (msg.values.type === 'graph') {
+      this.codapActions.hasCreatedGraph = true
+    }
   }
 
   axisAttributeChangeHandler = (msg) => {
