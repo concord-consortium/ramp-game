@@ -21284,7 +21284,9 @@ var SimulationBase = function (_PureComponent) {
     var _this = _possibleConstructorReturn(this, (SimulationBase.__proto__ || Object.getPrototypeOf(SimulationBase)).call(this, props));
 
     _this.createComponentHandler = function (msg) {
-      _this.codapActions.hasCreatedGraph = msg.values.type === 'graph';
+      if (msg.values.type === 'graph') {
+        _this.codapActions.hasCreatedGraph = true;
+      }
     };
 
     _this.axisAttributeChangeHandler = function (msg) {
