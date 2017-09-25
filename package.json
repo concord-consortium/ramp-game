@@ -1,5 +1,5 @@
 {
-  "name": "inquiry-space-2",
+  "name": "ramp-game",
   "version": "0.1.0",
   "description": "This project reproduces the Inquiry Space car ramp challenge in Javascript",
   "main": "js/index.js",
@@ -7,7 +7,9 @@
     "build": "webpack",
     "deploy": "./build_and_deploy.sh",
     "lint": "standard --fix",
-    "start": "webpack-dev-server"
+    "start": "webpack-dev-server",
+    "cloudfront:invalidations": "s3cmd cfinvalinfo cf://E39SSL7C4Z0E5A",
+    "cloudfront:inval-root": "aws cloudfront create-invalidation --distribution-id E39SSL7C4Z0E5A --paths /index.html"
   },
   "repository": {
     "type": "git",
