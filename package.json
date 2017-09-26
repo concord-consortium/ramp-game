@@ -1,7 +1,7 @@
 {
   "name": "ramp-game",
   "version": "0.1.0",
-  "description": "This project reproduces the Inquiry Space car ramp challenge in Javascript",
+  "description": "This project reproduces the Inquiry Space car ramp challenge in JavaScript",
   "main": "js/index.js",
   "scripts": {
     "build": "webpack",
@@ -13,12 +13,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/concord-consortium/inquiry-space-2.git"
+    "url": "git+https://github.com/concord-consortium/ramp-game.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/concord-consortium/inquiry-space-2/issues"
+    "url": "https://github.com/concord-consortium/ramp-game/issues"
   },
   "standard": {
     "ignore": [
@@ -26,7 +26,7 @@
     ],
     "parser": "babel-eslint"
   },
-  "homepage": "https://github.com/concord-consortium/inquiry-space-2#readme",
+  "homepage": "https://github.com/concord-consortium/ramp-game#readme",
   "dependencies": {
     "babel-polyfill": "^6.16.0",
     "eventemitter2": "^4.1.0",
