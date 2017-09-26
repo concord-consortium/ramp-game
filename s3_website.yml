@@ -9,7 +9,7 @@ cloudfront_distribution_id: E39SSL7C4Z0E5A
 cloudfront_invalidate_root: true
 cloudfront_wildcard_invalidation: true
 
-<% if ENV['TRAVIS_BRANCH'] == 'master' %>
+<% if ENV['TRAVIS_BRANCH'] == 'production' %>
 # in this case we are going to deploy this branch to the top level of the domain
 # so we need to ignore the version and branch folders
 ignore_on_server: ^ramp-game/(version/|branch/)
