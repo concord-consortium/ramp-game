@@ -78,6 +78,19 @@ export default class SimulationBase extends PureComponent {
       returnToActivity: false
     }
 
+    this.codapActions = {
+      hasCreatedGraph: false,
+      hasPutAttributeOnAxis: false,
+      hasPutStartDistanceOnAxis: false,
+      hasPutEndDistanceOnAxis: false,
+      hasPutFrictionOnAxis: false,
+      hasPutAttributeOnLegend: false,
+      hasPutChallengeOnLegend: false,
+      hasCreatedMovableLine: false,
+      hasMovedMovableLine: false,
+      hasCreatedRegressionLine: false
+    }
+
     this.outputs = calcOutputs(this.state)
 
     this.codapHandler = new CodapHandler()
@@ -97,6 +110,49 @@ export default class SimulationBase extends PureComponent {
     this.rafHandler = this.rafHandler.bind(this)
   }
 
+  createComponentHandler = (msg) => {
+    if (msg.values.type === 'graph') {
+      this.codapActions.hasCreatedGraph = true
+    }
+  }
+
+  axisAttributeChangeHandler = (msg) => {
+    const attr = msg.values.attributeName
+    const startDistanceName = config.outputs.startDistanceUpRamp.codapDef.name
+    const endDistanceName = config.outputs.endDistance.codapDef.name
+    const surfaceFrictionName = config.inputs.surfaceFriction.codapDef.name
+    this.codapActions.hasCreatedGraph = true
+    this.codapActions.hasPutAttributeOnAxis = true
+    if (attr === startDistanceName) {
+      this.codapActions.hasPutStartDistanceOnAxis = true
+    } else if (attr === endDistanceName) {
+      this.codapActions.hasPutEndDistanceOnAxis = true
+    } else if (attr === surfaceFrictionName) {
+      this.codapActions.hasPutFrictionOnAxis = true
+    }
+  }
+
+  legendAttributeLogHandler = (msg) => {
+    const match = / attribute (.*) }/.exec(msg.values.message)
+    const attr = match && match[1]
+    this.codapActions.hasPutAttributeOnLegend = true
+    if (attr === config.others.challenge.codapDef.name) {
+      this.codapActions.hasPutChallengeOnLegend = true
+    }
+  }
+
+  showMovableLineLogHandler = (msg) => {
+    this.codapActions.hasCreatedMovableLine = true
+  }
+
+  dragMovableLineLogHandler = (msg) => {
+    this.codapActions.hasMovedMovableLine = true
+  }
+
+  showRegressionLineLogHandler = (msg) => {
+    this.codapActions.hasCreatedRegressionLine = true
+  }
+
   componentDidMount () {
     // Handle CODAP as a parent window.
     this.codapHandler.init()
@@ -106,6 +162,18 @@ export default class SimulationBase extends PureComponent {
         if (this.codapHandler.state.game) {
           this.loadGameState(this.codapHandler.state)
         }
+
+        this.codapHandler.registerEventHandlers({
+          'create': this.createComponentHandler,
+          'attributeChange': this.axisAttributeChangeHandler
+        })
+
+        this.codapHandler.registerLogHandlers({
+          'legendAttributeChange': this.legendAttributeLogHandler,
+          'toggleMovableLine: show': this.showMovableLineLogHandler,
+          'dragMovableLine': this.dragMovableLineLogHandler,
+          'toggleLSRL: show': this.showRegressionLineHandler
+        })
       })
       .catch(msg => {
         console.log('CODAP not available')
@@ -201,7 +269,7 @@ export default class SimulationBase extends PureComponent {
           runsInStep,
           score,
           hintableScores,
-          remedialScores })) {
+          remedialScores }, this.codapActions)) {
           // reset hint counter
           hintableScores = 0
         }

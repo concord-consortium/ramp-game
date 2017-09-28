@@ -6,6 +6,12 @@ export const MIN_SCORE_TO_AVOID_REMEDIATION = MIN_SCORE_TO_ADVANCE
 export const GAME_INPUTS = ['surfaceFriction']
 export const GAME_OUTPUTS = ['startHeightAboveGround', 'startDistanceUpRamp', 'currentEndDistance']
 const HINT_COMPONENT_TITLE = 'Ramp Game Hints'
+const CH2_GRAPH_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange2-make-a-graph.html'
+const CH3_MOVABLE_LINE_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange3-movable-line.html'
+const CH4_GRAPH_CONFIG_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-axis-legend-selection.html'
+const CH4_AXIS_CONFIG_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-axis-selection.html'
+const CH4_LEGEND_CONFIG_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-legend-selection.html'
+const CH4_SELECTION_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-selection.html'
 
 export function calcGameScore (carX, targetX, targetWidth) {
   const targetRadius = 0.5 * targetWidth
@@ -60,13 +66,13 @@ export const challenges = [
     targetWidth (step) {
       return 0.9 - step * 0.14
     },
-    hint (state) {
+    hint (state, codapActions) {
       if (state.hintableScores >= 3) {
         showWebView({
           title: HINT_COMPONENT_TITLE,
           width: 415,
           height: 560,
-          URL: 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange2-make-a-graph.html'
+          URL: CH2_GRAPH_HINT_URL
         })
         return true
       }
@@ -92,13 +98,14 @@ export const challenges = [
     targetWidth (step) {
       return 0.9 - step * 0.14
     },
-    hint (state) {
+    hint (state, codapActions) {
       if (state.hintableScores >= 3) {
+        const url = codapActions.hasCreatedGraph ? CH3_MOVABLE_LINE_HINT_URL : CH2_GRAPH_HINT_URL
         showWebView({
           title: HINT_COMPONENT_TITLE,
           width: 375,
           height: 415,
-          URL: 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange3-movable-line.html'
+          URL: url
         })
         return true
       }
@@ -125,20 +132,24 @@ export const challenges = [
     targetWidth (step) {
       return 0.9 - step * 0.14
     },
-    hint (state) {
-      const urls = [
-        'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-axis-legend-selection.html',
-        'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-axis-selection.html',
-        'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-legend-selection.html',
-        'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-selection.html'
-      ]
-      const randomIndex = Math.floor(Math.random() * urls.length)
+    hint (state, codapActions) {
       if (state.hintableScores >= 3) {
+        let url = CH4_GRAPH_CONFIG_HINT_URL
+        const hasConfiguredAxes = codapActions.hasPutFrictionOnAxis &&
+                                    codapActions.hasPutEndDistanceOnAxis
+        const hasConfiguredLegend = codapActions.hasPutChallengeOnLegend
+        if (hasConfiguredAxes && hasConfiguredLegend) {
+          url = CH4_SELECTION_HINT_URL
+        } else if (hasConfiguredAxes && !hasConfiguredLegend) {
+          url = CH4_LEGEND_CONFIG_HINT_URL
+        } else if (!hasConfiguredAxes && hasConfiguredLegend) {
+          url = CH4_AXIS_CONFIG_HINT_URL
+        }
         showWebView({
           title: HINT_COMPONENT_TITLE,
           width: 405,
           height: 615,
-          URL: urls[randomIndex]
+          URL: url
         })
         return true
       }

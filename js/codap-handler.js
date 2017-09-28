@@ -1,6 +1,7 @@
 /* global codapInterface */
 import { calcOutputs } from './physics'
 import config from './config'
+import { forEach } from 'lodash'
 
 const TIMESTEP = 0.05
 
@@ -27,7 +28,7 @@ const DATA_SET_TEMPLATE = {
         setOfCasesWithArticle: 'a run'
       },
       attrs: [
-        {name: config.game ? 'Step' : 'Run number', type: 'categorical'}
+        config.game ? config.others.step.codapDef : config.others.run.codapDef
         // will be extended by outputs defined in config
       ]
     },
@@ -40,7 +41,7 @@ const DATA_SET_TEMPLATE = {
         setOfCasesWithArticle: 'a run'
       },
       attrs: [
-        {name: 'Time', unit: 's', type: 'numeric', precision: 2}
+        config.others.time.codapDef
         // will be extended by outputs defined in config
       ]
     }
@@ -56,7 +57,7 @@ if (config.game) {
       setOfCasesWithArticle: 'a challenge'
     },
     attrs: [
-      {name: 'Challenge', type: 'categorical'}
+      config.others.challenge.codapDef
     ]
   })
   DATA_SET_TEMPLATE.collections[1].parent = 'GameSummary'
@@ -108,14 +109,13 @@ function requestCreateDataSet (name, template) {
 
 export function generateCodapData (options) {
   const outputs = calcOutputs(options)
-  const values = {
-    'Time': options.elapsedTime
-  }
+  const values = {}
+  values[config.others.time.codapDef.name] = options.elapsedTime
   if (config.game) {
-    values['Challenge'] = options.challengeIdx + 1
-    values['Step'] = options.stepIdx + 1
+    values[config.others.challenge.codapDef.name] = options.challengeIdx + 1
+    values[config.others.step.codapDef.name] = options.stepIdx + 1
   } else {
-    values['Run number'] = options.runNumber
+    values[config.others.run.codapDef.name] = options.runNumber
   }
   Object.keys(config.inputs).forEach(inputName => {
     const input = config.inputs[inputName]
@@ -229,6 +229,37 @@ export default class CodapHandler {
       resource: 'dataContext[' + DATA_SET_NAME + '].item',
       values: generateCompleteData(options)
     })
+  }
+
+  registerEventHandlers (handlers) {
+    forEach(handlers, (handler, operation) => {
+      codapInterface.on('notify', 'component', operation, handler)
+    })
+  }
+
+  handleNotifications = (msg) => {
+    forEach(this.logHandlers, (handler, logStr) => {
+      const formatStr = msg.values.formatStr
+      if (formatStr && (formatStr.indexOf(logStr) >= 0)) {
+        handler(msg)
+      }
+    })
+  }
+
+  registerLogHandlers (handlers) {
+    this.logHandlers = handlers || []
+    Object.keys(handlers).forEach((logStr) => {
+      codapInterface.sendRequest({
+        action: 'register',
+        resource: 'logMessageMonitor',
+        values: {
+          clientId: this.clientId,
+          formatPrefix: logStr
+        }
+      })
+    })
+
+    codapInterface.on('notify', '*', null, this.handleNotifications)
   }
 
   log (action, params) {
