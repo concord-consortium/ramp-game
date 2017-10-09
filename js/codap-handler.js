@@ -126,7 +126,11 @@ export function generateCodapData (options) {
   Object.keys(config.outputs).forEach(outputName => {
     const output = config.outputs[outputName]
     if (output.showInCodap) {
-      values[output.codapDef.name] = outputs[outputName]
+      const rawValue = outputs[outputName]
+      const outputValue = output.dispFunc
+                            ? output.dispFunc(rawValue)
+                            : rawValue
+      values[output.codapDef.name] = outputValue
     }
   })
   return values
