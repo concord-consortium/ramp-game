@@ -212,7 +212,7 @@ export default class SimulationBase extends PureComponent {
   }
 
   componentDidUpdate (prevProps, prevState) {
-    const { isRunning, challengeIdx, stepIdx, elapsedTime } = this.state
+    const { isRunning, challengeIdx, stepIdx, runNumber, elapsedTime } = this.state
     const { width, height } = this.props
     if (isRunning && !prevState.isRunning) {
       if (isNaN(this.outputs.totalTime)) {
@@ -232,7 +232,9 @@ export default class SimulationBase extends PureComponent {
         scaleY: getScaleY(this.pixelMeterRatio)
       })
     }
-    if (challengeIdx !== prevState.challengeIdx || stepIdx !== prevState.stepIdx) {
+    if (challengeIdx !== prevState.challengeIdx ||
+        stepIdx !== prevState.stepIdx ||
+        runNumber !== prevState.runNumber) {
       this.setupChallenge(prevState.challengeIdx)
       this.saveGameState()
     }
@@ -595,8 +597,7 @@ export default class SimulationBase extends PureComponent {
       disabledInputs: challenge.disabledInputs,
       surfaceFriction: challenge.surfaceFriction !== undefined ? challenge.surfaceFriction : surfaceFriction,
       initialCarX: challenge.initialCarX !== undefined ? challenge.initialCarX : initialCarX,
-      lastScore: null,
-      remedialScores: 0
+      lastScore: null
     })
 
     if (challengeIdx !== prevChallengeIdx && !returnToActivity) {
