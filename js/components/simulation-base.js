@@ -8,6 +8,7 @@ import Controls from './controls'
 import ConfirmationDialog from './confirmation-dialog'
 import ChallengeStatus from './challenge-status'
 import * as c from '../sim-constants'
+import ArrowImage from './arrow-image'
 import VehicleImage from './vehicle-image'
 import StarRating from './star-rating'
 import RampDistanceLabel from './ramp-distance-label'
@@ -712,6 +713,7 @@ export default class SimulationBase extends PureComponent {
               this.challengeActive &&
               <GameTarget sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} x={targetX} width={targetWidth} />
             }
+            <ArrowImage sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle} />
             <VehicleImage sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle} onUnallowedDrag={this.handleUnallowedCarDrag}
               draggable={this.draggingActive && carDragging} onDrag={this.handleCarPosChange} />
             {
