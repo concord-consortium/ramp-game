@@ -102,7 +102,7 @@ export default class VehicleImage extends PureComponent {
         image={vehicleImage}
         x={sx(x)} y={sy(y)} width={CAR_WIDTH} height={CAR_HEIGHT}
         offsetX={CAR_OFFSET_X} offsetY={CAR_OFFSET_Y}
-        rotation={angle * 180 / Math.PI}
+        rotation={(angle || 0) * 180 / Math.PI}
         onMouseOver={this.onHover} onMouseOut={this.onHoverEnd}
         onMouseDown={this.onDragStart} onTouchStart={this.onDragStart}
       />
