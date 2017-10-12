@@ -94,43 +94,6 @@ export const challenges = [
     maxRunsInChallenge: 12,
     steps: 4,
     mass: 0.05,
-    surfaceFriction (attemptSet) {
-      return 0.2
-    },
-    carDragging: true,
-    disabledInputs: ['surfaceFriction'],
-    message: `Welcome Challenge 3. The surface has been changed to have less friction. Can you still hit the target?`,
-    runsExhaustedMsg: "Oh no! You've used up all of your cars. Try again.",
-    minTargetMove (runOffLength) {
-      return runOffLength ? 0.3 * runOffLength : 0
-    },
-    targetX (attemptSet) {
-      return Math.random() * 3 + 1
-    },
-    targetWidth (step) {
-      return 0.9 - step * 0.14
-    },
-    hint (state, codapActions) {
-      if (state.hintableScores >= 3) {
-        const url = codapActions.hasCreatedGraph ? CH3_MOVABLE_LINE_HINT_URL : CH2_GRAPH_HINT_URL
-        showWebView({
-          title: HINT_COMPONENT_TITLE,
-          width: 375,
-          height: 415,
-          URL: url
-        })
-        return true
-      }
-    },
-    loseStep (state) {
-      return state.remedialScores >= 3
-    }
-  },
-  {
-    /** * Challenge 4 ***/
-    maxRunsInChallenge: 12,
-    steps: 4,
-    mass: 0.05,
     carDragging: false,
     initialCarX (attemptSet) {
       return [-1, -1.5, -0.75][attemptSet % 3]
