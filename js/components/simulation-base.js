@@ -235,10 +235,11 @@ export default class SimulationBase extends PureComponent {
         scaleY: getScaleY(this.pixelMeterRatio)
       })
     }
-    if (attemptSet !== prevState.attemptSet ||
-        challengeIdx !== prevState.challengeIdx ||
-        stepIdx !== prevState.stepIdx ||
-        runNumber !== prevState.runNumber) {
+    if (this.challengeActive && (
+          attemptSet !== prevState.attemptSet ||
+          challengeIdx !== prevState.challengeIdx ||
+          stepIdx !== prevState.stepIdx ||
+          runNumber !== prevState.runNumber)) {
       this.setupChallenge(prevState.challengeIdx)
       this.saveGameState()
     }
@@ -787,7 +788,7 @@ export default class SimulationBase extends PureComponent {
         </Dialog>
         <Dialog
           theme={dialogTheme}
-          active={returnToActivity}
+          active={this.challengeActive && returnToActivity}
         >
           {/* Note that this dialog cannot be closed. It's intentional. User has to go back to LARA and go to the next page. */}
           Congratulations! You have completed Challenge { challengeIdx }.
