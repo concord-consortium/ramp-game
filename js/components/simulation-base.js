@@ -83,6 +83,7 @@ export default class SimulationBase extends PureComponent {
     }
 
     this.codapActions = {
+      hasSeenGraphHint: false,
       hasCreatedGraph: false,
       hasPutAttributeOnAxis: false,
       hasPutStartDistanceOnAxis: false,

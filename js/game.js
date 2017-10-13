@@ -88,8 +88,9 @@ export const challenges = [
           title: HINT_COMPONENT_TITLE,
           width: 415,
           height: 560,
-          URL: codapActions.hasCreatedGraph ? CH2_MOVABLE_LINE_HINT_URL : CH2_GRAPH_HINT_URL
+          URL: codapActions.hasSeenGraphHint ? CH2_MOVABLE_LINE_HINT_URL : CH2_GRAPH_HINT_URL
         })
+        codapActions.hasSeenGraphHint = true
         return true
       }
     },
