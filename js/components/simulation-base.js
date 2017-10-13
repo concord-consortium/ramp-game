@@ -55,7 +55,7 @@ export default class SimulationBase extends PureComponent {
       surfaceFriction: config.inputs.surfaceFriction.defaultValue,
       rampTopX: -2,
       rampTopY: 2,
-      initialCarX: -1,
+      initialCarX: -1.75,
       elapsedTime: 0,
 
       challengeIdx: config.game ? 0 : null,
