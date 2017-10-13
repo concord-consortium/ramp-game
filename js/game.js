@@ -50,6 +50,14 @@ export const challenges = [
     },
     targetWidth (step) {
       return 0.9 - step * 0.14
+    },
+    runFeedback (state) {
+      if (!state.attemptSet && (state.runsInChallenge === 1) && (state.score < MIN_SCORE_TO_ADVANCE)) {
+        return 'Try adjusting the position of the car to get closer to the center of the target.'
+      } else if ((state.successesInChallenge === 1) && (state.score >= MIN_SCORE_TO_ADVANCE)) {
+        return 'Congratulations on finishing the first of four steps in this challenge. Your targets will now get smaller.'
+      }
+      return null
     }
   },
   {

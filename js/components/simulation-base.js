@@ -65,6 +65,7 @@ export default class SimulationBase extends PureComponent {
 
       runsInChallenge: 0,
       runsInStep: 0,
+      successesInChallenge: 0,
       lastScore: null,
       hintableScores: 0,
       remedialScores: 0,
@@ -251,12 +252,15 @@ export default class SimulationBase extends PureComponent {
   simulationFinished () {
     const logParams = {}
     if (this.challengeActive) {
-      const { stepIdx, targetX, targetWidth } = this.state
+      const { attemptSet, stepIdx, targetX, targetWidth } = this.state
       const { carX } = this.outputs
       const score = calcGameScore(carX, targetX, targetWidth)
-      let { runsInChallenge, runsInStep, hintableScores, remedialScores } = this.state
+      let { runsInChallenge, runsInStep, successesInChallenge, hintableScores, remedialScores } = this.state
       ++runsInChallenge
       ++runsInStep
+      if (score >= MIN_SCORE_TO_ADVANCE) {
+        ++successesInChallenge
+      }
       if (score < MIN_SCORE_TO_AVOID_REMEDIATION) {
         ++remedialScores
       } else {
@@ -269,14 +273,25 @@ export default class SimulationBase extends PureComponent {
       }
 
       const challenge = this.challengeActive
-      if (challenge && challenge.hint) {
-        if (challenge.hint({
+      if (challenge) {
+        const gameStatus = {
+          attemptSet,
           step: stepIdx,
           runsInChallenge,
           runsInStep,
+          successesInChallenge,
           score,
           hintableScores,
-          remedialScores }, this.codapActions)) {
+          remedialScores }
+
+        if (challenge.runFeedback) {
+          const feedback = challenge.runFeedback(gameStatus)
+          if (feedback) {
+            this.showDialogWithMessage(feedback)
+          }
+        }
+
+        if (challenge.hint && challenge.hint(gameStatus, this.codapActions)) {
           // reset hint counter
           hintableScores = 0
         }
@@ -286,6 +301,7 @@ export default class SimulationBase extends PureComponent {
         lastScore: score,
         runsInChallenge,
         runsInStep,
+        successesInChallenge,
         hintableScores,
         remedialScores
       })
@@ -615,7 +631,7 @@ export default class SimulationBase extends PureComponent {
     const { challengeIdx, stepIdx, lastScore } = this.state
     const challenge = challenges[challengeIdx]
     const nextChallenge = challenges[challengeIdx + 1]
-    let { attemptSet, runsInChallenge, runsInStep, remedialScores } = this.state
+    let { attemptSet, runsInChallenge, runsInStep, successesInChallenge, remedialScores } = this.state
     const progress = { stepIdx, runsInChallenge, runsInStep, score: lastScore, remedialScores }
     let newAttemptSet = attemptSet
     let newChallengeIdx = challengeIdx
@@ -626,6 +642,7 @@ export default class SimulationBase extends PureComponent {
       newAttemptSet = attemptSet + 1
       newStepIdx = 0
       runsInChallenge = 0
+      // note that we don't reset successesInChallenge -- it's cumulative
       remedialScores = 0
     } else if (challenge.loseStep && challenge.loseStep(progress)) {
       // one step back
@@ -651,6 +668,7 @@ export default class SimulationBase extends PureComponent {
 
     if (newChallengeIdx !== challengeIdx) {
       runsInChallenge = 0
+      successesInChallenge = 0
     }
     if ((newChallengeIdx !== challengeIdx) || (newStepIdx !== stepIdx)) {
       runsInStep = 0
@@ -662,6 +680,7 @@ export default class SimulationBase extends PureComponent {
       stepIdx: newStepIdx,
       runsInChallenge,
       runsInStep,
+      successesInChallenge,
       remedialScores,
       returnToActivity
     })
