@@ -1,14 +1,22 @@
 import React, { PureComponent } from 'react'
 import { Image } from 'react-konva'
 
-const CAR_WIDTH = 45
-const CAR_HEIGHT = 33
+export const CAR_IMAGE = 'fastcar'
+export const SUV_IMAGE = 'suv'
+export const TRUCK_IMAGE = 'truck'
+export const VEHICLE_IMAGES = [CAR_IMAGE, SUV_IMAGE, TRUCK_IMAGE]
+
+const CAR_WIDTH = 55
+const CAR_HEIGHT = 18.3
+const CAR_OFFSET_X = CAR_WIDTH * 0.55
+const CAR_OFFSET_Y = CAR_HEIGHT
 
 export default class VehicleImage extends PureComponent {
   constructor (props) {
     super(props)
     this.state = {
-      image: null
+      images: {},
+      imageCount: 0
     }
     this.onHover = this.onHover.bind(this)
     this.onHoverEnd = this.onHoverEnd.bind(this)
@@ -65,24 +73,36 @@ export default class VehicleImage extends PureComponent {
   }
 
   componentDidMount () {
-    const image = new window.Image()
-    image.src = './fastcar-arrow.png'
-    image.onload = () => {
-      this.setState({
-        image: image
-      })
-    }
+    const carIcons = [
+      './common/images/fastcar.png',
+      './common/images/suv.png',
+      './common/images/truck.png']
+    carIcons.forEach((url) => {
+      const match = /.*\/(.*)\.png$/.exec(url)
+      const name = match && match[1]
+      const image = new window.Image()
+      image.src = url
+      image.onload = () => {
+        const { images } = this.state
+        images[name] = image
+        this.setState({
+          images: images,
+          imageCount: Object.keys(images).length
+        })
+      }
+    })
   }
 
   render () {
-    const { image } = this.state
-    const { sx, sy, x, y, angle } = this.props
+    const { vehicle, sx, sy, x, y, angle } = this.props
+    const { images } = this.state
+    const vehicleImage = images[vehicle] || images[CAR_IMAGE]
     return (
       <Image
-        image={image}
+        image={vehicleImage}
         x={sx(x)} y={sy(y)} width={CAR_WIDTH} height={CAR_HEIGHT}
-        offsetX={0.5 * CAR_WIDTH} offsetY={CAR_HEIGHT * 0.7}
-        rotation={angle * 180 / Math.PI}
+        offsetX={CAR_OFFSET_X} offsetY={CAR_OFFSET_Y}
+        rotation={(angle || 0) * 180 / Math.PI}
         onMouseOver={this.onHover} onMouseOut={this.onHoverEnd}
         onMouseDown={this.onDragStart} onTouchStart={this.onDragStart}
       />

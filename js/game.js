@@ -33,16 +33,20 @@ export function calcStarsCount (score) {
 export const challenges = [
   {
     /** * Challenge 1 ***/
+    maxRunsInChallenge: 12,
     steps: 4,
     mass: 0.05,
-    surfaceFriction: 0.3,
+    surfaceFriction (attemptSet) {
+      return 0.3
+    },
     carDragging: true,
     disabledInputs: ['surfaceFriction'],
     message: `Make the car stop in the middle of the red zone.
               Place the car on the ramp by clicking on it and
               dragging it. As you get better, the red target will get smaller.`,
-    targetX (step) {
-      return 2.91
+    runsExhaustedMsg: "Oh no! You've used up all of your cars. Try again.",
+    targetX (attemptSet) {
+      return [2.91, 1.46, 3.67][attemptSet % 3]
     },
     targetWidth (step) {
       return 0.9 - step * 0.14
@@ -50,17 +54,21 @@ export const challenges = [
   },
   {
     /** * Challenge 2 ***/
+    maxRunsInChallenge: 12,
     steps: 4,
     mass: 0.05,
-    surfaceFriction: 0.3,
+    surfaceFriction (attemptSet) {
+      return [0.3, 0.2, 0.4][attemptSet % 3]
+    },
     carDragging: true,
     disabledInputs: ['surfaceFriction'],
     message: `Welcome to Challenge 2. The target will now move each time,
               so trial and error may not be a successful strategy here.`,
+    runsExhaustedMsg: "Oh no! You've used up all of your cars. The surface friction has now changed!",
     minTargetMove (runOffLength) {
       return runOffLength ? 0.3 * runOffLength : 0
     },
-    targetX (step) {
+    targetX (attemptSet) {
       return Math.random() * 3 + 1
     },
     targetWidth (step) {
@@ -83,50 +91,21 @@ export const challenges = [
   },
   {
     /** * Challenge 3 ***/
-    steps: 4,
-    mass: 0.05,
-    surfaceFriction: 0.2,
-    carDragging: true,
-    disabledInputs: ['surfaceFriction'],
-    message: `Welcome Challenge 3. The surface has been changed to have less friction. Can you still hit the target?`,
-    minTargetMove (runOffLength) {
-      return runOffLength ? 0.3 * runOffLength : 0
-    },
-    targetX (step) {
-      return Math.random() * 3 + 1
-    },
-    targetWidth (step) {
-      return 0.9 - step * 0.14
-    },
-    hint (state, codapActions) {
-      if (state.hintableScores >= 3) {
-        const url = codapActions.hasCreatedGraph ? CH3_MOVABLE_LINE_HINT_URL : CH2_GRAPH_HINT_URL
-        showWebView({
-          title: HINT_COMPONENT_TITLE,
-          width: 375,
-          height: 415,
-          URL: url
-        })
-        return true
-      }
-    },
-    loseStep (state) {
-      return state.remedialScores >= 3
-    }
-  },
-  {
-    /** * Challenge 4 ***/
+    maxRunsInChallenge: 12,
     steps: 4,
     mass: 0.05,
     carDragging: false,
-    initialCarX: -1,
+    initialCarX (attemptSet) {
+      return [-1, -1.5, -0.75][attemptSet % 3]
+    },
     disabledInputs: ['startDistanceUpRamp', 'startHeightAboveGround'],
     message: `Welcome to Challenge 4. Now you control the friction rather than the starting height.`,
     unallowedCarDragMsg: 'Remember you can only adjust surface friction in this challenge.',
+    runsExhaustedMsg: "Oh no! You've used up all of your cars. Now you have to start at a different position up the ramp.",
     minTargetMove (runOffLength) {
       return runOffLength ? 0.3 * runOffLength : 0
     },
-    targetX (step) {
+    targetX (attemptSet) {
       return Math.random() * 3 + 1
     },
     targetWidth (step) {
