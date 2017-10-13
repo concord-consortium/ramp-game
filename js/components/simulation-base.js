@@ -796,7 +796,7 @@ export default class SimulationBase extends PureComponent {
             Jump to:
             {
               challenges.map((challenge, idx) => {
-                return <a onClick={this.jumpToChallenge.bind(this, idx)}>Challenge { idx + 1}</a>
+                return <a key={idx} onClick={this.jumpToChallenge.bind(this, idx)}>Challenge { idx + 1}</a>
               })
             }
           </div>
