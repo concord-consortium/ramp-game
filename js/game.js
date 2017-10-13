@@ -7,11 +7,11 @@ export const GAME_INPUTS = ['surfaceFriction']
 export const GAME_OUTPUTS = ['startHeightAboveGround', 'startDistanceUpRamp', 'currentEndDistance']
 const HINT_COMPONENT_TITLE = 'Ramp Game Hints'
 const CH2_GRAPH_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange2-make-a-graph.html'
-const CH3_MOVABLE_LINE_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange3-movable-line.html'
-const CH4_GRAPH_CONFIG_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-axis-legend-selection.html'
-const CH4_AXIS_CONFIG_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-axis-selection.html'
-const CH4_LEGEND_CONFIG_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-legend-selection.html'
-const CH4_SELECTION_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-selection.html'
+const CH2_MOVABLE_LINE_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange3-movable-line.html'
+const CH3_GRAPH_CONFIG_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-axis-legend-selection.html'
+const CH3_AXIS_CONFIG_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-axis-selection.html'
+const CH3_LEGEND_CONFIG_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-legend-selection.html'
+const CH3_SELECTION_HINT_URL = 'https://inquiryspace-resources.concord.org/ramp-game-hints/challange4-selection.html'
 
 export function calcGameScore (carX, targetX, targetWidth) {
   const targetRadius = 0.5 * targetWidth
@@ -80,7 +80,7 @@ export const challenges = [
           title: HINT_COMPONENT_TITLE,
           width: 415,
           height: 560,
-          URL: CH2_GRAPH_HINT_URL
+          URL: codapActions.hasCreatedGraph ? CH2_MOVABLE_LINE_HINT_URL : CH2_GRAPH_HINT_URL
         })
         return true
       }
@@ -113,16 +113,16 @@ export const challenges = [
     },
     hint (state, codapActions) {
       if (state.hintableScores >= 3) {
-        let url = CH4_GRAPH_CONFIG_HINT_URL
+        let url = CH3_GRAPH_CONFIG_HINT_URL
         const hasConfiguredAxes = codapActions.hasPutFrictionOnAxis &&
                                     codapActions.hasPutEndDistanceOnAxis
         const hasConfiguredLegend = codapActions.hasPutChallengeOnLegend
         if (hasConfiguredAxes && hasConfiguredLegend) {
-          url = CH4_SELECTION_HINT_URL
+          url = CH3_SELECTION_HINT_URL
         } else if (hasConfiguredAxes && !hasConfiguredLegend) {
-          url = CH4_LEGEND_CONFIG_HINT_URL
+          url = CH3_LEGEND_CONFIG_HINT_URL
         } else if (!hasConfiguredAxes && hasConfiguredLegend) {
-          url = CH4_AXIS_CONFIG_HINT_URL
+          url = CH3_AXIS_CONFIG_HINT_URL
         }
         showWebView({
           title: HINT_COMPONENT_TITLE,
