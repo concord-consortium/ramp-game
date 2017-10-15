@@ -108,7 +108,7 @@ export const challenges = [
       return [-1, -1.5, -0.75][attemptSet % 3]
     },
     disabledInputs: ['startDistanceUpRamp', 'startHeightAboveGround'],
-    message: `Welcome to Challenge 4. Now you control the friction rather than the starting height.`,
+    message: `Welcome to Challenge 3. Now you control the friction rather than the starting height.`,
     unallowedCarDragMsg: 'Remember you can only adjust surface friction in this challenge.',
     runsExhaustedMsg: "Oh no! You've used up all of your cars. Now you have to start at a different position up the ramp.",
     minTargetMove (runOffLength) {
