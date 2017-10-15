@@ -237,7 +237,7 @@ export default class SimulationBase extends PureComponent {
         scaleY: getScaleY(this.pixelMeterRatio)
       })
     }
-    if (this.challengeActive && (
+    if (config.game && (
           attemptSet !== prevState.attemptSet ||
           challengeIdx !== prevState.challengeIdx ||
           stepIdx !== prevState.stepIdx ||
