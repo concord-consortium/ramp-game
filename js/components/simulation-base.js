@@ -179,6 +179,12 @@ export default class SimulationBase extends PureComponent {
           'dragMovableLine': this.dragMovableLineLogHandler,
           'toggleLSRL: show': this.showRegressionLineHandler
         })
+
+        this.codapHandler.retrieveRunNumber((runNumber) => {
+          if (runNumber) {
+            this.state.runNumber = runNumber + 1
+          }
+        })
       })
       .catch(msg => {
         console.log('CODAP not available')

@@ -90,6 +90,10 @@ if (DATA_SET_TEMPLATE.collections.find(col => col.name === 'RunDetails').attrs.l
   DETAILS_PRESENT = false
 }
 
+function responseCallback (response) {
+  // console.log(`Success: ${response && response.success}`)
+}
+
 function requestDataContext (name) {
   return codapInterface.sendRequest({
     action: 'get',
@@ -205,7 +209,7 @@ export default class CodapHandler {
       .then(iResult => {
         // If we did not find a data set, make one
         if (iResult && !iResult.success) {
-          // If not not found, create it.
+          // If not found, create it.
           return requestCreateDataSet(DATA_SET_NAME, DATA_SET_TEMPLATE)
         } else {
           // Else we are fine as we are, so return a resolved promise.
@@ -214,10 +218,41 @@ export default class CodapHandler {
       })
   }
 
+  // determine the run number of the last case in the collection.
+  retrieveRunNumber (runNumberCallback) {
+    const runsCollection = `dataContext[${DATA_SET_NAME}].collection[RunSummary]`
+    // determine the number of cases
+    codapInterface.sendRequest({
+      action: 'get',
+      resource: `${runsCollection}.caseCount`
+    }, responseCallback)
+    .then((response) => {
+      if (response.success) {
+        // request the last case
+        const caseCount = response.values
+        if (!caseCount) return
+        codapInterface.sendRequest({
+          action: 'get',
+          resource: `${runsCollection}.caseByIndex[${caseCount - 1}]`
+        }, responseCallback)
+        .then((response) => {
+          // retrieve the run number from the last case
+          if (response.success) {
+            const theCase = response.values['case']
+            const runNumber = theCase.values[config.others.run.codapDef.name]
+            if (runNumber) {
+              runNumberCallback(runNumber)
+            }
+          }
+        }, responseCallback)
+      }
+    })
+  }
+
   setCodapState (state) {
     Object.assign(this.state, state)
     // Notify CODAP that interactive is "dirty" and needs to be saved.
-    // This action isn't indented for it, but it seems there's no dedicated API for it.
+    // This action isn't intended for it, but it seems there's no dedicated API for it.
     return codapInterface.sendRequest({
       action: 'notify',
       resource: 'undoChangeNotice',
