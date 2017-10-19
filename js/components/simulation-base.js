@@ -182,7 +182,7 @@ export default class SimulationBase extends PureComponent {
 
         this.codapHandler.retrieveRunNumber((runNumber) => {
           if (runNumber) {
-            this.state.runNumber = runNumber + 1
+            this.setState({ runNumber: runNumber + 1 })
           }
         })
       })
