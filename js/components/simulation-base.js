@@ -6,9 +6,11 @@ import Ground, { GROUND_HEIGHT } from './ground'
 import InclineControl from './incline-control'
 import Controls from './controls'
 import ConfirmationDialog from './confirmation-dialog'
+import AttemptsStatus from './attempts-status'
 import ChallengeStatus from './challenge-status'
 import * as c from '../sim-constants'
-import VehicleImage from './vehicle-image'
+import ArrowImage from './arrow-image'
+import VehicleImage, { VEHICLE_IMAGES } from './vehicle-image'
 import StarRating from './star-rating'
 import RampDistanceLabel from './ramp-distance-label'
 import CarHeightLine from './car-height-line'
@@ -46,13 +48,14 @@ export default class SimulationBase extends PureComponent {
       inclineControl: true,
       disabledInputs: [],
 
+      attemptSet: 0,
       runNumber: 1,
       gravity: config.inputs.gravity.defaultValue,
       mass: config.inputs.mass.defaultValue,
       surfaceFriction: config.inputs.surfaceFriction.defaultValue,
       rampTopX: -2,
       rampTopY: 2,
-      initialCarX: -1,
+      initialCarX: -1.75,
       elapsedTime: 0,
 
       challengeIdx: config.game ? 0 : null,
@@ -62,6 +65,7 @@ export default class SimulationBase extends PureComponent {
 
       runsInChallenge: 0,
       runsInStep: 0,
+      successesInChallenge: 0,
       lastScore: null,
       hintableScores: 0,
       remedialScores: 0,
@@ -79,6 +83,7 @@ export default class SimulationBase extends PureComponent {
     }
 
     this.codapActions = {
+      hasSeenGraphHint: false,
       hasCreatedGraph: false,
       hasPutAttributeOnAxis: false,
       hasPutStartDistanceOnAxis: false,
@@ -174,6 +179,12 @@ export default class SimulationBase extends PureComponent {
           'dragMovableLine': this.dragMovableLineLogHandler,
           'toggleLSRL: show': this.showRegressionLineHandler
         })
+
+        this.codapHandler.retrieveRunNumber((runNumber) => {
+          if (runNumber) {
+            this.state.runNumber = runNumber + 1
+          }
+        })
       })
       .catch(msg => {
         console.log('CODAP not available')
@@ -212,7 +223,7 @@ export default class SimulationBase extends PureComponent {
   }
 
   componentDidUpdate (prevProps, prevState) {
-    const { isRunning, challengeIdx, stepIdx, elapsedTime } = this.state
+    const { isRunning, attemptSet, challengeIdx, stepIdx, runNumber, elapsedTime } = this.state
     const { width, height } = this.props
     if (isRunning && !prevState.isRunning) {
       if (isNaN(this.outputs.totalTime)) {
@@ -232,7 +243,11 @@ export default class SimulationBase extends PureComponent {
         scaleY: getScaleY(this.pixelMeterRatio)
       })
     }
-    if (challengeIdx !== prevState.challengeIdx || stepIdx !== prevState.stepIdx) {
+    if (config.game && (
+          attemptSet !== prevState.attemptSet ||
+          challengeIdx !== prevState.challengeIdx ||
+          stepIdx !== prevState.stepIdx ||
+          runNumber !== prevState.runNumber)) {
       this.setupChallenge(prevState.challengeIdx)
       this.saveGameState()
     }
@@ -244,12 +259,15 @@ export default class SimulationBase extends PureComponent {
   simulationFinished () {
     const logParams = {}
     if (this.challengeActive) {
-      const { stepIdx, targetX, targetWidth } = this.state
+      const { attemptSet, stepIdx, targetX, targetWidth } = this.state
       const { carX } = this.outputs
       const score = calcGameScore(carX, targetX, targetWidth)
-      let { runsInChallenge, runsInStep, hintableScores, remedialScores } = this.state
+      let { runsInChallenge, runsInStep, successesInChallenge, hintableScores, remedialScores } = this.state
       ++runsInChallenge
       ++runsInStep
+      if (score >= MIN_SCORE_TO_ADVANCE) {
+        ++successesInChallenge
+      }
       if (score < MIN_SCORE_TO_AVOID_REMEDIATION) {
         ++remedialScores
       } else {
@@ -262,14 +280,25 @@ export default class SimulationBase extends PureComponent {
       }
 
       const challenge = this.challengeActive
-      if (challenge && challenge.hint) {
-        if (challenge.hint({
+      if (challenge) {
+        const gameStatus = {
+          attemptSet,
           step: stepIdx,
           runsInChallenge,
           runsInStep,
+          successesInChallenge,
           score,
           hintableScores,
-          remedialScores }, this.codapActions)) {
+          remedialScores }
+
+        if (challenge.runFeedback) {
+          const feedback = challenge.runFeedback(gameStatus)
+          if (feedback) {
+            this.showDialogWithMessage(feedback)
+          }
+        }
+
+        if (challenge.hint && challenge.hint(gameStatus, this.codapActions)) {
           // reset hint counter
           hintableScores = 0
         }
@@ -277,7 +306,9 @@ export default class SimulationBase extends PureComponent {
 
       this.setState({
         lastScore: score,
+        runsInChallenge,
         runsInStep,
+        successesInChallenge,
         hintableScores,
         remedialScores
       })
@@ -568,7 +599,7 @@ export default class SimulationBase extends PureComponent {
   }
 
   setupChallenge (prevChallengeIdx) {
-    const { challengeIdx, stepIdx, initialCarX, surfaceFriction,
+    const { attemptSet, challengeIdx, stepIdx, initialCarX, surfaceFriction,
             targetX, returnToActivity } = this.state
     const challenge = challenges[challengeIdx]
     if (!challenge) {
@@ -580,7 +611,7 @@ export default class SimulationBase extends PureComponent {
       const minTargetMove = challenge.minTargetMove ? challenge.minTargetMove(c.runoffEndX) : 0
       let newTargetX, diffTargetX
       do {
-        newTargetX = challenge.targetX(stepIdx)
+        newTargetX = challenge.targetX(attemptSet)
         diffTargetX = targetX ? Math.abs(newTargetX - targetX) : 0
       } while (diffTargetX < minTargetMove)
       return newTargetX
@@ -593,10 +624,9 @@ export default class SimulationBase extends PureComponent {
       carDragging: challenge.carDragging,
       inclineControl: challenge.inclineControl,
       disabledInputs: challenge.disabledInputs,
-      surfaceFriction: challenge.surfaceFriction !== undefined ? challenge.surfaceFriction : surfaceFriction,
-      initialCarX: challenge.initialCarX !== undefined ? challenge.initialCarX : initialCarX,
-      lastScore: null,
-      remedialScores: 0
+      surfaceFriction: challenge.surfaceFriction ? challenge.surfaceFriction(attemptSet) : surfaceFriction,
+      initialCarX: challenge.initialCarX ? challenge.initialCarX(attemptSet) : initialCarX,
+      lastScore: null
     })
 
     if (challengeIdx !== prevChallengeIdx && !returnToActivity) {
@@ -608,12 +638,20 @@ export default class SimulationBase extends PureComponent {
     const { challengeIdx, stepIdx, lastScore } = this.state
     const challenge = challenges[challengeIdx]
     const nextChallenge = challenges[challengeIdx + 1]
-    let { runsInChallenge, runsInStep, remedialScores } = this.state
-    let newStepIdx = stepIdx
+    let { attemptSet, runsInChallenge, runsInStep, successesInChallenge, remedialScores } = this.state
+    const progress = { stepIdx, runsInChallenge, runsInStep, score: lastScore, remedialScores }
+    let newAttemptSet = attemptSet
     let newChallengeIdx = challengeIdx
+    let newStepIdx = stepIdx
     let returnToActivity = false
-    if (challenge.loseStep &&
-        challenge.loseStep({ stepIdx, runsInChallenge, runsInStep, score: lastScore, remedialScores })) {
+    if (challenge.maxRunsInChallenge && (runsInChallenge >= challenge.maxRunsInChallenge)) {
+      this.showDialogWithMessage(challenge.runsExhaustedMsg)
+      newAttemptSet = attemptSet + 1
+      newStepIdx = 0
+      runsInChallenge = 0
+      // note that we don't reset successesInChallenge -- it's cumulative
+      remedialScores = 0
+    } else if (challenge.loseStep && challenge.loseStep(progress)) {
       // one step back
       if (stepIdx > 0) {
         newStepIdx = stepIdx - 1
@@ -624,27 +662,32 @@ export default class SimulationBase extends PureComponent {
       newStepIdx = stepIdx + 1
     } else if (lastScore >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 === challenge.steps && nextChallenge) {
       // Next challenge.
+      newAttemptSet = 0
       newChallengeIdx = challengeIdx + 1
       newStepIdx = 0
       returnToActivity = config.returnToActivity
     } else if (lastScore >= MIN_SCORE_TO_ADVANCE && stepIdx + 1 === challenge.steps && !nextChallenge) {
       // End of the game.
+      newAttemptSet = 0
       newChallengeIdx = challengeIdx + 1
       newStepIdx = 0
     }
 
     if (newChallengeIdx !== challengeIdx) {
       runsInChallenge = 0
+      successesInChallenge = 0
     }
     if ((newChallengeIdx !== challengeIdx) || (newStepIdx !== stepIdx)) {
       runsInStep = 0
     }
 
     this.setState({
+      attemptSet: newAttemptSet,
       challengeIdx: newChallengeIdx,
       stepIdx: newStepIdx,
       runsInChallenge,
       runsInStep,
+      successesInChallenge,
       remedialScores,
       returnToActivity
     })
@@ -681,9 +724,16 @@ export default class SimulationBase extends PureComponent {
   }
 
   render () {
-    const { rampTopX, rampTopY, scaleX, scaleY, codapPresent, dataSaved, discardDataDialogActive, elapsedTime,
-      discardDataWarningEnabled, targetX, targetWidth, carDragging, inclineControl, challengeIdx, stepIdx, lastScore,
-      disabledInputs, genericDialogActive, genericDialogMessage, returnToActivity } = this.state
+    const { rampTopX, rampTopY, scaleX, scaleY, codapPresent, dataSaved, discardDataDialogActive,
+      elapsedTime, discardDataWarningEnabled, targetX, targetWidth, carDragging, inclineControl,
+      attemptSet, challengeIdx, stepIdx, lastScore, runsInChallenge, disabledInputs, genericDialogActive,
+      genericDialogMessage, returnToActivity } = this.state
+    const origin = { x: scaleX(0), y: scaleY(0) }
+    const marginX = Math.max((origin.x - 60) / 2, 28)
+    const carLoc = { x: Math.round(marginX), y: Math.round(origin.y + 27) }
+    const carCoords = { x: this.invScaleX(carLoc.x), y: this.invScaleY(carLoc.y) }
+    const textLoc = { x: carLoc.x + 35, y: Math.round(origin.y + 7) }
+    const vehicle = VEHICLE_IMAGES[attemptSet % VEHICLE_IMAGES.length]
     const { simulationFinished, carX, carY, rampAngle, carAngle, startDistanceUpRamp } = this.outputs
     const simulationStarted = elapsedTime > 0
     return (
@@ -711,11 +761,18 @@ export default class SimulationBase extends PureComponent {
               this.challengeActive &&
               <GameTarget sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} x={targetX} width={targetWidth} />
             }
-            <VehicleImage sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle} onUnallowedDrag={this.handleUnallowedCarDrag}
-              draggable={this.draggingActive && carDragging} onDrag={this.handleCarPosChange} />
+            <ArrowImage sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle} />
+            <VehicleImage vehicle={vehicle} sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle}
+              onUnallowedDrag={this.handleUnallowedCarDrag}
+              draggable={this.draggingActive && carDragging}
+              onDrag={this.handleCarPosChange} />
             {
               !simulationStarted && config.outputs.startHeightAboveGround.showInMainView &&
               <CarHeightLine sx={scaleX} sy={scaleY} carX={carX} carY={carY} />
+            }
+            {
+              this.challengeActive &&
+              <VehicleImage vehicle={vehicle} sx={scaleX} sy={scaleY} x={carCoords.x} y={carCoords.y} />
             }
           </Layer>
         </Stage>
@@ -730,6 +787,10 @@ export default class SimulationBase extends PureComponent {
         {
           this.challengeActive &&
           <ChallengeStatus challengeIdx={challengeIdx} stepIdx={stepIdx} />
+        }
+        {
+          this.challengeActive &&
+          <AttemptsStatus loc={textLoc} challengeIdx={challengeIdx} runsInChallenge={runsInChallenge} />
         }
         <ConfirmationDialog
           title='Discard data?'
@@ -753,7 +814,7 @@ export default class SimulationBase extends PureComponent {
         </Dialog>
         <Dialog
           theme={dialogTheme}
-          active={returnToActivity}
+          active={this.challengeActive && returnToActivity}
         >
           {/* Note that this dialog cannot be closed. It's intentional. User has to go back to LARA and go to the next page. */}
           Congratulations! You have completed Challenge { challengeIdx }.
@@ -762,7 +823,7 @@ export default class SimulationBase extends PureComponent {
             Jump to:
             {
               challenges.map((challenge, idx) => {
-                return <a onClick={this.jumpToChallenge.bind(this, idx)}>Challenge { idx + 1}</a>
+                return <a key={idx} onClick={this.jumpToChallenge.bind(this, idx)}>Challenge { idx + 1}</a>
               })
             }
           </div>
