@@ -1,6 +1,7 @@
 /* global codapInterface */
 import { calcOutputs } from './physics'
 import config from './config'
+import { calcStarsCount } from './game'
 import { forEach } from 'lodash'
 
 const TIMESTEP = 0.05
@@ -120,6 +121,9 @@ export function generateCodapData (options) {
     values[config.others.step.codapDef.name] = options.stepIdx + 1
   } else {
     values[config.others.run.codapDef.name] = options.runNumber
+  }
+  if (options.lastScore != null) {
+    outputs.score = calcStarsCount(options.lastScore)
   }
   Object.keys(config.inputs).forEach(inputName => {
     const input = config.inputs[inputName]

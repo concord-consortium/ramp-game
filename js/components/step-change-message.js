@@ -2,6 +2,9 @@ import React, { PureComponent } from 'react'
 import CSSTransition from 'react-transition-group/CSSTransition'
 import styles from '../../css/step-change-message.css'
 
+const MSG_TRANSITION_DURATION = 500
+const MSG_STABLE_DURATION = 2000
+
 const Fade = ({ classNames, duration, children, ...props }) => (
   <CSSTransition
     {...props}
@@ -28,7 +31,7 @@ export default class StepChangeMessage extends PureComponent {
     this.setState({ visibility: 'visible' })
   }
   handleEntered = (node) => {
-    setTimeout(() => { this.setState({ show: false }) }, 500)
+    setTimeout(() => { this.setState({ show: false }) }, MSG_TRANSITION_DURATION + MSG_STABLE_DURATION)
   }
   handleExited = (node) => {
     this.setState({ visibility: 'hidden' })
@@ -41,7 +44,7 @@ export default class StepChangeMessage extends PureComponent {
       exit: styles['stepChangeMessage-exit'],
       exitActive: styles['stepChangeMessage-exit-active']
     }
-    const durations = 600
+    const durations = MSG_TRANSITION_DURATION
     return (
       <div className={styles.stepChangeMessage} style={{ visibility: this.state.visibility }}>
         <Fade classNames={classNames} duration={durations} in={this.state.show}
