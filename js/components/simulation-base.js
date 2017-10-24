@@ -182,7 +182,7 @@ export default class SimulationBase extends PureComponent {
 
         this.codapHandler.retrieveRunNumber((runNumber) => {
           if (runNumber) {
-            this.state.runNumber = runNumber + 1
+            this.setState({ runNumber: runNumber + 1 })
           }
         })
       })
@@ -257,6 +257,7 @@ export default class SimulationBase extends PureComponent {
   }
 
   simulationFinished () {
+    let newState = {}
     const logParams = {}
     if (this.challengeActive) {
       const { attemptSet, stepIdx, targetX, targetWidth } = this.state
@@ -304,22 +305,26 @@ export default class SimulationBase extends PureComponent {
         }
       }
 
-      this.setState({
+      newState = {
         lastScore: score,
         runsInChallenge,
         runsInStep,
         successesInChallenge,
         hintableScores,
         remedialScores
-      })
+      }
+
       logParams.score = score
       logParams.starScore = calcStarsCount(score)
     }
     this.log('SimulationFinished', logParams)
 
-    if (config.autosave) {
-      this.saveData()
-    }
+    this.setState(newState, () => {
+      // use setState callback because saved data depends on completion
+      if (config.autosave) {
+        this.saveData()
+      }
+    })
   }
 
   get gameState () {

@@ -122,6 +122,13 @@ const config = {
       showInCodapInGameMode: true,
       showInMainView: false
     },
+    score: {
+      codapDef: {name: 'Score', unit: 'stars', type: 'categorical'},
+      codapType: 'summary',
+      showInCodap: true,
+      showInCodapInGameMode: true,
+      showInMainView: false
+    },
     carVelocity: {
       codapDef: {name: 'Velocity', unit: 'm/s', type: 'numeric', precision: 2},
       codapType: 'detail',

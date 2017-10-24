@@ -49,7 +49,7 @@ export const challenges = [
       return [2.91, 1.46, 3.67][attemptSet % 3]
     },
     targetWidth (step) {
-      return 0.9 - step * 0.14
+      return 0.7 - step * 0.14
     },
     runFeedback (state) {
       if (!state.attemptSet && (state.runsInChallenge === 1) && (state.score < MIN_SCORE_TO_ADVANCE)) {
@@ -80,7 +80,7 @@ export const challenges = [
       return Math.random() * 3 + 1
     },
     targetWidth (step) {
-      return 0.9 - step * 0.14
+      return 0.7 - step * 0.14
     },
     hint (state, codapActions) {
       if (state.hintableScores >= 3) {
@@ -118,7 +118,7 @@ export const challenges = [
       return Math.random() * 3 + 1
     },
     targetWidth (step) {
-      return 0.9 - step * 0.14
+      return 0.7 - step * 0.14
     },
     hint (state, codapActions) {
       if (state.hintableScores >= 3) {
