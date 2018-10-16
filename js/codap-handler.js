@@ -15,7 +15,8 @@ const CONFIG = {
     width: 650,
     height: 350
   },
-  version: '0.1'
+  version: '0.1',
+  preventDataContextReorg: false
 }
 
 const DATA_SET_TEMPLATE = {
