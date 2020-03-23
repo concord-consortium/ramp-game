@@ -4,7 +4,8 @@ import { Image } from 'react-konva'
 export const CAR_IMAGE = 'fastcar'
 export const SUV_IMAGE = 'suv'
 export const TRUCK_IMAGE = 'truck'
-export const VEHICLE_IMAGES = [CAR_IMAGE, SUV_IMAGE, TRUCK_IMAGE]
+export const BIKE_IMAGE = 'bike'
+export const VEHICLE_IMAGES = [CAR_IMAGE, SUV_IMAGE, TRUCK_IMAGE, BIKE_IMAGE]
 
 const CAR_WIDTH = 55
 const CAR_HEIGHT = 18.3
@@ -73,10 +74,7 @@ export default class VehicleImage extends PureComponent {
   }
 
   componentDidMount () {
-    const carIcons = [
-      './common/images/fastcar.png',
-      './common/images/suv.png',
-      './common/images/truck.png']
+    const carIcons = VEHICLE_IMAGES.map(name => `./common/images/${name}.png`)
     carIcons.forEach((url) => {
       const match = /.*\/(.*)\.png$/.exec(url)
       const name = match && match[1]

@@ -4,6 +4,7 @@ import Checkbox from 'react-toolbox/lib/checkbox'
 import Input from 'react-toolbox/lib/input'
 import config from '../config'
 import authoringStyles from '../../css/authoring.less'
+import { VEHICLE_IMAGES, CAR_IMAGE } from './vehicle-image'
 
 function getInputsData () {
   const data = []
@@ -39,7 +40,8 @@ function getOutputsData () {
 const BASIC_OPTIONS = [
   {name: 'game', dispName: 'Game'},
   {name: 'autosave', dispName: 'Autosave'},
-  {name: 'returnToActivity', dispName: 'Return to activity dialog'}
+  {name: 'returnToActivity', dispName: 'Return to activity dialog'},
+  {name: 'specifyVehicle', dispName: 'Use specific vehical for all attempts'}
 ]
 
 export default class Authoring extends PureComponent {
@@ -56,7 +58,7 @@ export default class Authoring extends PureComponent {
   }
 
   get finalUrl () {
-    const { inputs, outputs } = this.state
+    const { inputs, outputs, vehicle } = this.state
     let url = window.location.href.slice()
     url = url.replace('?authoring', '')
 
@@ -70,8 +72,10 @@ export default class Authoring extends PureComponent {
         }
       }
     })
-
-    const props = ['defaultValue', 'showInCodap', 'showInCodapInGameMode', 'showInMainView']
+    if (vehicle) {
+      url += `&vehicle=${vehicle}`
+    }
+    const props = ['editable', 'defaultValue', 'showInCodap', 'showInCodapInGameMode', 'showInMainView']
     inputs.forEach(item => {
       props.forEach(prop => {
         if (item[prop] !== config.inputs[item.name][prop]) {
@@ -115,6 +119,7 @@ export default class Authoring extends PureComponent {
   toggleNestedValue (type, idx, name) {
     const newData = this.state[type].slice()
     newData[idx] = Object.assign({}, newData[idx], {[name]: !newData[idx][name]})
+    console.log(newData[idx])
     this.setState({
       [type]: newData
     })
@@ -128,6 +133,26 @@ export default class Authoring extends PureComponent {
     })
   }
 
+  renderVehicleSelector () {
+    const vehicle = this.state.vehicle || CAR_IMAGE
+    const setVehicle = (e) => this.setState({vehicle: e.target.value})
+    if (!this.state.specifyVehicle) {
+      return null
+    }
+    return (
+      <div className={authoringStyles.inline}>
+        Always use this vehicle image:
+        <select name='vehicle' id='vehicle' value={vehicle} onChange={setVehicle}>
+          {
+            VEHICLE_IMAGES.map((v) => {
+              return <option value={v}>{v}</option>
+            })
+          }
+        </select>
+      </div>
+    )
+  }
+
   render () {
     const { inputs, outputs, iframeSrc } = this.state
     const finalUrl = this.finalUrl
@@ -136,9 +161,17 @@ export default class Authoring extends PureComponent {
         <h1>Customize simulation configuration, inputs and outputs</h1>
         {
           BASIC_OPTIONS.map(opt => {
-            return <div key={opt.name}><Checkbox className={authoringStyles.inline} checked={this.state[opt.name]} onChange={this.toggleValue.bind(this, opt.name)} /> { opt.dispName }</div>
+            return (
+              <div key={opt.name}>
+                <Checkbox className={authoringStyles.inline}
+                  checked={this.state[opt.name]}
+                  onChange={this.toggleValue.bind(this, opt.name)}
+                /> { opt.dispName }
+              </div>
+            )
           })
         }
+        { this.renderVehicleSelector() }
         <h3>Inputs</h3>
         <Table selectable={false}>
           <TableHead>
@@ -171,6 +204,7 @@ export default class Authoring extends PureComponent {
         <Table selectable={false}>
           <TableHead>
             <TableCell>Name</TableCell>
+            <TableCell>Show slider</TableCell>
             <TableCell>Show in main view</TableCell>
             <TableCell>Show in CODAP</TableCell>
             <TableCell>Show in CODAP in game mode</TableCell>
@@ -178,6 +212,9 @@ export default class Authoring extends PureComponent {
           {outputs.map((item, idx) => (
             <TableRow key={idx}>
               <TableCell>{item.displayName}</TableCell>
+              <TableCell>
+                <Checkbox checked={item.editable} onChange={this.toggleNestedValue.bind(this, 'outputs', idx, 'editable')} />
+              </TableCell>
               <TableCell>
                 <Checkbox checked={item.showInMainView} onChange={this.toggleNestedValue.bind(this, 'outputs', idx, 'showInMainView')} />
               </TableCell>

@@ -1,12 +1,14 @@
 import { getURLParam } from './utils'
 import * as c from './sim-constants'
-
+import { CAR_IMAGE } from './components/vehicle-image'
 const config = {
   game: false,
   // Save data to CODAP automatically.
   autosave: true,
   // Sends user back to activity after each challenge.
   returnToActivity: true,
+  specifyVehicle: false,
+  vehicle: CAR_IMAGE,
   others: {
     challenge: {
       codapDef: {name: 'Challenge', type: 'categorical'},
@@ -162,6 +164,8 @@ function processUrl (type) {
     } else if (urlValue != null && !isNaN(urlValue)) {
       // !isNaN(string) means isNumber(string).
       return parseFloat(urlValue)
+    } else if (typeof urlValue === 'string') {
+      return urlValue
     }
     return null
   }

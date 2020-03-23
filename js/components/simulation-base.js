@@ -738,7 +738,9 @@ export default class SimulationBase extends PureComponent {
     const carLoc = { x: Math.round(marginX), y: Math.round(origin.y + 27) }
     const carCoords = { x: this.invScaleX(carLoc.x), y: this.invScaleY(carLoc.y) }
     const textLoc = { x: carLoc.x + 35, y: Math.round(origin.y + 7) }
-    const vehicle = VEHICLE_IMAGES[attemptSet % VEHICLE_IMAGES.length]
+    const vehicle = config.specifyVehicle
+      ? config.vehicle
+      : VEHICLE_IMAGES[attemptSet % VEHICLE_IMAGES.length]
     const { simulationFinished, carX, carY, rampAngle, carAngle, startDistanceUpRamp } = this.outputs
     const simulationStarted = elapsedTime > 0
     return (
