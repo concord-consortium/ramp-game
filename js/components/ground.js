@@ -25,12 +25,12 @@ export default class Ground extends PureComponent {
   }
 
   render () {
-    const { sx, sy, pixelMeterRatio } = this.props
+    const { sx, sy, pixelMeterRatio, hideMarks } = this.props
     const width = (c.runoffEndX - c.rampStartX) * pixelMeterRatio
     return (
       <Group>
         <Rect x={sx(c.rampStartX)} y={sy(c.rampBottomY)} width={width} height={GROUND_HEIGHT} fill={'green'} stroke={'black'} strokeWidth={1} />
-        { this.renderMarks() }
+        { hideMarks ? null : this.renderMarks() }
       </Group>
     )
   }

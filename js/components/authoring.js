@@ -41,6 +41,8 @@ const BASIC_OPTIONS = [
   {name: 'game', dispName: 'Game'},
   {name: 'autosave', dispName: 'Autosave'},
   {name: 'returnToActivity', dispName: 'Return to activity dialog'},
+  {name: 'hideMarks', dispName: 'Hide distance markers on ground'},
+  {name: 'hideArrow', dispName: 'Hide red arrow behind vehicle'},
   {name: 'specifyVehicle', dispName: 'Use specific vehical for all attempts'}
 ]
 
@@ -50,7 +52,8 @@ export default class Authoring extends PureComponent {
     this.state = {
       inputs: getInputsData(),
       outputs: getOutputsData(),
-      iframeSrc: ''
+      iframeSrc: '',
+      vehicleHeight: config.vehicleHeight
     }
     BASIC_OPTIONS.forEach(opt => {
       this.state[opt.name] = config[opt.name]
@@ -58,7 +61,7 @@ export default class Authoring extends PureComponent {
   }
 
   get finalUrl () {
-    const { inputs, outputs, vehicle } = this.state
+    const { inputs, outputs, vehicle, vehicleHeight } = this.state
     let url = window.location.href.slice()
     url = url.replace('?authoring', '')
 
@@ -74,6 +77,9 @@ export default class Authoring extends PureComponent {
     })
     if (vehicle) {
       url += `&vehicle=${vehicle}`
+    }
+    if (vehicleHeight) {
+      url += `&vehicleHeight=${vehicleHeight}`
     }
     const props = ['editable', 'defaultValue', 'showInCodap', 'showInCodapInGameMode', 'showInMainView']
     inputs.forEach(item => {
@@ -133,6 +139,24 @@ export default class Authoring extends PureComponent {
     })
   }
 
+  setVehicleHeight = (value) => {
+    this.setState({vehicleHeight: value})
+  }
+
+  renderHeightOption () {
+    const { vehicleHeight } = this.state
+    return (
+      <div className={authoringStyles.flexInput}>
+        <div>Vehicle Image Height:</div>
+        <Input
+          type='text'
+          className={authoringStyles.smallInput}
+          value={vehicleHeight}
+          onChange={this.setVehicleHeight} />
+      </div>
+    )
+  }
+
   renderVehicleSelector () {
     const vehicle = this.state.vehicle || CAR_IMAGE
     const setVehicle = (e) => this.setState({vehicle: e.target.value})
@@ -159,6 +183,9 @@ export default class Authoring extends PureComponent {
     return (
       <div className={authoringStyles.authoring} >
         <h1>Customize simulation configuration, inputs and outputs</h1>
+        {
+          this.renderHeightOption()
+        }
         {
           BASIC_OPTIONS.map(opt => {
             return (

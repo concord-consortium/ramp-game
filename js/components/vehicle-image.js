@@ -7,10 +7,7 @@ export const TRUCK_IMAGE = 'truck'
 export const BIKE_IMAGE = 'bike'
 export const VEHICLE_IMAGES = [CAR_IMAGE, SUV_IMAGE, TRUCK_IMAGE, BIKE_IMAGE]
 
-const CAR_WIDTH = 55
-const CAR_HEIGHT = 18.3
-const CAR_OFFSET_X = CAR_WIDTH * 0.55
-const CAR_OFFSET_Y = CAR_HEIGHT
+export const DEFAULT_VEHICLE_HEIGHT = 19
 
 export default class VehicleImage extends PureComponent {
   constructor (props) {
@@ -92,14 +89,23 @@ export default class VehicleImage extends PureComponent {
   }
 
   render () {
-    const { vehicle, sx, sy, x, y, angle } = this.props
+    const { vehicle, sx, sy, x, y, angle, maxHeight } = this.props
     const { images } = this.state
     const vehicleImage = images[vehicle] || images[CAR_IMAGE]
+
+    // Images might not have loaded yet, if so short-circuit the render pass
+    if (!(vehicleImage && vehicleImage.width)) { return null }
+
+    const height = maxHeight || DEFAULT_VEHICLE_HEIGHT
+    const heightRatio = height / vehicleImage.height
+    const width = vehicleImage.width * heightRatio
+    const offsetX = width / 2
+    const offsetY = height
     return (
       <Image
         image={vehicleImage}
-        x={sx(x)} y={sy(y)} width={CAR_WIDTH} height={CAR_HEIGHT}
-        offsetX={CAR_OFFSET_X} offsetY={CAR_OFFSET_Y}
+        x={sx(x)} y={sy(y)} width={width} height={height}
+        offsetX={offsetX} offsetY={offsetY}
         rotation={(angle || 0) * 180 / Math.PI}
         onMouseOver={this.onHover} onMouseOut={this.onHoverEnd}
         onMouseDown={this.onDragStart} onTouchStart={this.onDragStart}

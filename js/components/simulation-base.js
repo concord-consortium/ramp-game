@@ -741,6 +741,7 @@ export default class SimulationBase extends PureComponent {
     const vehicle = config.specifyVehicle
       ? config.vehicle
       : VEHICLE_IMAGES[attemptSet % VEHICLE_IMAGES.length]
+    const { hideMarks, hideArrow, vehicleHeight } = config
     const { simulationFinished, carX, carY, rampAngle, carAngle, startDistanceUpRamp } = this.outputs
     const simulationStarted = elapsedTime > 0
     return (
@@ -758,7 +759,7 @@ export default class SimulationBase extends PureComponent {
         <Stage width={this.simWidth} height={this.simHeight}>
           <Layer>
             <Ramp sx={scaleX} sy={scaleY} pointX={rampTopX} pointY={rampTopY} angle={rampAngle} />
-            <Ground sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} />
+            <Ground sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} hideMarks={hideMarks} />
             {
               inclineControl &&
               <InclineControl x={scaleX(rampTopX)} y={scaleY(rampTopY)}
@@ -767,9 +768,13 @@ export default class SimulationBase extends PureComponent {
             {
               this.challengeActive &&
               <GameTarget sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} x={targetX} width={targetWidth} />
+            }{
+              hideArrow
+                ? null
+                : <ArrowImage sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle} />
             }
-            <ArrowImage sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle} />
             <VehicleImage vehicle={vehicle} sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle}
+              maxHeight={vehicleHeight}
               onUnallowedDrag={this.handleUnallowedCarDrag}
               draggable={this.draggingActive && carDragging}
               onDrag={this.handleCarPosChange} />
@@ -779,7 +784,9 @@ export default class SimulationBase extends PureComponent {
             }
             {
               this.challengeActive &&
-              <VehicleImage vehicle={vehicle} sx={scaleX} sy={scaleY} x={carCoords.x} y={carCoords.y} />
+              <VehicleImage vehicle={vehicle} sx={scaleX} sy={scaleY} x={carCoords.x} y={carCoords.y}
+                maxHeight={vehicleHeight}
+              />
             }
           </Layer>
         </Stage>

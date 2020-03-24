@@ -1,14 +1,24 @@
 import { getURLParam } from './utils'
 import * as c from './sim-constants'
-import { CAR_IMAGE } from './components/vehicle-image'
+import { CAR_IMAGE, DEFAULT_VEHICLE_HEIGHT } from './components/vehicle-image'
 const config = {
   game: false,
   // Save data to CODAP automatically.
   autosave: true,
-  // Sends user back to activity after each challenge.
+  // Sends student back to activity after each challenge.
   returnToActivity: true,
+  // Student can directly modify the slope of the ramp
+  allowAngleAdjustment: true,
+  // Arrow which appears behind vehicle to indicate distance markers
+  hideArrow: false,
+  // Distance markers on the ground
+  hideMarks: false,
+  // If we don't specify a vehicle image, they are cycled on each attempt.
   specifyVehicle: false,
+  // Specify a specific image to use for all attempts
   vehicle: CAR_IMAGE,
+  // The height of the vehicle image
+  vehicleHeight: DEFAULT_VEHICLE_HEIGHT,
   others: {
     challenge: {
       codapDef: {name: 'Challenge', type: 'categorical'},
