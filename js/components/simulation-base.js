@@ -227,7 +227,7 @@ export default class SimulationBase extends PureComponent {
     const { width, height } = this.props
     if (isRunning && !prevState.isRunning) {
       if (isNaN(this.outputs.totalTime)) {
-        this.showDialogWithMessage("Ramp friction is too big, car won't start moving")
+        this.showDialogWithMessage("Ramp friction is too big, vehicle won't start moving")
         this.setState({
           isRunning: false
         })
