@@ -15,8 +15,6 @@ export default class RampDistanceLabel extends PureComponent {
   render () {
     const { x, y, angle, distance } = this.props
     const offset = getOffset(angle)
-    // console.log(offset)
-    // const offset = {x: 0, y: 0}
     return (
       <span className={styles.label} style={{
         left: x + offset.x,

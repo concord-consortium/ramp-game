@@ -126,7 +126,6 @@ export default class Authoring extends PureComponent {
   toggleNestedValue (type, idx, name) {
     const newData = this.state[type].slice()
     newData[idx] = Object.assign({}, newData[idx], {[name]: !newData[idx][name]})
-    console.log(newData[idx])
     this.setState({
       [type]: newData
     })
