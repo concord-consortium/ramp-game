@@ -3,7 +3,7 @@ var CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   entry: {
-    'app': './js/index.js'
+    app: './js/index.js'
   },
   output: {
     path: path.join(__dirname, 'dist'),
@@ -69,7 +69,7 @@ module.exports = {
   },
   plugins: [
     new CopyWebpackPlugin([
-      {from: 'public'}
+      { from: 'public' }
     ])
   ]
 }

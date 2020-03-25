@@ -16,9 +16,9 @@ export function calcDistanceUpRamp (carX, rampAngle) {
 }
 
 export function calcRampAcceleration (gravity, surfaceFriction, rampAngle) {
-  let parallelAcceleration = gravity * (Math.sin(rampAngle))
-  let normalAcceleration = gravity * (Math.cos(rampAngle))
-  let rampAcceleration = parallelAcceleration - normalAcceleration * surfaceFriction
+  const parallelAcceleration = gravity * (Math.sin(rampAngle))
+  const normalAcceleration = gravity * (Math.cos(rampAngle))
+  const rampAcceleration = parallelAcceleration - normalAcceleration * surfaceFriction
   if (rampAcceleration < 0) {
     return 0
   }

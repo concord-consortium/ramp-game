@@ -38,13 +38,13 @@ function getOutputsData () {
 }
 
 const BASIC_OPTIONS = [
-  {name: 'game', dispName: 'Game'},
-  {name: 'autosave', dispName: 'Autosave'},
-  {name: 'returnToActivity', dispName: 'Return to activity dialog'},
-  {name: 'allowAngleAdjustment', dispName: 'Allow student to direcetly change ramp incline'},
-  {name: 'hideMarks', dispName: 'Hide distance markers on ground'},
-  {name: 'hideArrow', dispName: 'Hide red arrow behind vehicle'},
-  {name: 'specifyVehicle', dispName: 'Use specific vehical for all attempts'}
+  { name: 'game', dispName: 'Game' },
+  { name: 'autosave', dispName: 'Autosave' },
+  { name: 'returnToActivity', dispName: 'Return to activity dialog' },
+  { name: 'allowAngleAdjustment', dispName: 'Allow student to direcetly change ramp incline' },
+  { name: 'hideMarks', dispName: 'Hide distance markers on ground' },
+  { name: 'hideArrow', dispName: 'Hide red arrow behind vehicle' },
+  { name: 'specifyVehicle', dispName: 'Use specific vehical for all attempts' }
 ]
 
 export default class Authoring extends PureComponent {
@@ -125,7 +125,7 @@ export default class Authoring extends PureComponent {
 
   toggleNestedValue (type, idx, name) {
     const newData = this.state[type].slice()
-    newData[idx] = Object.assign({}, newData[idx], {[name]: !newData[idx][name]})
+    newData[idx] = Object.assign({}, newData[idx], { [name]: !newData[idx][name] })
     this.setState({
       [type]: newData
     })
@@ -133,14 +133,14 @@ export default class Authoring extends PureComponent {
 
   setInputDefValue (idx, value) {
     const newData = this.state.inputs.slice()
-    newData[idx] = Object.assign({}, newData[idx], {defaultValue: value})
+    newData[idx] = Object.assign({}, newData[idx], { defaultValue: value })
     this.setState({
       inputs: newData
     })
   }
 
   setVehicleHeight = (value) => {
-    this.setState({vehicleHeight: value})
+    this.setState({ vehicleHeight: value })
   }
 
   renderHeightOption () {
@@ -159,7 +159,7 @@ export default class Authoring extends PureComponent {
 
   renderVehicleSelector () {
     const vehicle = this.state.vehicle || CAR_IMAGE
-    const setVehicle = (e) => this.setState({vehicle: e.target.value})
+    const setVehicle = (e) => this.setState({ vehicle: e.target.value })
     if (!this.state.specifyVehicle) {
       return null
     }

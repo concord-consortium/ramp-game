@@ -17,7 +17,7 @@ import CarHeightLine from './car-height-line'
 import GameTarget from './game-target'
 import { calcOutputs, calcRampLength, calcRampAngle } from '../physics'
 import { calcGameScore, calcStarsCount, challenges, MIN_SCORE_TO_ADVANCE,
-        MIN_SCORE_TO_AVOID_HINTS, MIN_SCORE_TO_AVOID_REMEDIATION } from '../game'
+  MIN_SCORE_TO_AVOID_HINTS, MIN_SCORE_TO_AVOID_REMEDIATION } from '../game'
 import CodapHandler, { generateCodapData } from '../codap-handler'
 import config from '../config'
 import dialogTheme from '../../css/dialog-theme.less'
@@ -169,14 +169,14 @@ export default class SimulationBase extends PureComponent {
         }
 
         this.codapHandler.registerEventHandlers({
-          'create': this.createComponentHandler,
-          'attributeChange': this.axisAttributeChangeHandler
+          create: this.createComponentHandler,
+          attributeChange: this.axisAttributeChangeHandler
         })
 
         this.codapHandler.registerLogHandlers({
-          'legendAttributeChange': this.legendAttributeLogHandler,
+          legendAttributeChange: this.legendAttributeLogHandler,
           'toggleMovableLine: show': this.showMovableLineLogHandler,
-          'dragMovableLine': this.dragMovableLineLogHandler,
+          dragMovableLine: this.dragMovableLineLogHandler,
           'toggleLSRL: show': this.showRegressionLineHandler
         })
 
@@ -244,7 +244,7 @@ export default class SimulationBase extends PureComponent {
       })
     }
     if (config.game && (
-          attemptSet !== prevState.attemptSet ||
+      attemptSet !== prevState.attemptSet ||
           challengeIdx !== prevState.challengeIdx ||
           stepIdx !== prevState.stepIdx ||
           runNumber !== prevState.runNumber)) {
@@ -605,7 +605,7 @@ export default class SimulationBase extends PureComponent {
 
   setupChallenge (prevChallengeIdx) {
     const { attemptSet, challengeIdx, stepIdx, initialCarX, surfaceFriction,
-            targetX, returnToActivity } = this.state
+      targetX, returnToActivity } = this.state
     const challenge = challenges[challengeIdx]
     if (!challenge) {
       this.gameCompleted()
@@ -820,7 +820,7 @@ export default class SimulationBase extends PureComponent {
         <Dialog
           theme={dialogTheme}
           active={genericDialogActive}
-          actions={[ { label: 'OK', onClick: this.hideGenericDialog } ]}
+          actions={[{ label: 'OK', onClick: this.hideGenericDialog }]}
           onEscKeyDown={this.hideGenericDialog}
           onOverlayClick={this.hideGenericDialog}
         >

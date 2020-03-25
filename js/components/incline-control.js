@@ -17,7 +17,7 @@ export default class InclineControl extends PureComponent {
   onHover () {
     const { draggable } = this.props
     if (draggable) {
-      this.setState({active: true})
+      this.setState({ active: true })
       document.body.style.cursor = 'pointer'
     }
   }
@@ -26,14 +26,14 @@ export default class InclineControl extends PureComponent {
     const { draggable } = this.props
     if (draggable) {
       document.body.style.cursor = 'auto'
-      this.setState({active: false})
+      this.setState({ active: false })
     }
   }
 
   onDragStart () {
     const { draggable } = this.props
     if (draggable) {
-      this.setState({active: true})
+      this.setState({ active: true })
       document.addEventListener('mousemove', this.onDrag)
       document.addEventListener('mouseup', this.onDragEnd)
       document.addEventListener('touchmove', this.onDrag)
@@ -44,7 +44,7 @@ export default class InclineControl extends PureComponent {
   onDragEnd () {
     const { draggable } = this.props
     if (draggable) {
-      this.setState({active: false})
+      this.setState({ active: false })
       document.removeEventListener('mousemove', this.onDrag)
       document.removeEventListener('mouseup', this.onDragEnd)
       document.removeEventListener('touchmove', this.onDrag)
@@ -60,8 +60,8 @@ export default class InclineControl extends PureComponent {
   }
 
   render () {
-    const {x, y} = this.props
-    const {active} = this.state
+    const { x, y } = this.props
+    const { active } = this.state
     const radius = active ? 15 : 10
     const fill = active ? '#ddd' : '#fff'
     return (

@@ -17,7 +17,7 @@ export default class Ground extends PureComponent {
     for (let i = 0; i < MARKS_COUNT; i++) {
       const x = c.rampEndX + step * i
       const xPos = sx(x)
-      let points = [xPos, yPos, xPos, yPos + markHeight]
+      const points = [xPos, yPos, xPos, yPos + markHeight]
       lineMarks.push(<Line points={points} closed={false} stroke={'white'} strokeWidth={1} key={'mark' + x} />)
       lineMarks.push(<Text x={xPos - 9} y={yPos + markHeight * 1.2} fontFamily={'Arial'} fontSize={14} text={`${x.toFixed(1)} m`} fill={'white'} key={'text' + x} />)
     }
