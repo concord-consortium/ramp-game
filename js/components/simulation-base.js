@@ -741,7 +741,7 @@ export default class SimulationBase extends PureComponent {
     const vehicle = config.specifyVehicle
       ? config.vehicle
       : VEHICLE_IMAGES[attemptSet % VEHICLE_IMAGES.length]
-    const { hideMarks, hideArrow, vehicleHeight } = config
+    const { hideMarks, hideArrow, vehicleHeight, allowAngleAdjustment } = config
     const { simulationFinished, carX, carY, rampAngle, carAngle, startDistanceUpRamp } = this.outputs
     const simulationStarted = elapsedTime > 0
     return (
@@ -761,7 +761,7 @@ export default class SimulationBase extends PureComponent {
             <Ramp sx={scaleX} sy={scaleY} pointX={rampTopX} pointY={rampTopY} angle={rampAngle} />
             <Ground sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} hideMarks={hideMarks} />
             {
-              inclineControl &&
+              allowAngleAdjustment && inclineControl &&
               <InclineControl x={scaleX(rampTopX)} y={scaleY(rampTopY)}
                 draggable={this.draggingActive} onDrag={this.handleInclineChange} />
             }
