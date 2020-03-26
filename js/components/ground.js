@@ -30,7 +30,7 @@ export default class Ground extends PureComponent {
     return (
       <Group>
         <Rect x={sx(c.rampStartX)} y={sy(c.rampBottomY)} width={width} height={GROUND_HEIGHT} fill={'green'} stroke={'black'} strokeWidth={1} />
-        { hideMarks ? null : this.renderMarks() }
+        { !hideMarks && this.renderMarks() }
       </Group>
     )
   }
