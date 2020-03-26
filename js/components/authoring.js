@@ -44,7 +44,7 @@ const BASIC_OPTIONS = [
   { name: 'allowAngleAdjustment', dispName: 'Allow student to direcetly change ramp incline' },
   { name: 'hideMarks', dispName: 'Hide distance markers on ground' },
   { name: 'hideArrow', dispName: 'Hide red arrow behind vehicle' },
-  { name: 'specifyVehicle', dispName: 'Use specific vehical for all attempts' }
+  { name: 'specifyVehicle', dispName: 'Use specific vehicle for all attempts' }
 ]
 
 export default class Authoring extends PureComponent {
