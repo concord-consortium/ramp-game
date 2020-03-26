@@ -39,5 +39,5 @@ and open http://localhost:8080/ or http://localhost:8080/webpack-dev-server/ (au
 ## Deployment
 
 This project automatically deploys branches using a travis build script.
-The branches are deployed to http://ramp-game.concord.org/branch/<banch>/index.html
+The branches are deployed to http://ramp-game.concord.org/branch/<branch-name>/index.html
 see `.travis.yml` and `s3_deploy.sh` for more info.
