@@ -17,7 +17,7 @@ export default class Ground extends PureComponent {
     for (let i = 0; i < MARKS_COUNT; i++) {
       const x = c.rampEndX + step * i
       const xPos = sx(x)
-      let points = [xPos, yPos, xPos, yPos + markHeight]
+      const points = [xPos, yPos, xPos, yPos + markHeight]
       lineMarks.push(<Line points={points} closed={false} stroke={'white'} strokeWidth={1} key={'mark' + x} />)
       lineMarks.push(<Text x={xPos - 9} y={yPos + markHeight * 1.2} fontFamily={'Arial'} fontSize={14} text={`${x.toFixed(1)} m`} fill={'white'} key={'text' + x} />)
     }
@@ -25,12 +25,12 @@ export default class Ground extends PureComponent {
   }
 
   render () {
-    const { sx, sy, pixelMeterRatio } = this.props
+    const { sx, sy, pixelMeterRatio, hideMarks } = this.props
     const width = (c.runoffEndX - c.rampStartX) * pixelMeterRatio
     return (
       <Group>
         <Rect x={sx(c.rampStartX)} y={sy(c.rampBottomY)} width={width} height={GROUND_HEIGHT} fill={'green'} stroke={'black'} strokeWidth={1} />
-        { this.renderMarks() }
+        { !hideMarks && this.renderMarks() }
       </Group>
     )
   }

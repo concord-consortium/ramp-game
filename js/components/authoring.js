@@ -4,6 +4,7 @@ import Checkbox from 'react-toolbox/lib/checkbox'
 import Input from 'react-toolbox/lib/input'
 import config from '../config'
 import authoringStyles from '../../css/authoring.less'
+import { VEHICLE_IMAGES, CAR_IMAGE } from './vehicle-image'
 
 function getInputsData () {
   const data = []
@@ -37,9 +38,13 @@ function getOutputsData () {
 }
 
 const BASIC_OPTIONS = [
-  {name: 'game', dispName: 'Game'},
-  {name: 'autosave', dispName: 'Autosave'},
-  {name: 'returnToActivity', dispName: 'Return to activity dialog'}
+  { name: 'game', dispName: 'Game' },
+  { name: 'autosave', dispName: 'Autosave' },
+  { name: 'returnToActivity', dispName: 'Return to activity dialog' },
+  { name: 'allowAngleAdjustment', dispName: 'Allow student to direcetly change ramp incline' },
+  { name: 'hideMarks', dispName: 'Hide distance markers on ground' },
+  { name: 'hideArrow', dispName: 'Hide red arrow behind vehicle' },
+  { name: 'specifyVehicle', dispName: 'Use specific vehicle for all attempts' }
 ]
 
 export default class Authoring extends PureComponent {
@@ -48,7 +53,8 @@ export default class Authoring extends PureComponent {
     this.state = {
       inputs: getInputsData(),
       outputs: getOutputsData(),
-      iframeSrc: ''
+      iframeSrc: '',
+      vehicleHeight: config.vehicleHeight
     }
     BASIC_OPTIONS.forEach(opt => {
       this.state[opt.name] = config[opt.name]
@@ -56,7 +62,7 @@ export default class Authoring extends PureComponent {
   }
 
   get finalUrl () {
-    const { inputs, outputs } = this.state
+    const { inputs, outputs, vehicle, vehicleHeight } = this.state
     let url = window.location.href.slice()
     url = url.replace('?authoring', '')
 
@@ -70,7 +76,12 @@ export default class Authoring extends PureComponent {
         }
       }
     })
-
+    if (vehicle) {
+      url += `&vehicle=${vehicle}`
+    }
+    if (vehicleHeight) {
+      url += `&vehicleHeight=${vehicleHeight}`
+    }
     const props = ['defaultValue', 'showInCodap', 'showInCodapInGameMode', 'showInMainView']
     inputs.forEach(item => {
       props.forEach(prop => {
@@ -86,8 +97,8 @@ export default class Authoring extends PureComponent {
         }
       })
     })
-    // Remove first &, as it's unnecessary and make sure there's ?
-    url = url.replace('/&', '/?')
+    // Remove first &, as it's unnecessary and make sure there's a ?
+    url = url.replace(/&/, '?')
     return url
   }
 
@@ -114,7 +125,7 @@ export default class Authoring extends PureComponent {
 
   toggleNestedValue (type, idx, name) {
     const newData = this.state[type].slice()
-    newData[idx] = Object.assign({}, newData[idx], {[name]: !newData[idx][name]})
+    newData[idx] = Object.assign({}, newData[idx], { [name]: !newData[idx][name] })
     this.setState({
       [type]: newData
     })
@@ -122,10 +133,48 @@ export default class Authoring extends PureComponent {
 
   setInputDefValue (idx, value) {
     const newData = this.state.inputs.slice()
-    newData[idx] = Object.assign({}, newData[idx], {defaultValue: value})
+    newData[idx] = Object.assign({}, newData[idx], { defaultValue: value })
     this.setState({
       inputs: newData
     })
+  }
+
+  setVehicleHeight = (value) => {
+    this.setState({ vehicleHeight: value })
+  }
+
+  renderHeightOption () {
+    const { vehicleHeight } = this.state
+    return (
+      <div className={authoringStyles.flexInput}>
+        <div>Vehicle Image Height:</div>
+        <Input
+          type='text'
+          className={authoringStyles.smallInput}
+          value={vehicleHeight}
+          onChange={this.setVehicleHeight} />
+      </div>
+    )
+  }
+
+  renderVehicleSelector () {
+    const vehicle = this.state.vehicle || CAR_IMAGE
+    const setVehicle = (e) => this.setState({ vehicle: e.target.value })
+    if (!this.state.specifyVehicle) {
+      return null
+    }
+    return (
+      <div className={authoringStyles.inline}>
+        Always use this vehicle image:
+        <select name='vehicle' id='vehicle' value={vehicle} onChange={setVehicle}>
+          {
+            VEHICLE_IMAGES.map((v) => {
+              return <option value={v}>{v}</option>
+            })
+          }
+        </select>
+      </div>
+    )
   }
 
   render () {
@@ -135,10 +184,21 @@ export default class Authoring extends PureComponent {
       <div className={authoringStyles.authoring} >
         <h1>Customize simulation configuration, inputs and outputs</h1>
         {
+          this.renderHeightOption()
+        }
+        {
           BASIC_OPTIONS.map(opt => {
-            return <div key={opt.name}><Checkbox className={authoringStyles.inline} checked={this.state[opt.name]} onChange={this.toggleValue.bind(this, opt.name)} /> { opt.dispName }</div>
+            return (
+              <div key={opt.name}>
+                <Checkbox className={authoringStyles.inline}
+                  checked={this.state[opt.name]}
+                  onChange={this.toggleValue.bind(this, opt.name)}
+                /> { opt.dispName }
+              </div>
+            )
           })
         }
+        { this.renderVehicleSelector() }
         <h3>Inputs</h3>
         <Table selectable={false}>
           <TableHead>
