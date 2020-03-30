@@ -1,3 +1,4 @@
+/* global  performance */
 import * as c from './sim-constants'
 
 export function calcRampAngle (rampTopX, rampTopY) {
@@ -92,4 +93,53 @@ export function calcOutputs ({ initialCarX, gravity, surfaceFriction, rampTopX, 
     endDistance: c.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, timeOnGround),
     simulationFinished: elapsedTime === totalTime
   }
+}
+
+// Based on Gilbert Model with point charges
+// see https://en.wikipedia.org/wiki/Force_between_magnets
+export function calcMagneticForce (distanceMeters, chargeM1, chargeM2) {
+  const permiability = 0.8 // Uh?
+  const fallOff = 4 * Math.PI * (distanceMeters * distanceMeters)
+  const forceNewtons = (permiability * chargeM1 * chargeM2) / fallOff
+  return forceNewtons
+}
+
+export function calcAcceleration (forceN, massKg) {
+  const metersPerS2 = forceN / massKg
+  return metersPerS2
+}
+
+export function calcVelocity (previousV, mass, acc, deltaS) {
+  return previousV * mass + acc * deltaS
+}
+
+export function calcPosition (previousX, vel, deltaS) {
+  return previousX + (vel * deltaS)
+}
+
+export function crashSimulation (startX, _endX, carMass, chargeM1) {
+  let lastTime = performance.now()
+  let lastX = startX
+  let lastV = 0
+  const timestep = 0.02
+  const endX = _endX
+  const mass = carMass
+  const charge = chargeM1
+  const computeX = (timeNow) => {
+    const deltaT = (timeNow - lastTime) / 1000
+    if (deltaT < timestep) {
+      return lastX
+    }
+    const distance = Math.abs(_endX - lastX)
+    lastTime = timeNow
+    const force = calcMagneticForce(distance, charge, charge)
+    const acc = calcAcceleration(force, mass)
+    lastV = calcVelocity(lastV, mass, acc, deltaT)
+    lastX = calcPosition(lastX, lastV, deltaT)
+    if (lastX > endX) {
+      lastX = endX
+    }
+    return lastX
+  }
+  return computeX
 }

@@ -3,12 +3,14 @@ var CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   entry: {
-    app: './js/index.js'
+    app: './js/index.js',
+    carcrash: './js/carcrash.js'
   },
   output: {
     path: path.join(__dirname, 'dist'),
     filename: '[name].js'
   },
+  devtool: 'inline-source-map',
   module: {
     rules: [
       {
