@@ -8,9 +8,9 @@ import crashStyles from '../../css/car-crash.less'
 import { Layer, Stage } from 'react-konva'
 import { crashSimulation } from '../physics'
 
+const leftEdge = -2
 const parkedcarX = 2
-const minDistance = 0.9
-const crashSite = parkedcarX - minDistance
+const carHeightToWidth = 1.2
 
 export default class CarCrash extends SimulationBase {
   constructor (props) {
@@ -18,6 +18,13 @@ export default class CarCrash extends SimulationBase {
     this.setState({
       carX: 0
     })
+  }
+
+  get crashSite () {
+    const { vehicleHeight } = config
+    const vehicleWidth = vehicleHeight * carHeightToWidth
+    const minDistance = vehicleWidth / this.pixelMeterRatio
+    return parkedcarX - minDistance
   }
 
   rafHandler (timestamp) {
@@ -28,7 +35,7 @@ export default class CarCrash extends SimulationBase {
         if (nextX !== carX) {
           this.setState({ carX: nextX })
         }
-        if (nextX >= crashSite) {
+        if (nextX >= this.crashSite) {
           this.setState({ isRunning: false })
         } else {
           window.requestAnimationFrame(this.rafHandler)
@@ -47,18 +54,17 @@ export default class CarCrash extends SimulationBase {
   }
 
   handleCarPosChange (newXScreen, newYScreen) {
-    const leftEdge = -2
     if (!this.draggingActive) {
       return
     }
     let newXWorld = this.invScaleX(newXScreen)
     if (newXWorld < leftEdge) {
       newXWorld = leftEdge
-    } else if (newXWorld > crashSite) {
-      newXWorld = crashSite
+    } else if (newXWorld > this.crashSite) {
+      newXWorld = this.crashSite
     }
     this.setState({
-      carX: Math.min(newXWorld, crashSite)
+      carX: Math.min(newXWorld, this.crashSite)
     })
   }
 
@@ -67,7 +73,7 @@ export default class CarCrash extends SimulationBase {
     const { carX } = this.state
     this.setState({ isRunning: running })
     if (running) {
-      this.simulator = crashSimulation(carX, crashSite, 0.1, 2)
+      this.simulator = crashSimulation(carX, this.crashSite, 0.1, 2)
     }
   }
 
@@ -88,7 +94,8 @@ export default class CarCrash extends SimulationBase {
   }
 
   render () {
-    const { scaleX, scaleY, elapsedTime, carX, carDragging } = this.state
+    const { scaleX, scaleY, elapsedTime, carDragging } = this.state
+    const carX = this.state.carX || 0
     const { vehicleHeight } = config
     return (
       <div
