@@ -758,7 +758,14 @@ export default class SimulationBase extends PureComponent {
         />
         <Stage width={this.simWidth} height={this.simHeight}>
           <Layer>
-            <Ramp sx={scaleX} sy={scaleY} pointX={rampTopX} pointY={rampTopY} angle={rampAngle} />
+            <Ramp
+              sx={scaleX}
+              sy={scaleY}
+              pointX={rampTopX}
+              pointY={rampTopY}
+              angle={rampAngle}
+              showAngle={allowAngleAdjustment}
+            />
             <Ground sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} hideMarks={hideMarks} />
             {
               allowAngleAdjustment && inclineControl &&
