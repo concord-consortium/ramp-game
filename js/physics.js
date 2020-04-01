@@ -152,7 +152,7 @@ export function crashSimulation (startX, endX, distanceScale, carMass, chargeM1)
     } else {
       x = startX
     }
-    return {nextX: x, velocity: velocity}
+    return { nextX: x, velocity: velocity }
   }
   return computeX
 }

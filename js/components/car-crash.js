@@ -31,9 +31,9 @@ export default class CarCrash extends SimulationBase {
     const { isRunning, carX } = this.state
     if (isRunning) {
       if (this.simulator) {
-        const {velocity, nextX} = this.simulator(timestamp)
+        const { velocity, nextX } = this.simulator(timestamp)
         if (nextX !== carX) {
-          this.setState({carX: nextX, velocity})
+          this.setState({ carX: nextX, velocity })
         }
         if (nextX >= this.crashSite) {
           this.setState({ isRunning: false })
@@ -103,7 +103,7 @@ export default class CarCrash extends SimulationBase {
   }
 
   render () {
-    const { scaleX, scaleY, elapsedTime, carDragging, velocity} = this.state
+    const { scaleX, scaleY, elapsedTime, carDragging, velocity } = this.state
     const carX = this.state.carX || 0
     const { vehicleHeight } = config
     return (
