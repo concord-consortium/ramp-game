@@ -98,48 +98,61 @@ export function calcOutputs ({ initialCarX, gravity, surfaceFriction, rampTopX, 
 // Based on Gilbert Model with point charges
 // see https://en.wikipedia.org/wiki/Force_between_magnets
 export function calcMagneticForce (distanceMeters, chargeM1, chargeM2) {
-  const permiability = 0.8 // Uh?
-  const fallOff = 4 * Math.PI * (distanceMeters * distanceMeters)
+  const epsilon = 0.00001
+  const effectiveDistance = distanceMeters < epsilon ? epsilon : distanceMeters
+  const permiability = 0.8
+  const fallOff = 4 * Math.PI * (effectiveDistance * effectiveDistance)
+  // const fallOff = effectiveDistance * effectiveDistance
   const forceNewtons = (permiability * chargeM1 * chargeM2) / fallOff
   return forceNewtons
 }
 
 export function calcAcceleration (forceN, massKg) {
-  const metersPerS2 = forceN / massKg
+  const frictionCoef = 10e-5
+  const friction = massKg * -9.81 * frictionCoef
+  const netForceN = (friction + forceN) > 0 ? friction + forceN : 0
+  const metersPerS2 = netForceN / massKg
   return metersPerS2
 }
 
-export function calcVelocity (previousV, mass, acc, deltaS) {
-  return previousV * mass + acc * deltaS
-}
-
-export function calcPosition (previousX, vel, deltaS) {
-  return previousX + (vel * deltaS)
-}
-
-export function crashSimulation (startX, _endX, carMass, chargeM1) {
-  let lastTime = performance.now()
-  let lastX = startX
-  let lastV = 0
-  const timestep = 0.02
-  const endX = _endX
+export function crashSimulation (startX, endX, distanceScale, carMass, chargeM1) {
+  const startTime = performance.now()
   const mass = carMass
-  const charge = chargeM1
+  const distance = endX - startX
+  const numChunks = 50
+  const deltaD = distance / numChunks
+  const forces = []
+
+  for (let x = endX - 0.001; x >= startX; x = x - deltaD) {
+    const d = (endX - x) * distanceScale
+    const f = calcMagneticForce(d, chargeM1, chargeM1)
+    console.log(`force ${f}`)
+    forces.push(f)
+  }
+  forces.reverse()
+
+  const accelerations = forces.map(f => calcAcceleration(f, mass))
+  const times = accelerations.map(a => Math.sqrt(deltaD / a))
+  const velocities = times.map(t => deltaD / t)
+
   const computeX = (timeNow) => {
-    const deltaT = (timeNow - lastTime) / 1000
-    if (deltaT < timestep) {
-      return lastX
+    const deltaT = timeNow - startTime
+    let x = 0
+    let i = 0
+    let time = 0
+    let velocity = 0
+    while (time < deltaT && i < (numChunks - 1)) {
+      time = time + times[i]
+      i++
     }
-    const distance = Math.abs(_endX - lastX)
-    lastTime = timeNow
-    const force = calcMagneticForce(distance, charge, charge)
-    const acc = calcAcceleration(force, mass)
-    lastV = calcVelocity(lastV, mass, acc, deltaT)
-    lastX = calcPosition(lastX, lastV, deltaT)
-    if (lastX > endX) {
-      lastX = endX
+    if (isFinite(time)) {
+      velocity = velocities[i]
+      x = startX + ((i * deltaD) + velocity * (deltaT - time))
+      x = x > endX ? endX : x
+    } else {
+      x = startX
     }
-    return lastX
+    return {nextX: x, velocity: velocity}
   }
   return computeX
 }

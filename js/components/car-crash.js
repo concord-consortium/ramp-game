@@ -9,7 +9,7 @@ import { Layer, Stage } from 'react-konva'
 import { crashSimulation } from '../physics'
 
 const leftEdge = -2
-const parkedcarX = 2
+const parkedcarX = 4
 const carHeightToWidth = 1.2
 
 export default class CarCrash extends SimulationBase {
@@ -31,9 +31,9 @@ export default class CarCrash extends SimulationBase {
     const { isRunning, carX } = this.state
     if (isRunning) {
       if (this.simulator) {
-        const nextX = this.simulator(timestamp)
+        const {velocity, nextX} = this.simulator(timestamp)
         if (nextX !== carX) {
-          this.setState({ carX: nextX })
+          this.setState({carX: nextX, velocity})
         }
         if (nextX >= this.crashSite) {
           this.setState({ isRunning: false })
@@ -69,12 +69,21 @@ export default class CarCrash extends SimulationBase {
   }
 
   startStop = () => {
-    const running = !this.state.isRunning
-    const { carX } = this.state
-    this.setState({ isRunning: running })
-    if (running) {
-      this.simulator = crashSimulation(carX, this.crashSite, 0.1, 2)
+    if (!this.state.isRunning) {
+      this.start()
+    } else {
+      this.stop()
     }
+  }
+
+  start = () => {
+    const { carX } = this.state
+    this.setState({ isRunning: true })
+    this.simulator = crashSimulation(carX, this.crashSite, 2, 1, 0.9)
+  }
+
+  stop = () => {
+    this.setState({ isRunning: false })
   }
 
   renderButtons () {
@@ -94,7 +103,7 @@ export default class CarCrash extends SimulationBase {
   }
 
   render () {
-    const { scaleX, scaleY, elapsedTime, carDragging } = this.state
+    const { scaleX, scaleY, elapsedTime, carDragging, velocity} = this.state
     const carX = this.state.carX || 0
     const { vehicleHeight } = config
     return (
@@ -111,7 +120,11 @@ export default class CarCrash extends SimulationBase {
               maxHeight={vehicleHeight}
               onUnallowedDrag={this.handleUnallowedCarDrag}
               draggable={this.draggingActive && carDragging}
-              onDrag={this.handleCarPosChange} />
+              onDrag={this.handleCarPosChange}
+              onDragStart={this.stop}
+              onDragEnd={this.start}
+              velocity={velocity}
+            />
             <MagnetCar
               id='parkedCar'
               key='parkedCar'

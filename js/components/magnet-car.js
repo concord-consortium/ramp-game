@@ -76,6 +76,9 @@ export default class MagnetCar extends PureComponent {
   onDragStart () {
     const { draggable, onUnallowedDrag } = this.props
     if (draggable) {
+      if (this.props.onDragStart) {
+        this.props.onDragStart()
+      }
       this.setState({ active: true })
       document.addEventListener('mousemove', this.onDrag)
       document.addEventListener('mouseup', this.onDragEnd)
@@ -89,6 +92,9 @@ export default class MagnetCar extends PureComponent {
   onDragEnd () {
     const { draggable } = this.props
     if (draggable) {
+      if (this.props.onDragEnd) {
+        this.props.onDragEnd()
+      }
       this.setState({ active: false })
       document.removeEventListener('mousemove', this.onDrag)
       document.removeEventListener('mouseup', this.onDragEnd)
