@@ -126,7 +126,6 @@ export function crashSimulation (startX, endX, distanceScale, carMass, chargeM1)
   for (let x = endX - 0.001; x >= startX; x = x - deltaD) {
     const d = (endX - x) * distanceScale
     const f = calcMagneticForce(d, chargeM1, chargeM1)
-    console.log(`force ${f}`)
     forces.push(f)
   }
   forces.reverse()

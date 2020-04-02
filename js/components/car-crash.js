@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button } from 'react-toolbox/lib/button'
-import MagnetCar from './magnet-car'
+import MagnetCar, { FACING_LEFT, FACING_RIGHT } from './magnet-car'
 import Ground from './ground'
 import SimulationBase from './simulation-base'
 import config from '../config'
@@ -11,6 +11,7 @@ import { crashSimulation } from '../physics'
 const leftEdge = -2
 const parkedcarX = 4
 const carHeightToWidth = 1.2
+const CASH_VELOCITY = 17
 
 export default class CarCrash extends SimulationBase {
   constructor (props) {
@@ -23,7 +24,7 @@ export default class CarCrash extends SimulationBase {
   get crashSite () {
     const { vehicleHeight } = config
     const vehicleWidth = vehicleHeight * carHeightToWidth
-    const minDistance = vehicleWidth / this.pixelMeterRatio
+    const minDistance = (vehicleWidth * 1.35) / this.pixelMeterRatio
     return parkedcarX - minDistance
   }
 
@@ -37,6 +38,9 @@ export default class CarCrash extends SimulationBase {
         }
         if (nextX >= this.crashSite) {
           this.setState({ isRunning: false })
+          if (velocity > CASH_VELOCITY) {
+            this.setState({ crashed: true })
+          }
         } else {
           window.requestAnimationFrame(this.rafHandler)
         }
@@ -64,7 +68,8 @@ export default class CarCrash extends SimulationBase {
       newXWorld = this.crashSite
     }
     this.setState({
-      carX: Math.min(newXWorld, this.crashSite)
+      carX: Math.min(newXWorld, this.crashSite),
+      crashed: false
     })
   }
 
@@ -78,7 +83,7 @@ export default class CarCrash extends SimulationBase {
 
   start = () => {
     const { carX } = this.state
-    this.setState({ isRunning: true })
+    this.setState({ isRunning: true, crashed: false })
     this.simulator = crashSimulation(carX, this.crashSite, 2, 1, 0.9)
   }
 
@@ -103,7 +108,7 @@ export default class CarCrash extends SimulationBase {
   }
 
   render () {
-    const { scaleX, scaleY, elapsedTime, carDragging, velocity } = this.state
+    const { scaleX, scaleY, elapsedTime, carDragging, crashed, velocity } = this.state
     const carX = this.state.carX || 0
     const { vehicleHeight } = config
     return (
@@ -124,6 +129,9 @@ export default class CarCrash extends SimulationBase {
               onDragStart={this.stop}
               onDragEnd={this.start}
               velocity={velocity}
+              crashed={crashed}
+              mobile
+              direction={FACING_RIGHT}
             />
             <MagnetCar
               id='parkedCar'
@@ -133,6 +141,8 @@ export default class CarCrash extends SimulationBase {
               x={parkedcarX} y={0} angle={0}
               maxHeight={vehicleHeight}
               draggable={false}
+              crashed={crashed}
+              direction={FACING_LEFT}
             />
           </Layer>
         </Stage>

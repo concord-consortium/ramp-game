@@ -1,29 +1,29 @@
 import React, { PureComponent } from 'react'
-import { Image } from 'react-konva'
+import { Group, Image } from 'react-konva'
 
-const NORMAL_PREFIX = 'normal'
-const FRONT_BASHED_PREFIX = 'front-bashed'
-const BACK_BASHED_PREFIX = 'back-bashed'
-const NORTH_SUFFIX = 'N-S'
-const SOUTH_SUFFIX = 'S-N'
-const CAR_IMAGE_NAMES = [NORMAL_PREFIX, FRONT_BASHED_PREFIX, BACK_BASHED_PREFIX]
-const NORTH_IMAGE_NAMES = CAR_IMAGE_NAMES.map(i => `${i}-${NORTH_SUFFIX}`)
-const SOUTH_IMAGE_NAMES = CAR_IMAGE_NAMES.map(i => `${i}-${SOUTH_SUFFIX}`)
-const IMAGE_NAMES = NORTH_IMAGE_NAMES.concat(SOUTH_IMAGE_NAMES)
-const IMAGES = {}
-const urlForImage = (name) => `./common/images/crash/${name}.png`
-IMAGE_NAMES.forEach((name) => {
-  const url = urlForImage(name)
-  const image = new window.Image()
-  image.src = url
-  image.onload = () => {
-    IMAGES[name] = image
-  }
-})
+export const FACING_RIGHT = 'facing-right'
+export const FACING_LEFT = 'facing-left'
 
-const getImageForCar = (smashed, polarity) => {
-  const name = `${smashed}-${polarity}`
-  return IMAGES[name]
+const CAR_NORMAL = 'car-normal'
+const CAR_FRONT_SMASH = 'car-smash-front'
+const CAR_BACK_SMASH = 'car-smash-back'
+
+const MAGNET_NORTH = 'magnet-north'
+const MAGNET_SOUTH = 'magnet-south'
+const CAR_IMAGE_NAMES = [CAR_NORMAL, CAR_FRONT_SMASH, CAR_BACK_SMASH]
+const MAGNET_IMAGE_NAMES = [MAGNET_NORTH, MAGNET_SOUTH]
+
+const CAR_IMAGES = {}
+const MAGNET_IMAGES = {}
+
+const urlForImage = (name) => `./common/images/crash/slices/${name}.png`
+
+const getImageForCar = (smashed) => {
+  return CAR_IMAGES[smashed]
+}
+
+const getImageForMagnet = (polarity) => {
+  return MAGNET_IMAGES[polarity]
 }
 
 export const DEFAULT_VEHICLE_HEIGHT = 30
@@ -43,15 +43,28 @@ export default class MagnetCar extends PureComponent {
   }
 
   componentDidMount () {
-    IMAGE_NAMES.forEach((name) => {
+    CAR_IMAGE_NAMES.forEach((name) => {
       const url = urlForImage(name)
       const image = new window.Image()
       image.src = url
       image.onload = () => {
-        IMAGES[name] = image
+        CAR_IMAGES[name] = image
         this.setState({
-          images: IMAGES,
-          imageCount: Object.keys(IMAGES).length
+          carImages: CAR_IMAGES,
+          carImageCount: Object.keys(CAR_IMAGES).length
+        })
+      }
+    })
+
+    MAGNET_IMAGE_NAMES.forEach((name) => {
+      const url = urlForImage(name)
+      const image = new window.Image()
+      image.src = url
+      image.onload = () => {
+        MAGNET_IMAGES[name] = image
+        this.setState({
+          mangetImages: MAGNET_IMAGES,
+          magnetImageCount: Object.keys(MAGNET_IMAGES).length
         })
       }
     })
@@ -111,27 +124,56 @@ export default class MagnetCar extends PureComponent {
   }
 
   render () {
-    const { sx, sy, x, y, angle, maxHeight } = this.props
-    const vehicleImage = getImageForCar(NORMAL_PREFIX, NORTH_SUFFIX)
+    const { sx, sy, x, y, direction, maxHeight, crashed, mobile } = this.props
+    const vehicleImage = crashed
+      ? getImageForCar(CAR_FRONT_SMASH)
+      : getImageForCar(CAR_NORMAL)
+
+    const magnetImage = getImageForMagnet(MAGNET_SOUTH)
 
     // Images might not have loaded yet, if so short-circuit the render pass
     if (!(vehicleImage && vehicleImage.width)) { return null }
+    if (!(magnetImage && magnetImage.width)) { return null }
 
-    const height = maxHeight || DEFAULT_VEHICLE_HEIGHT
-    const heightRatio = height / vehicleImage.height
-    const width = vehicleImage.width * heightRatio
-    const offsetX = width / 2
-    const offsetY = height
+    const carHeight = maxHeight || DEFAULT_VEHICLE_HEIGHT
+    const carHeightRatio = carHeight / vehicleImage.height
+    const carWidth = vehicleImage.width * carHeightRatio
+    let carOffsetX = carWidth / 2
+    const carOffsetY = carHeight
+    if (crashed && mobile) {
+      carOffsetX += carWidth * 0.25
+    }
+    const magnetHeight = carHeight * 0.25
+    const magnetHeightRatio = magnetHeight / magnetImage.height
+    const magnetWidth = magnetImage.width * magnetHeightRatio
+    let magnetOffsetX = magnetWidth * 0.65
+    if (direction && direction === FACING_LEFT) {
+      magnetOffsetX = magnetWidth * 0.5
+    }
+    if (crashed && mobile) {
+      magnetOffsetX -= magnetWidth * 0.25
+    }
+
+    const magnetOffsetY = carOffsetY + magnetHeight
+    const xScale = direction && direction === FACING_RIGHT ? -1 : 1
     return (
-      <Image
-        image={vehicleImage}
-        x={sx(x)} y={sy(y)} width={width} height={height}
-        offsetX={offsetX} offsetY={offsetY}
-        scaleX={-1}
-        rotation={(angle || 0) * 180 / Math.PI}
-        onMouseOver={this.onHover} onMouseOut={this.onHoverEnd}
-        onMouseDown={this.onDragStart} onTouchStart={this.onDragStart}
-      />
+      <Group>
+        <Image
+          image={vehicleImage}
+          x={sx(x)} y={sy(y)} width={carWidth} height={carHeight}
+          offsetX={carOffsetX} offsetY={carOffsetY}
+          scaleX={xScale}
+          onMouseOver={this.onHover} onMouseOut={this.onHoverEnd}
+          onMouseDown={this.onDragStart} onTouchStart={this.onDragStart}
+        />
+        <Image
+          image={magnetImage}
+          x={sx(x)} y={sy(y)} width={magnetWidth} height={magnetHeight}
+          offsetX={magnetOffsetX} offsetY={magnetOffsetY}
+          onMouseOver={this.onHover} onMouseOut={this.onHoverEnd}
+          onMouseDown={this.onDragStart} onTouchStart={this.onDragStart}
+        />
+      </Group>
     )
   }
 }
