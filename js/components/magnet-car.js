@@ -7,10 +7,10 @@ export const FACING_LEFT = 'facing-left'
 const CAR_NORMAL = 'car-normal'
 const CAR_FRONT_SMASH = 'car-smash-front'
 const CAR_BACK_SMASH = 'car-smash-back'
-
+const CAR_BLOCKS = 'blocks'
 const MAGNET_NORTH = 'magnet-north'
 const MAGNET_SOUTH = 'magnet-south'
-const CAR_IMAGE_NAMES = [CAR_NORMAL, CAR_FRONT_SMASH, CAR_BACK_SMASH]
+const CAR_IMAGE_NAMES = [CAR_NORMAL, CAR_FRONT_SMASH, CAR_BACK_SMASH, CAR_BLOCKS]
 const MAGNET_IMAGE_NAMES = [MAGNET_NORTH, MAGNET_SOUTH]
 
 const CAR_IMAGES = {}
@@ -130,10 +130,12 @@ export default class MagnetCar extends PureComponent {
       : getImageForCar(CAR_NORMAL)
 
     const magnetImage = getImageForMagnet(MAGNET_SOUTH)
+    const blockImage = getImageForCar(CAR_BLOCKS)
 
     // Images might not have loaded yet, if so short-circuit the render pass
     if (!(vehicleImage && vehicleImage.width)) { return null }
     if (!(magnetImage && magnetImage.width)) { return null }
+    if (!(blockImage && blockImage.width)) { return null }
 
     const carHeight = maxHeight || DEFAULT_VEHICLE_HEIGHT
     const carHeightRatio = carHeight / vehicleImage.height
@@ -154,6 +156,7 @@ export default class MagnetCar extends PureComponent {
       magnetOffsetX -= magnetWidth * 0.25
     }
 
+    const blocksHeight = carHeight / blockImage.height
     const magnetOffsetY = carOffsetY + magnetHeight
     const xScale = direction && direction === FACING_RIGHT ? -1 : 1
     return (
@@ -173,6 +176,14 @@ export default class MagnetCar extends PureComponent {
           onMouseOver={this.onHover} onMouseOut={this.onHoverEnd}
           onMouseDown={this.onDragStart} onTouchStart={this.onDragStart}
         />
+        { mobile
+          ? null
+          : <Image
+            image={blockImage}
+            x={sx(x)} y={sy(y)} width={carWidth} height={blocksHeight}
+            offsetX={carOffsetX} offsetY={blocksHeight} scaleX={xScale}
+          />
+        }
       </Group>
     )
   }

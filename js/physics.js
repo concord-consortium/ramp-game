@@ -115,7 +115,7 @@ export function calcAcceleration (forceN, massKg) {
   return metersPerS2
 }
 
-export function crashSimulation (startX, endX, distanceScale, carMass, chargeM1) {
+export function crashSimulation (startX, endX, timeScale, carMass, chargeM1) {
   const startTime = performance.now()
   const mass = carMass
   const distance = endX - startX
@@ -124,7 +124,7 @@ export function crashSimulation (startX, endX, distanceScale, carMass, chargeM1)
   const forces = []
 
   for (let x = endX - 0.001; x >= startX; x = x - deltaD) {
-    const d = (endX - x) * distanceScale
+    const d = (endX - x)
     const f = calcMagneticForce(d, chargeM1, chargeM1)
     forces.push(f)
   }
@@ -135,7 +135,8 @@ export function crashSimulation (startX, endX, distanceScale, carMass, chargeM1)
   const velocities = times.map(t => deltaD / t)
 
   const computeX = (timeNow) => {
-    const deltaT = timeNow - startTime
+    let deltaT = timeNow - startTime
+    deltaT = deltaT * timeScale
     let x = 0
     let i = 0
     let time = 0

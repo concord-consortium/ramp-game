@@ -1,6 +1,8 @@
 import React from 'react'
 import { Button } from 'react-toolbox/lib/button'
+import { Dialog } from 'react-toolbox/lib/dialog'
 import MagnetCar, { FACING_LEFT, FACING_RIGHT } from './magnet-car'
+import Instructions from './car-crash-instructions'
 import Ground from './ground'
 import SimulationBase from './simulation-base'
 import config from '../config'
@@ -14,13 +16,6 @@ const carHeightToWidth = 1.2
 const CASH_VELOCITY = 17
 
 export default class CarCrash extends SimulationBase {
-  constructor (props) {
-    super(props)
-    this.setState({
-      carX: 0
-    })
-  }
-
   get crashSite () {
     const { vehicleHeight } = config
     const vehicleWidth = vehicleHeight * carHeightToWidth
@@ -83,8 +78,9 @@ export default class CarCrash extends SimulationBase {
 
   start = () => {
     const { carX } = this.state
+    const { timeScale, mCarMass, mCarCharge } = config
     this.setState({ isRunning: true, crashed: false })
-    this.simulator = crashSimulation(carX, this.crashSite, 2, 1, 0.9)
+    this.simulator = crashSimulation(carX, this.crashSite, timeScale, mCarMass, mCarCharge)
   }
 
   stop = () => {
@@ -107,17 +103,42 @@ export default class CarCrash extends SimulationBase {
     )
   }
 
+  hideDialog = () => {
+    this.setState({ hideDialog: true })
+  }
+
+  showDialog = () => {
+    const { hideDialog } = this.state
+    const actions = [
+      { label: 'OK', onClick: this.hideDialog }
+    ]
+    if (!hideDialog) {
+      return (
+        <Dialog
+          actions={actions}
+          active={!hideDialog}
+          onEscKeyDown={this.hideDialog}
+          onOverlayClick={this.hideDialog}
+          title='Instructions'
+        >
+          <Instructions />
+        </Dialog>
+      )
+    }
+    return null
+  }
+
   render () {
-    const { scaleX, scaleY, elapsedTime, carDragging, crashed, velocity } = this.state
-    const carX = this.state.carX || 0
+    const { scaleX, scaleY, carDragging, crashed, velocity } = this.state
+    const carX = this.state.carX || this.crashSite
     const { vehicleHeight } = config
     return (
       <div
         className={crashStyles.carCrash}
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseLeave}>
-        <div>{elapsedTime}</div>
-        { this.renderButtons() }
+        { this.showDialog() }
+        {/* { this.renderButtons() } */}
         <Stage width={this.simWidth} height={this.simHeight}>
           <Layer>
             <Ground sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} hideMarks />
