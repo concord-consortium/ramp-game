@@ -1,5 +1,4 @@
 import React from 'react'
-import { Button } from 'react-toolbox/lib/button'
 import { Dialog } from 'react-toolbox/lib/dialog'
 import MagnetCar, { FACING_LEFT, FACING_RIGHT } from './magnet-car'
 import { Instructions } from './car-crash-instructions'
@@ -87,22 +86,6 @@ export default class CarCrash extends SimulationBase {
     this.setState({ isRunning: false })
   }
 
-  renderButtons () {
-    const { elapsedTime, isRunning } = this.state
-    const { setupNewRun, startStop } = this
-    const simStarted = elapsedTime > 0
-    const simFinished = false
-    const startStopButtonLabel = isRunning
-      ? 'stop'
-      : 'run'
-    return (
-      <div className={crashStyles.buttons}>
-        <Button label={startStopButtonLabel} onClick={startStop.bind(this)} disabled={simFinished} raised primary />
-        <Button label='New run' onClick={setupNewRun} disabled={!simStarted} raised primary />
-      </div>
-    )
-  }
-
   hideDialog = () => {
     this.setState({ hideDialog: true })
   }
@@ -138,7 +121,6 @@ export default class CarCrash extends SimulationBase {
         onMouseEnter={this.handleMouseEnter}
         onMouseLeave={this.handleMouseLeave}>
         { this.showDialog() }
-        {/* { this.renderButtons() } */}
         <Stage width={this.simWidth} height={this.simHeight}>
           <Layer>
             <Ground sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} hideMarks />
