@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import React from 'react'
 import instructionStyles from '../../css/car-crash-instructions.less'
 
 const instructionImage = './common/images/crash/instructions.png'
@@ -7,19 +7,18 @@ Use your mouse to drag the car on the left away from the parked car on the right
 
 Try starting the car at different locations. What do you notice?
 `
-export default class Instructions extends PureComponent {
-  render () {
-    return (
-      <div className={instructionStyles.wrapper}>
-        <div className={instructionStyles.instructions}>
-          {instructionsText}
-        </div>
-        <img
-          src={instructionImage}
-          alt={instructionsText}
-          className={instructionStyles.image}
-        />
+
+export const Instructions = () => {
+  return (
+    <div className={instructionStyles.wrapper}>
+      <div className={instructionStyles.instructions}>
+        {instructionsText}
       </div>
-    )
-  }
+      <img
+        src={instructionImage}
+        alt={instructionsText}
+        className={instructionStyles.image}
+      />
+    </div>
+  )
 }
