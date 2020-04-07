@@ -4,7 +4,8 @@ var CopyWebpackPlugin = require('copy-webpack-plugin')
 module.exports = {
   entry: {
     app: './js/index.js',
-    carcrash: './js/carcrash.js'
+    carcrash: './js/carcrash.js',
+    phonedrop: './js/phonedrop.js'
   },
   output: {
     path: path.join(__dirname, 'dist'),
