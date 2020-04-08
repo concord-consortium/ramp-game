@@ -99,18 +99,17 @@ export function calcOutputs ({ initialCarX, gravity, surfaceFriction, rampTopX, 
 // see https://en.wikipedia.org/wiki/Force_between_magnets
 export function calcMagneticForce (distanceMeters, chargeM1, chargeM2) {
   const epsilon = 0.00001
-  const effectiveDistance = distanceMeters < epsilon ? epsilon : distanceMeters
-  const permiability = 0.8
+  const effectiveDistance = Math.max(epsilon, distanceMeters)
+  const permeability = 0.8
   const fallOff = 4 * Math.PI * (effectiveDistance * effectiveDistance)
-  // const fallOff = effectiveDistance * effectiveDistance
-  const forceNewtons = (permiability * chargeM1 * chargeM2) / fallOff
+  const forceNewtons = (permeability * chargeM1 * chargeM2) / fallOff
   return forceNewtons
 }
 
 export function calcAcceleration (forceN, massKg) {
   const frictionCoef = 10e-5
   const friction = massKg * -9.81 * frictionCoef
-  const netForceN = (friction + forceN) > 0 ? friction + forceN : 0
+  const netForceN = Math.max(0, friction + forceN)
   const metersPerS2 = netForceN / massKg
   return metersPerS2
 }

@@ -30,9 +30,7 @@ export default class App extends PureComponent {
 
   render () {
     const { width, height } = this.state
-    const SimulationComponent = this.props.simulation
-      ? this.props.simulation
-      : SimulationBase
+    const SimulationComponent = this.props.simulation || SimulationBase
     return (
       <div className={appStyles.app} >
         <SimulationComponent width={width} height={height} />

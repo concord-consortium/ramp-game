@@ -12,7 +12,7 @@ import { crashSimulation } from '../physics'
 const leftEdge = -2
 const parkedcarX = 4
 const carHeightToWidth = 1.2
-const CASH_VELOCITY = 17
+const CRASH_VELOCITY = 17
 
 export default class CarCrash extends SimulationBase {
   get crashSite () {
@@ -32,7 +32,7 @@ export default class CarCrash extends SimulationBase {
         }
         if (nextX >= this.crashSite) {
           this.setState({ isRunning: false })
-          if (velocity > CASH_VELOCITY) {
+          if (velocity > CRASH_VELOCITY) {
             this.setState({ crashed: true })
           }
         } else {
@@ -43,7 +43,6 @@ export default class CarCrash extends SimulationBase {
   }
 
   componentDidUpdate (prevProps, prevState) {
-    this.log('SimulationStarted')
     window.requestAnimationFrame(this.rafHandler)
   }
 
