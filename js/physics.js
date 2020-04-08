@@ -106,9 +106,12 @@ export function calcMagneticForce (distanceMeters, chargeM1, chargeM2) {
   return forceNewtons
 }
 
-export function calcAcceleration (forceN, massKg) {
+export function calcAcceleration (forceN, massKg, useFriction=false) {
   const frictionCoef = 10e-5
-  const friction = massKg * -9.81 * frictionCoef
+  let friction = 0
+  if(useFriction) {
+    friction = massKg * -9.81 * frictionCoef
+  }
   const netForceN = Math.max(0, friction + forceN)
   const metersPerS2 = netForceN / massKg
   return metersPerS2
@@ -151,7 +154,8 @@ export function crashSimulation (startX, endX, timeScale, carMass, chargeM1) {
     } else {
       x = startX
     }
-    return { nextX: x, velocity: velocity }
+    const force = mass * 0.5 * (velocity ** 2)
+    return { nextX: x, velocity: velocity, force: force }
   }
   return computeX
 }
