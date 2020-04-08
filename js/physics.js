@@ -106,10 +106,10 @@ export function calcMagneticForce (distanceMeters, chargeM1, chargeM2) {
   return forceNewtons
 }
 
-export function calcAcceleration (forceN, massKg, useFriction=false) {
+export function calcAcceleration (forceN, massKg, useFriction = false) {
   const frictionCoef = 10e-5
   let friction = 0
-  if(useFriction) {
+  if (useFriction) {
     friction = massKg * -9.81 * frictionCoef
   }
   const netForceN = Math.max(0, friction + forceN)
