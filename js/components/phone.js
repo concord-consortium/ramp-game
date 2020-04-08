@@ -1,4 +1,4 @@
-import React  from 'react'
+import React from 'react'
 import DraggableComponent from './draggable-component'
 import { Group, Image } from 'react-konva'
 
