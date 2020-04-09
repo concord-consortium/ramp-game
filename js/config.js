@@ -19,6 +19,9 @@ const config = {
   vehicle: CAR_IMAGE,
   // The height of the vehicle image
   vehicleHeight: DEFAULT_VEHICLE_HEIGHT,
+  timeScale: 0.5,
+  mCarCharge: 0.25,
+  mCarMass: 0.25,
   others: {
     challenge: {
       codapDef: { name: 'Challenge', type: 'categorical' },
