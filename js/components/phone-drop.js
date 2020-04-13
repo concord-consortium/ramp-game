@@ -25,7 +25,6 @@ function getScaleY (pixelMeterRatio) {
   }
 }
 
-
 export default class PhoneDrop extends SimulationBase {
   rafHandler = (timestamp) => {
     const { isRunning, phoneY } = this.state
