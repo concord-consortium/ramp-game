@@ -159,3 +159,18 @@ export function crashSimulation (startX, endX, timeScale, carMass, chargeM1) {
   }
   return computeX
 }
+
+export function dropSimulation (startY, endY, timeScale) {
+  const startTime = performance.now()
+  const computeY = (timeNow) => {
+    const dt = (timeNow - startTime) / 1000
+    const evalTime = dt * timeScale
+    const velocity = 9.8 * evalTime
+    const distance = velocity * evalTime
+    const y = (startY - distance) > endY
+      ? (startY - distance)
+      : endY
+    return { velocity, nextY: y }
+  }
+  return computeY
+}
