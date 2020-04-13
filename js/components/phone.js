@@ -46,7 +46,7 @@ export default class Phone extends DraggableComponent {
   }
 
   render () {
-    const { sx, sy, x, y, maxHeight, crashed } = this.props
+    const { x, y, maxHeight, crashed } = this.props
     const phoneImage = crashed
       ? getImageForPhone(PHONE_BROKEN)
       : getImageForPhone(PHONE)
@@ -58,14 +58,14 @@ export default class Phone extends DraggableComponent {
     const phoneHeightRatio = phoneHeight / phoneImage.height
     const phoneWidth = phoneImage.width * phoneHeightRatio
     const phoneOffsetX = phoneWidth / 2
-    const carOffsetY = phoneHeight
+    const phoneOffsetY = phoneHeight
 
     return (
       <Group>
         <Image
           image={phoneImage}
-          x={sx(x)} y={sy(y)} width={phoneWidth} height={phoneHeight}
-          offsetX={phoneOffsetX} offsetY={carOffsetY}
+          x={x} y={y} width={phoneWidth} height={phoneHeight}
+          offsetX={phoneOffsetX} offsetY={phoneOffsetY}
           scaleX={1}
           onMouseOver={this.onHover} onMouseOut={this.onHoverEnd}
           onMouseDown={this.onDragStart} onTouchStart={this.onDragStart}

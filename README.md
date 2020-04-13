@@ -41,3 +41,11 @@ and open http://localhost:8080/ or http://localhost:8080/webpack-dev-server/ (au
 This project automatically deploys branches using a travis build script.
 The branches are deployed to http://ramp-game.concord.org/branch/<branch-name>/index.html
 see `.travis.yml` and `s3_deploy.sh` for more info.
+
+## Phone Drop simulation query parameters:
+
+Change the size of the phone by setting url parameter `vehicleHeight`
+Change the timeScale multiplier by changing url parameter `timeScale`
+Change the crack threshold from the default of 3.7 using the url parameter `phoneCrack`
+
+See `config.js` for more details
