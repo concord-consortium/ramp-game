@@ -139,7 +139,6 @@ export default class PhoneDrop extends SimulationBase {
         { this.showDialog() }
         <Stage width={this.simWidth} height={this.simHeight}>
           <Layer>
-            {/* <Ground sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} hideMarks /> */}
             <Rect
               x={0}
               y={scaleY(worldMinY)}
