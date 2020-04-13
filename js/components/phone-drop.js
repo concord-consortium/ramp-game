@@ -8,20 +8,25 @@ import config from '../config'
 import { Layer, Stage, Rect } from 'react-konva'
 import { dropSimulation } from '../physics'
 
-export const minX = -1
-export const minY = -4
-export const maxX = 1
-export const maxY = 4
+// World left
+const worldMinX = -1
+// World right
+const worldMaxX = 1
+
+// World bottom, where the 'ground' is located, and crashing happens.
+const worldMinY = -4
+// World top
+const worldMaxY = 4
 
 function getScaleX (pixelMeterRatio) {
   return function scaleX (worldX) {
-    return (worldX - minX) * pixelMeterRatio
+    return (worldX - worldMinX) * pixelMeterRatio
   }
 }
 
 function getScaleY (pixelMeterRatio) {
   return function scaleY (worldY) {
-    return (maxY - worldY) * pixelMeterRatio
+    return (worldMaxY - worldY) * pixelMeterRatio
   }
 }
 
@@ -35,7 +40,7 @@ export default class PhoneDrop extends SimulationBase {
         if (nextY !== phoneY) {
           this.setState({ phoneY: nextY, velocity })
         }
-        if (nextY <= minY) {
+        if (nextY <= worldMinY) {
           this.setState({ isRunning: false })
           if (velocity > phoneCrack) {
             this.setState({ crashed: true })
@@ -48,8 +53,8 @@ export default class PhoneDrop extends SimulationBase {
   }
 
   get pixelMeterRatio () {
-    const xScale = this.simWidth / (maxX - minX)
-    const yScale = (this.simHeight - GROUND_HEIGHT) / (maxY - minY)
+    const xScale = this.simWidth / (worldMaxX - worldMinX)
+    const yScale = (this.simHeight - GROUND_HEIGHT) / (worldMaxY - worldMinY)
     return Math.min(xScale, yScale)
   }
 
@@ -69,10 +74,10 @@ export default class PhoneDrop extends SimulationBase {
 
   handlePhoneDrag = (newXScreen, newYScreen) => {
     let newYWorld = this.invScaleY(newYScreen)
-    if (newYWorld > maxY) {
-      newYWorld = maxY
-    } else if (newYWorld <= minY) {
-      newYWorld = minY
+    if (newYWorld > worldMaxY) {
+      newYWorld = worldMaxY
+    } else if (newYWorld <= worldMinY) {
+      newYWorld = worldMinY
     }
     this.setState({
       phoneY: newYWorld,
@@ -92,7 +97,7 @@ export default class PhoneDrop extends SimulationBase {
     const { phoneY } = this.state
     const { timeScale } = config
     this.setState({ isRunning: true, crashed: false })
-    this.simulator = dropSimulation(phoneY, minY, timeScale)
+    this.simulator = dropSimulation(phoneY, worldMinY, timeScale)
   }
 
   stop = () => {
@@ -126,7 +131,7 @@ export default class PhoneDrop extends SimulationBase {
 
   render () {
     const { scaleY, crashed, velocity } = this.state
-    const phoneY = this.state.phoneY || minY
+    const phoneY = this.state.phoneY || worldMinY
     const { vehicleHeight } = config
     const phoneCenter = this.simWidth / 2
     return (
@@ -137,9 +142,9 @@ export default class PhoneDrop extends SimulationBase {
             {/* <Ground sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} hideMarks /> */}
             <Rect
               x={0}
-              y={scaleY(minY)}
+              y={scaleY(worldMinY)}
               width={this.simWidth}
-              height={32}
+              height={GROUND_HEIGHT}
               fill={'green'}
               stroke={'black'}
               strokeWidth={1} />
