@@ -22,6 +22,7 @@ const config = {
   timeScale: 0.5,
   mCarCharge: 0.25,
   mCarMass: 0.25,
+  phoneCrack: 3.7,
   others: {
     challenge: {
       codapDef: { name: 'Challenge', type: 'categorical' },

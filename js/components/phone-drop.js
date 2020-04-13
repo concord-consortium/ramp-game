@@ -2,36 +2,43 @@ import React from 'react'
 import { Dialog } from 'react-toolbox/lib/dialog'
 import Phone from './phone'
 import { Instructions } from './phone-drop-instructions'
-import Ground from './ground'
+import { GROUND_HEIGHT } from './ground'
 import SimulationBase from './simulation-base'
 import config from '../config'
-import { Layer, Stage } from 'react-konva'
+import { Layer, Stage, Rect } from 'react-konva'
 import { dropSimulation } from '../physics'
-import { minX, maxX } from '../sim-constants'
 
-//
-const DROP_CENTER_X = (maxX - minX) / 2 + minX
-// Simulation top is on the Y axis in world coordinates.
-const WORLD_TOP_Y = 2.6
+export const minX = -1
+export const minY = -4
+export const maxX = 1
+export const maxY = 4
 
-// Where the ground is on the Y axis in our sim in world coordinates
-const WORLD_BOTTOM_Y = 0
+function getScaleX (pixelMeterRatio) {
+  return function scaleX (worldX) {
+    return (worldX - minX) * pixelMeterRatio
+  }
+}
 
-// After this velocity (m/s) the phone breaks ...
-const CASH_VELOCITY = 3.7
+function getScaleY (pixelMeterRatio) {
+  return function scaleY (worldY) {
+    return (maxY - worldY) * pixelMeterRatio
+  }
+}
+
 
 export default class PhoneDrop extends SimulationBase {
   rafHandler = (timestamp) => {
     const { isRunning, phoneY } = this.state
+    const { phoneCrack } = config
     if (isRunning) {
       if (this.simulator) {
         const { velocity, nextY } = this.simulator(timestamp)
         if (nextY !== phoneY) {
           this.setState({ phoneY: nextY, velocity })
         }
-        if (nextY <= WORLD_BOTTOM_Y) {
+        if (nextY <= minY) {
           this.setState({ isRunning: false })
-          if (velocity > CASH_VELOCITY) {
+          if (velocity > phoneCrack) {
             this.setState({ crashed: true })
           }
         } else {
@@ -41,20 +48,32 @@ export default class PhoneDrop extends SimulationBase {
     }
   }
 
-  componentDidUpdate (prevProps, prevState) {
-    window.requestAnimationFrame(this.rafHandler)
+  get pixelMeterRatio () {
+    const xScale = this.simWidth / (maxX - minX)
+    const yScale = (this.simHeight - GROUND_HEIGHT) / (maxY - minY)
+    return Math.min(xScale, yScale)
   }
 
-  log (msg) {
-    console.log(msg)
+  componentDidUpdate (prevProps, prevState) {
+    const { isRunning } = this.state
+    const { width, height } = this.props
+    if (width !== prevProps.width || height !== prevProps.height) {
+      this.setState({
+        scaleX: getScaleX(this.pixelMeterRatio),
+        scaleY: getScaleY(this.pixelMeterRatio)
+      })
+    }
+    if (isRunning && !prevState.isRunning) {
+      window.requestAnimationFrame(this.rafHandler)
+    }
   }
 
   handlePhoneDrag = (newXScreen, newYScreen) => {
     let newYWorld = this.invScaleY(newYScreen)
-    if (newYWorld > WORLD_TOP_Y) {
-      newYWorld = WORLD_TOP_Y
-    } else if (newYWorld <= WORLD_BOTTOM_Y) {
-      newYWorld = WORLD_BOTTOM_Y
+    if (newYWorld > maxY) {
+      newYWorld = maxY
+    } else if (newYWorld <= minY) {
+      newYWorld = minY
     }
     this.setState({
       phoneY: newYWorld,
@@ -74,7 +93,7 @@ export default class PhoneDrop extends SimulationBase {
     const { phoneY } = this.state
     const { timeScale } = config
     this.setState({ isRunning: true, crashed: false })
-    this.simulator = dropSimulation(phoneY, WORLD_BOTTOM_Y, timeScale)
+    this.simulator = dropSimulation(phoneY, minY, timeScale)
   }
 
   stop = () => {
@@ -107,16 +126,25 @@ export default class PhoneDrop extends SimulationBase {
   }
 
   render () {
-    const { scaleX, scaleY, crashed, velocity } = this.state
-    const phoneY = this.state.phoneY || 0
+    const { scaleY, crashed, velocity } = this.state
+    const phoneY = this.state.phoneY || minY
     const { vehicleHeight } = config
+    const phoneCenter = this.simWidth / 2
     return (
       <div>
         { this.showDialog() }
         <Stage width={this.simWidth} height={this.simHeight}>
           <Layer>
-            <Ground sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} hideMarks />
-            <Phone sx={scaleX} sy={scaleY} x={DROP_CENTER_X} y={phoneY} angle={0}
+            {/* <Ground sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} hideMarks /> */}
+            <Rect
+              x={0}
+              y={scaleY(minY)}
+              width={this.simWidth}
+              height={32}
+              fill={'green'}
+              stroke={'black'}
+              strokeWidth={1} />
+            <Phone x={phoneCenter} y={scaleY(phoneY)} angle={0}
               maxHeight={vehicleHeight}
               onUnallowedDrag={this.handleUnallowedCarDrag}
               draggable
