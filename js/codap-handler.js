@@ -137,8 +137,8 @@ export function generateCodapData (options) {
     if (output.showInCodap) {
       const rawValue = outputs[outputName]
       const outputValue = output.dispFunc
-                            ? output.dispFunc(rawValue)
-                            : rawValue
+        ? output.dispFunc(rawValue)
+        : rawValue
       values[output.codapDef.name] = outputValue
     }
   })
@@ -231,27 +231,27 @@ export default class CodapHandler {
       action: 'get',
       resource: `${runsCollection}.caseCount`
     }, responseCallback)
-    .then((response) => {
-      if (response.success) {
+      .then((response) => {
+        if (response.success) {
         // request the last case
-        const caseCount = response.values
-        if (!caseCount) return
-        codapInterface.sendRequest({
-          action: 'get',
-          resource: `${runsCollection}.caseByIndex[${caseCount - 1}]`
-        }, responseCallback)
-        .then((response) => {
-          // retrieve the run number from the last case
-          if (response.success) {
-            const theCase = response.values['case']
-            const runNumber = theCase.values[config.others.run.codapDef.name]
-            if (runNumber) {
-              runNumberCallback(runNumber)
-            }
-          }
-        }, responseCallback)
-      }
-    })
+          const caseCount = response.values
+          if (!caseCount) return
+          codapInterface.sendRequest({
+            action: 'get',
+            resource: `${runsCollection}.caseByIndex[${caseCount - 1}]`
+          }, responseCallback)
+            .then((response) => {
+              // retrieve the run number from the last case
+              if (response.success) {
+                const theCase = response.values['case']
+                const runNumber = theCase.values[config.others.run.codapDef.name]
+                if (runNumber) {
+                  runNumberCallback(runNumber)
+                }
+              }
+            }, responseCallback)
+        }
+      })
   }
 
   setCodapState (state) {
@@ -261,7 +261,7 @@ export default class CodapHandler {
     return codapInterface.sendRequest({
       action: 'notify',
       resource: 'undoChangeNotice',
-      'values': {
+      values: {
         operation: 'undoableActionPerformed'
       }
     })
@@ -308,10 +308,10 @@ export default class CodapHandler {
 
   log (action, params) {
     codapInterface.sendRequest({
-      'action': 'notify',
-      'resource': 'logMessage',
-      'values': {
-        'formatStr': params ? `${action}:${JSON.stringify(params)}` : action + ':'
+      action: 'notify',
+      resource: 'logMessage',
+      values: {
+        formatStr: params ? `${action}:${JSON.stringify(params)}` : action + ':'
       }
     })
   }

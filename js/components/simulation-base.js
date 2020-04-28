@@ -17,7 +17,7 @@ import CarHeightLine from './car-height-line'
 import GameTarget from './game-target'
 import { calcOutputs, calcRampLength, calcRampAngle } from '../physics'
 import { calcGameScore, calcStarsCount, challenges, MIN_SCORE_TO_ADVANCE,
-        MIN_SCORE_TO_AVOID_HINTS, MIN_SCORE_TO_AVOID_REMEDIATION } from '../game'
+  MIN_SCORE_TO_AVOID_HINTS, MIN_SCORE_TO_AVOID_REMEDIATION } from '../game'
 import CodapHandler, { generateCodapData } from '../codap-handler'
 import config from '../config'
 import dialogTheme from '../../css/dialog-theme.less'
@@ -169,14 +169,14 @@ export default class SimulationBase extends PureComponent {
         }
 
         this.codapHandler.registerEventHandlers({
-          'create': this.createComponentHandler,
-          'attributeChange': this.axisAttributeChangeHandler
+          create: this.createComponentHandler,
+          attributeChange: this.axisAttributeChangeHandler
         })
 
         this.codapHandler.registerLogHandlers({
-          'legendAttributeChange': this.legendAttributeLogHandler,
+          legendAttributeChange: this.legendAttributeLogHandler,
           'toggleMovableLine: show': this.showMovableLineLogHandler,
-          'dragMovableLine': this.dragMovableLineLogHandler,
+          dragMovableLine: this.dragMovableLineLogHandler,
           'toggleLSRL: show': this.showRegressionLineHandler
         })
 
@@ -227,7 +227,7 @@ export default class SimulationBase extends PureComponent {
     const { width, height } = this.props
     if (isRunning && !prevState.isRunning) {
       if (isNaN(this.outputs.totalTime)) {
-        this.showDialogWithMessage("Ramp friction is too big, car won't start moving")
+        this.showDialogWithMessage("Ramp friction is too big, vehicle won't start moving")
         this.setState({
           isRunning: false
         })
@@ -244,7 +244,7 @@ export default class SimulationBase extends PureComponent {
       })
     }
     if (config.game && (
-          attemptSet !== prevState.attemptSet ||
+      attemptSet !== prevState.attemptSet ||
           challengeIdx !== prevState.challengeIdx ||
           stepIdx !== prevState.stepIdx ||
           runNumber !== prevState.runNumber)) {
@@ -605,7 +605,7 @@ export default class SimulationBase extends PureComponent {
 
   setupChallenge (prevChallengeIdx) {
     const { attemptSet, challengeIdx, stepIdx, initialCarX, surfaceFriction,
-            targetX, returnToActivity } = this.state
+      targetX, returnToActivity } = this.state
     const challenge = challenges[challengeIdx]
     if (!challenge) {
       this.gameCompleted()
@@ -738,7 +738,10 @@ export default class SimulationBase extends PureComponent {
     const carLoc = { x: Math.round(marginX), y: Math.round(origin.y + 27) }
     const carCoords = { x: this.invScaleX(carLoc.x), y: this.invScaleY(carLoc.y) }
     const textLoc = { x: carLoc.x + 35, y: Math.round(origin.y + 7) }
-    const vehicle = VEHICLE_IMAGES[attemptSet % VEHICLE_IMAGES.length]
+    const vehicle = config.specifyVehicle
+      ? config.vehicle
+      : VEHICLE_IMAGES[attemptSet % VEHICLE_IMAGES.length]
+    const { hideMarks, hideArrow, vehicleHeight, allowAngleAdjustment } = config
     const { simulationFinished, carX, carY, rampAngle, carAngle, startDistanceUpRamp } = this.outputs
     const simulationStarted = elapsedTime > 0
     return (
@@ -756,18 +759,22 @@ export default class SimulationBase extends PureComponent {
         <Stage width={this.simWidth} height={this.simHeight}>
           <Layer>
             <Ramp sx={scaleX} sy={scaleY} pointX={rampTopX} pointY={rampTopY} angle={rampAngle} />
-            <Ground sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} />
+            <Ground sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} hideMarks={hideMarks} />
             {
-              inclineControl &&
+              allowAngleAdjustment && inclineControl &&
               <InclineControl x={scaleX(rampTopX)} y={scaleY(rampTopY)}
                 draggable={this.draggingActive} onDrag={this.handleInclineChange} />
             }
             {
               this.challengeActive &&
               <GameTarget sx={scaleX} sy={scaleY} pixelMeterRatio={this.pixelMeterRatio} x={targetX} width={targetWidth} />
+            }{
+              hideArrow
+                ? null
+                : <ArrowImage sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle} />
             }
-            <ArrowImage sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle} />
             <VehicleImage vehicle={vehicle} sx={scaleX} sy={scaleY} x={carX} y={carY} angle={carAngle}
+              maxHeight={vehicleHeight}
               onUnallowedDrag={this.handleUnallowedCarDrag}
               draggable={this.draggingActive && carDragging}
               onDrag={this.handleCarPosChange} />
@@ -777,7 +784,9 @@ export default class SimulationBase extends PureComponent {
             }
             {
               this.challengeActive &&
-              <VehicleImage vehicle={vehicle} sx={scaleX} sy={scaleY} x={carCoords.x} y={carCoords.y} />
+              <VehicleImage vehicle={vehicle} sx={scaleX} sy={scaleY} x={carCoords.x} y={carCoords.y}
+                maxHeight={vehicleHeight}
+              />
             }
           </Layer>
         </Stage>
@@ -811,7 +820,7 @@ export default class SimulationBase extends PureComponent {
         <Dialog
           theme={dialogTheme}
           active={genericDialogActive}
-          actions={[ { label: 'OK', onClick: this.hideGenericDialog } ]}
+          actions={[{ label: 'OK', onClick: this.hideGenericDialog }]}
           onEscKeyDown={this.hideGenericDialog}
           onOverlayClick={this.hideGenericDialog}
         >

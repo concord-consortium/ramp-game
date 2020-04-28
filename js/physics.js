@@ -1,3 +1,4 @@
+/* global  performance */
 import * as c from './sim-constants'
 
 export function calcRampAngle (rampTopX, rampTopY) {
@@ -16,9 +17,9 @@ export function calcDistanceUpRamp (carX, rampAngle) {
 }
 
 export function calcRampAcceleration (gravity, surfaceFriction, rampAngle) {
-  let parallelAcceleration = gravity * (Math.sin(rampAngle))
-  let normalAcceleration = gravity * (Math.cos(rampAngle))
-  let rampAcceleration = parallelAcceleration - normalAcceleration * surfaceFriction
+  const parallelAcceleration = gravity * (Math.sin(rampAngle))
+  const normalAcceleration = gravity * (Math.cos(rampAngle))
+  const rampAcceleration = parallelAcceleration - normalAcceleration * surfaceFriction
   if (rampAcceleration < 0) {
     return 0
   }
@@ -92,4 +93,84 @@ export function calcOutputs ({ initialCarX, gravity, surfaceFriction, rampTopX, 
     endDistance: c.rampEndX + calcGroundDisplacement(velocityAtBottomOfRamp, groundAcceleration, timeOnGround),
     simulationFinished: elapsedTime === totalTime
   }
+}
+
+// Based on Gilbert Model with point charges
+// see https://en.wikipedia.org/wiki/Force_between_magnets
+export function calcMagneticForce (distanceMeters, chargeM1, chargeM2) {
+  const epsilon = 0.00001
+  const effectiveDistance = Math.max(epsilon, distanceMeters)
+  const permeability = 0.8
+  const fallOff = 4 * Math.PI * (effectiveDistance * effectiveDistance)
+  const forceNewtons = (permeability * chargeM1 * chargeM2) / fallOff
+  return forceNewtons
+}
+
+export function calcAcceleration (forceN, massKg, useFriction = false) {
+  const frictionCoef = 10e-5
+  let friction = 0
+  if (useFriction) {
+    friction = massKg * -9.81 * frictionCoef
+  }
+  const netForceN = Math.max(0, friction + forceN)
+  const metersPerS2 = netForceN / massKg
+  return metersPerS2
+}
+
+export function crashSimulation (startX, endX, timeScale, carMass, chargeM1) {
+  const startTime = performance.now()
+  const mass = carMass
+  const distance = endX - startX
+  const numChunks = 50
+  const deltaD = distance / numChunks
+  const forces = []
+
+  for (let x = endX - 0.001; x >= startX; x = x - deltaD) {
+    const d = (endX - x)
+    const f = calcMagneticForce(d, chargeM1, chargeM1)
+    forces.push(f)
+  }
+  forces.reverse()
+
+  const accelerations = forces.map(f => calcAcceleration(f, mass))
+  const times = accelerations.map(a => Math.sqrt(deltaD / a))
+  const velocities = times.map(t => deltaD / t)
+
+  const computeX = (timeNow) => {
+    let deltaT = timeNow - startTime
+    deltaT = deltaT * timeScale
+    let x = 0
+    let i = 0
+    let time = 0
+    let velocity = 0
+    while (time < deltaT && i < (numChunks - 1)) {
+      time = time + times[i]
+      i++
+    }
+    if (isFinite(time)) {
+      velocity = velocities[i]
+      x = startX + ((i * deltaD) + velocity * (deltaT - time))
+      x = x > endX ? endX : x
+    } else {
+      x = startX
+    }
+    const force = mass * 0.5 * (velocity ** 2)
+    return { nextX: x, velocity: velocity, force: force }
+  }
+  return computeX
+}
+
+export function dropSimulation (startY, endY, timeScale) {
+  const startTime = performance.now()
+  const computeY = (timeNow) => {
+    const dt = (timeNow - startTime) / 1000
+    const evalTime = dt * timeScale
+    const velocity = 9.8 * evalTime
+    const distance = velocity * evalTime
+    const y = (startY - distance) > endY
+      ? (startY - distance)
+      : endY
+    return { velocity, nextY: y }
+  }
+  return computeY
 }

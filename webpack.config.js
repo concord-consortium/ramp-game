@@ -3,21 +3,21 @@ var CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   entry: {
-    'app': './js/index.js'
+    app: './js/index.js',
+    carcrash: './js/carcrash.js',
+    phonedrop: './js/phonedrop.js'
   },
   output: {
     path: path.join(__dirname, 'dist'),
     filename: '[name].js'
   },
+  devtool: 'inline-source-map',
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        loader: 'babel-loader',
-        query: {
-          presets: ['es2015', 'stage-2', 'react']
-        }
+        loader: 'babel-loader'
       },
       {
         // Config based on:
@@ -72,7 +72,7 @@ module.exports = {
   },
   plugins: [
     new CopyWebpackPlugin([
-      {from: 'public'}
+      { from: 'public' }
     ])
   ]
 }

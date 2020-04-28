@@ -20,6 +20,7 @@ export default class StepChangeMessage extends PureComponent {
     super(...args)
     this.state = { show: false, visibility: 'hidden' }
   }
+
   componentWillReceiveProps (nextProps) {
     const newChallenge = this.props.challengeIdx !== nextProps.challengeIdx
     const newStep = this.props.stepIdx !== nextProps.stepIdx
@@ -27,15 +28,19 @@ export default class StepChangeMessage extends PureComponent {
       this.setState({ show: true })
     }
   }
+
   handleEnter = (node) => {
     this.setState({ visibility: 'visible' })
   }
+
   handleEntered = (node) => {
     setTimeout(() => { this.setState({ show: false }) }, MSG_TRANSITION_DURATION + MSG_STABLE_DURATION)
   }
+
   handleExited = (node) => {
     this.setState({ visibility: 'hidden' })
   }
+
   render () {
     const { stepIdx } = this.props
     const classNames = {

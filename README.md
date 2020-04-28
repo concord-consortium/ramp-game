@@ -1,20 +1,21 @@
-# Inquiry Space 2
+# Ramp Game interactive
 
-This repository reproduces the Inquiry Space project, previously designed in NetLogo, in JavaScript.
+This repository reproduces the Ramp Game interactive used by Inquiry Space project, previously designed in NetLogo, in JavaScript.
 
 ## Testing
 
-Latest published builds for the IS2 demo:
+Latest published build:
+http://ramp-game.concord.org/
 
-https://concord-consortium.github.io/inquiry-space-2/
+Master deployment:
+http://ramp-game.concord.org/branch/master/index.html
 
 Authoring page:
-
-https://concord-consortium.github.io/inquiry-space-2/?authoring
+http://ramp-game.concord.org/?authoring
 
 Run in latest CODAP:
 
-https://codap.concord.org/releases/latest?di=https://concord-consortium.github.io/inquiry-space-2/?game
+https://codap.concord.org/releases/latest?di=http://ramp-game.concord.org/?game
 
 ## Development
 
@@ -37,8 +38,14 @@ and open http://localhost:8080/ or http://localhost:8080/webpack-dev-server/ (au
 
 ## Deployment
 
-#### Github Pages:
+This project automatically deploys branches using a travis build script.
+The branches are deployed to http://ramp-game.concord.org/branch/<branch-name>/index.html
+see `.travis.yml` and `s3_deploy.sh` for more info.
 
-Run `./build-and-deploy.sh`
+## Phone Drop simulation query parameters:
 
-Deploys to https://concord-consortium.github.io/inquiry-space-2/
+Change the size of the phone by setting url parameter `vehicleHeight`
+Change the timeScale multiplier by changing url parameter `timeScale`
+Change the crack threshold from the default of 3.7 using the url parameter `phoneCrack`
+
+See `config.js` for more details
