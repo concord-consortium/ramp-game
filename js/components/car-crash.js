@@ -102,6 +102,7 @@ export default class CarCrash extends SimulationBase {
           onEscKeyDown={this.hideDialog}
           onOverlayClick={this.hideDialog}
           title='Instructions'
+          className={crashStyles.wideDialog}
         >
           <Instructions />
         </Dialog>
